@@ -1,6 +1,6 @@
 # Architecture
 
-React19/Vinext app on a Cloudflare-compatible Worker. app/travel.tsx owns UI, app/atlas-map.tsx projects GeoJSON into a prefecture overview. Current map marker is approximate regional position, not saved photo GPS.
+React19/Vinext app on a Cloudflare-compatible Worker. app/travel.tsx owns UI, app/atlas-map.tsx projects GeoJSON into a prefecture overview. Regional selection marker is approximate; separate visit markers use user-confirmed persisted coordinates. lib/photo-metadata.ts reads bounded JPEG EXIF before flattening, proposes prefecture using point-in-polygon, and validates confirmed coordinates. 0001 adds nullable latitude/longitude/location_source; old rows remain valid. No timezone guessing: camera date is proposed as-is and offset shown when present. Browser image decoding applies orientation once via from-image.
 
 GET/POST /api/checkins, POST /api/statuses and POST/GET/DELETE /api/photos use app/chatgpt-auth.ts. D1 owner keys scope each query; R2 object reads require authorized DB rows. lib/photo.ts validates JPEG structure and removes EXIF metadata after client canvas conversion. Limits:6 photos/check-in,3MB uploaded JPEG,30 unfinished photo drafts/user.
 
