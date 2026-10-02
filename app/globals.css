@@ -139,3 +139,4 @@ dialog{background:#fffdf7;box-shadow:0 20px 70px #33452d25;border-radius:8px}dia
 .poster-dialog{margin:auto}.poster-dialog .sheet-header{position:sticky;top:0;z-index:2;background:var(--panel)}
 @media(max-width:800px){.poster-dialog{margin:auto 0 0}.travel-app .atlas-workspace{min-height:440px}}
 @media print{.travel-app{min-height:0!important}.travel-app>:not(.poster-dialog){display:none!important}.poster-dialog{display:block!important}}
+.download-fallback{display:inline-flex;align-items:center;min-height:44px;color:var(--amber);font-size:14px;text-decoration:underline}
