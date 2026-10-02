@@ -1,33 +1,47 @@
 # Japan Check-ins / 日本足迹
 
-照片优先的私人旅行日志，日式极简界面。上传照片、确认地点与日期，然后保存到地图和时间线。重复到访新增记录；城市深度和餐厅已吃过状态相互独立。
+可以 clone 后自行部署的私人旅行日志，中文移动端与日式极简界面。照片 → 确认地点和日期 → 保存 → 地图 / 时间线。重复到访新增记录，不根据照片推断旅行历史、餐厅已吃过或到访深度。
 
 ## 当前能力
 
-- 照片入口位于打卡表单最前面；相册多选、手机相机入口、上传进度与失败重试。
-- 47都道府县概览、24家电视精选餐厅、任意城市/街道/地点。
-- D1记录、私人R2照片、逐用户所有权检查；照片缩小和移除EXIF。
-- 在本机读取 JPEG EXIF 的定位和拍摄日期建议；确认/编辑后保存真实坐标，地图标记可打开对应时间线。无 GPS 可手动填坐标或仅记录地区，不能离线保存。
+- 默认密码访问：管理密码可记录旅行，可选访问密码只读；GitHub OAuth 登录可选。
+- 私有 / 公开模式可配置；公开页只展示主人明确发布的记录和照片，草稿及旧记录默认私有。
+- 私有 GitHub 数据仓库：照片草稿、旅行记录、历史标记通过服务端 GitHub API 保存；仓库变为公开时拒绝访问。
+- 照片缩小、客户端和服务端清除元数据；照片通过登录保护的接口读取，凭证不进入浏览器。
+- 上传和保存幂等重试、Git 并发冲突有界重试，重复到访新增记录。
+- 本机解析 JPEG EXIF 地点 / 日期建议；确认或编辑后才能保存坐标。无 GPS 可手动输入或只记地区。
+- 日本 47 都道府县地图、时间线、24 家精选餐厅、任意城市 / 街道 / 地点。
 
-## Codex 本地项目
+不支持离线保存、全球地图或图片视觉定位；HEIC 取决于浏览器解码，EXIF 建议解析目前只支持 JPEG。
 
-在Codex桌面选择此仓库的本地文件夹作为项目，并从AGENTS.md和docs/ROADMAP.md开始任务。此仓库提供项目代码和持久开发说明，不会自动创建Codex云端Environment。
+## Clone 与配置
 
 ```sh
 git clone git@github.com:oiahoon/japan-checkins.git
 cd japan-checkins
 npm ci
-npm run typecheck
-npm run build
+npm run setup
+# 按 docs/SELF-HOSTING.md 配置 .env.local
 npm run dev
 ```
 
-Node>=22.18。开发预览具有本地模拟身份，只能绑定loopback，不得公开暴露。D1需按drizzle内迁移初始化；参阅docs/ARCHITECTURE.md。
+Node >=22.18。本地入口为 `http://localhost:3000`，绑定 loopback。setup 生成密码保存在本机 .setup/admin-password.txt；填写自己的私有仓库和受限 token 后使用。不会提供模拟登录或自动接入其他私人资源；缺少存储配置时保存失败并显示错误。
 
-## 发布边界
+完整 [密码访问、公开模式、私有仓库与 GitHub → Vercel 部署步骤](docs/SELF-HOSTING.md)。无需 D1、R2 或付费地理编码服务。建议公共代码仓库与自己的私有数据仓库分开；数据仓库也可以是你自己的私有项目副本。
 
-GitHub是源码仓库，不是现成的照片存储或身份服务。本应用含Worker/D1/R2，不能作为GitHub Pages静态站直接部署。现有ChatGPT认证仅在Sites可信入口下有效；普通Cloudflare或其他部署须先实现验证会话的认证适配层，不能信任互联网传入的身份header。
+```sh
+npm run typecheck
+npm test
+npm run build
+npm run start
+```
 
-.openai/hosting.json仅保留逻辑绑定，没有私人Site项目ID。接入Sites时创建或选择你授权的项目并在本机配置；不要将原私人Site绑定复制进公共仓库。
+默认运行 Next.js，提供 `vercel.json`；连接 GitHub 后 main 推送自动部署到 Vercel。GitHub Actions 校验源码、合成测试和构建，不处理个人照片或自动部署私人站点。每次保存直接写入数据仓库，无需等待构建。
 
-本仓库不包含旅行历史、用户照片、令牌、真实数据库或本机状态。原私人Site及数据未迁移。餐厅与地图来源、近似位置和状态核实限制见public/data-notes.md。
+## 验证与兼容
+
+自动测试覆盖密码哈希、角色权限、公开投影、EXIF 缺失 / 损坏、边界、确认与元数据清除、会话签名 / 过期 / 所有权、并发记录及失败保存重试。真实私有仓库写入和手机照片上传需部署者使用自己的配置验收；不能把本地合成测试当作线上验收。
+
+旧 Sites + D1/R2 适配器保留，可使用 `npm run dev:sites` / `build:sites` / `start:sites`。它只能在可信 Sites 网关下使用，不作为 Vercel 的认证路径。原私人 Site、数据和访问权限没有迁移或修改。迁移不会自动导入旧记录。
+
+公共模板不包含照片、旅行历史、令牌或个人 Site ID。旅行与照片会留在数据仓库的 Git 历史中；移除草稿不会清除历史副本。地图和餐厅来源见 [数据说明](public/data-notes.md)。

@@ -20,3 +20,7 @@ dialog{background:#fffdf7;box-shadow:0 20px 70px #33452d25;border-radius:8px}dia
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .location-review{border:1px solid #d1d8c5;padding:16px;margin:18px 0 24px}.location-review h3{font-size:18px;margin:0 0 8px}.metadata-proposal{border-bottom:1px solid #dce2d2;padding:12px 0;font-size:14px;overflow-wrap:anywhere}.metadata-proposal p{line-height:1.7;margin:6px 0}.metadata-proposal button{color:#a13b2e;min-height:44px;text-align:left}.coordinate-preview{background:#f1f2e9;padding:12px;margin-bottom:16px}.coordinate-preview svg{width:100%;height:160px}.coordinate-preview p{font-size:12px;color:#6e746c}.visit-marker{cursor:pointer}.visit-marker:focus-visible{outline:none}.visit-marker:focus-visible circle:last-child{stroke:#252824;stroke-width:2}
+
+.login-page{min-height:100dvh;display:grid;place-items:center;padding:24px;background:#faf9f4}.login-card{max-width:420px;border-top:2px solid #bd4635;padding:32px 4px}.login-card h1{font-size:32px;margin:20px 0}.login-card p{line-height:1.9;margin-bottom:20px}.login-kicker{color:#657968;font-size:12px;letter-spacing:.12em}.login-button{display:block;padding:14px 20px;text-align:center;text-decoration:none}
+.login-card form .login-button{width:100%}.publish-control{display:block;margin-top:12px;font-size:13px;color:#657968}
+.setup-banner{margin:0;padding:12px 20px;background:#f1eadb;color:#6a563e;font-size:14px;line-height:1.6;border-bottom:1px solid #ded4bd;flex-shrink:0}

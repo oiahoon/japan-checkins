@@ -1,0 +1,49 @@
+import {z} from 'zod';
+import {confirmedLocation, validDate} from './photo-metadata.ts';
+export const recordId = z.string().regex(/^[a-zA-Z0-9-]{10,60}$/);
+const depth = z.number().int().min(0).max(5);
+const short = (n: number) => z.string().trim().min(1).max(n);
+const marker = z.object({scope:z.enum(['prefecture','city','place']),label:short(250),depth,eaten:z.boolean()});
+export const markersInput = z.object({markers:z.array(marker).min(1).max(3)});
+export const visitInput = z.object({
+  id:recordId,prefecture:short(50),city:z.string().trim().max(100),place:short(150),placeKey:short(250),
+  kind:z.enum(['restaurant','place']),date:z.string().refine(validDate),note:z.string().max(1000),
+  depth,prefDepth:depth,cityDepth:depth,eaten:z.boolean(),photos:z.array(recordId).max(6).refine(a=>new Set(a).size===a.length),
+  published:z.boolean().default(false),
+  location:z.unknown().transform(value=>confirmedLocation(value)),
+});
+const storedVisit = z.object({published:z.boolean().default(false),pref_depth:depth.default(0),city_depth:depth.default(0),id:recordId,owner:z.string(),prefecture:z.string(),city:z.string(),place:z.string(),place_key:z.string(),kind:z.string(),date:z.string(),note:z.string(),depth,eaten:z.number().int().min(0).max(1),created:z.string(),latitude:z.number().nullable(),longitude:z.number().nullable(),location_source:z.string().nullable()});
+const storedStatus = z.object({owner:z.string(),scope:z.enum(['prefecture','city','place']),label:z.string(),depth,eaten:z.number().int().min(0).max(1)});
+const storedPhoto = z.object({id:recordId,owner:z.string(),checkin:recordId.nullable(),sha:z.string().regex(/^[a-f0-9]{40}$/),digest:z.string(),created:z.string()});
+export const journalSchema = z.object({version:z.literal(1),owner:z.string(),checkins:z.array(storedVisit),statuses:z.array(storedStatus),photos:z.array(storedPhoto)});
+export type Journal = z.infer<typeof journalSchema>;
+export function emptyJournal(owner: string):Journal {return {version:1,owner,checkins:[],statuses:[],photos:[]};}
+export function assertOwner(journal: Journal, owner: string) {
+  if (journal.owner !== owner || [...journal.checkins,...journal.statuses,...journal.photos].some(row=>row.owner!==owner)) throw new Error('Journal owner mismatch');
+}
+export class InputError extends Error {}
+export function setMarkers(journal:Journal,owner:string,markers:z.infer<typeof marker>[]) {
+  assertOwner(journal,owner);
+  for (const m of markers) {
+    const next = {owner,scope:m.scope,label:m.label,depth:m.depth,eaten:m.eaten?1:0};
+    const i = journal.statuses.findIndex(s=>s.owner===owner&&s.scope===m.scope&&s.label===m.label);
+    if(i<0)journal.statuses.push(next);else journal.statuses[i]=next;
+  }
+}
+export function appendVisit(journal:Journal,owner:string,b:z.infer<typeof visitInput>) {
+  assertOwner(journal,owner);
+  if(journal.checkins.some(c=>c.id===b.id&&c.owner===owner))return false;
+  for(const id of b.photos)if(!journal.photos.some(p=>p.id===id&&p.owner===owner&&p.checkin===null))throw new InputError('照片不存在或已使用');
+  journal.checkins.push({published:b.published,pref_depth:b.prefDepth,city_depth:b.cityDepth,id:b.id,owner,prefecture:b.prefecture,city:b.city,place:b.place,place_key:b.placeKey,kind:b.kind,date:b.date,note:b.note,depth:b.depth,eaten:b.eaten?1:0,created:new Date().toISOString(),latitude:b.location?.latitude??null,longitude:b.location?.longitude??null,location_source:b.location?.source??null});
+  setMarkers(journal,owner,[{scope:'prefecture',label:b.prefecture,depth:b.prefDepth,eaten:false},...(b.city?[{scope:'city' as const,label:b.prefecture+' / '+b.city,depth:b.cityDepth,eaten:false}]:[]),{scope:'place',label:b.placeKey,depth:b.depth,eaten:b.eaten}]);
+  for(const p of journal.photos)if(b.photos.includes(p.id))p.checkin=b.id;
+  return true;
+}
+
+export function sharedJournal(journal:Journal):Journal{
+  const checkins=journal.checkins.filter(v=>v.published),ids=new Set(checkins.map(v=>v.id));
+  const shared:Journal={version:1,owner:journal.owner,checkins,statuses:[],photos:journal.photos.filter(p=>p.checkin!==null&&ids.has(p.checkin))};
+  // Only explicit status choices saved with published visits; never expose private aggregates.
+  for(const v of [...checkins].sort((a,b)=>a.created.localeCompare(b.created)))setMarkers(shared,journal.owner,[{scope:'prefecture',label:v.prefecture,depth:v.pref_depth,eaten:false},...(v.city?[{scope:'city' as const,label:v.prefecture+' / '+v.city,depth:v.city_depth,eaten:false}]:[]),{scope:'place',label:v.place_key,depth:v.depth,eaten:!!v.eaten}]);
+  return shared;
+}

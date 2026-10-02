@@ -1,0 +1,11 @@
+.git
+.env*
+!.env.example
+.setup
+.wrangler
+.sites-runtime
+outputs
+work
+private-data
+uploads
+artifacts
