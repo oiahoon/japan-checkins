@@ -1,0 +1,17 @@
+import {featurePath,projection,visitArea,type MapFeature,type GeographicVisit,type Scope} from './geography.ts';
+export const posterFormats={print:{label:'A4 打印',width:2480,height:3508},desktop:{label:'桌面壁纸',width:3840,height:2160},phone:{label:'手机壁纸',width:1440,height:2560}};
+export type PosterFormat=keyof typeof posterFormats;
+export function escapeXML(s:string){return s.replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]!));}
+export function buildPoster({scope,features,visits,title,format,precise=false}:{scope:Scope;features:MapFeature[];visits:GeographicVisit[];title:string;format:PosterFormat;precise?:boolean}){
+ const {width:w,height:h}=posterFormats[format],landscape=w>h,m=w*.075,mapW=w-2*m,mapH=h*(landscape?.55:.47),mapY=h*(landscape?.26:.30),project=projection(features,mapW,mapH,20);
+ const areas=new Set(visits.map(v=>visitArea(v,scope,features)).filter(Boolean)),dates=visits.map(v=>v.date).sort(),period=dates.length?dates[0]+' — '+dates[dates.length-1]:'下一段记忆，等你启程';
+ const paths=features.map(f=>`<path d="${featurePath(f,project)}" fill="${areas.has(f.properties.name)||(scope==='sichuan'&&visits.length)?'#879c82':'#dfe3d9'}" stroke="#f8f6ef" stroke-width="${landscape?2:1.5}" fill-rule="evenodd"/>`).join('');
+ const points=precise?visits.filter(v=>v.latitude!=null&&v.longitude!=null).map(v=>{const [x,y]=project([v.longitude!,v.latitude!]);return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${Math.max(4,w/420)}" fill="#bd4635" stroke="#fffdf7" stroke-width="2"/>`;}).join(''):'';
+ const areaNames=[...areas].sort(),font=w/52,unit=scope==='sichuan'?'座城市':scope==='world'?'个国家 / 地区':scope==='japan'?'个都道府县':'个省级地区';
+ // Summaries contain no place names, notes, photos or record identifiers.
+ const rows:string[]=[];let row='';let shown=0;
+ for(const area of areaNames){const next=row?row+' · '+area:area;if(next.length>62&&row){rows.push(row);row='';if(rows.length===3)break;}row=row?row+' · '+area:area;shown++;}
+ if(row&&rows.length<3)rows.push(row);if(shown<areaNames.length)rows[rows.length-1]+=' …';
+ const attribution=scope==='japan'?'地图：GSI / dataofjapan · 简化概览':scope==='world'?'地图：Natural Earth · 简化概览':'地图：geoBoundaries · 简化概览';
+ return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${escapeXML(title)}"><rect width="100%" height="100%" fill="#f5f3ed"/><g font-family="PingFang SC,Microsoft YaHei,Noto Sans CJK SC,sans-serif" fill="#252824"><text x="${m}" y="${h*.09}" font-size="${font*.66}" fill="#a54234" letter-spacing="4">TRAVEL JOURNAL / 旅行足迹</text><text x="${m}" y="${h*.17}" font-family="Songti SC,SimSun,serif" font-size="${font*2}" font-weight="500">${escapeXML(title.slice(0,24))}</text><text x="${m}" y="${h*.225}" font-size="${font*.78}" fill="#65705f">${visits.length} 次到访 · ${areas.size} ${unit}</text><g transform="translate(${m},${mapY})">${paths}${points}</g><path d="M${m},${h*.82}H${w-m}" stroke="#cfd2c7" stroke-width="2"/><text x="${m}" y="${h*.86}" font-size="${font*.74}">${escapeXML(period)}</text>${rows.map((row,i)=>`<text x="${m}" y="${h*.89+i*font*1.25}" font-size="${font*.6}" fill="#65705f">${escapeXML(row)}</text>`).join('')}<text x="${m}" y="${h*.972}" font-size="${font*.46}" fill="#6b7466">${attribution}${precise?' · 包含精确落点':' · 地区汇总，无精确落点'}</text></g></svg>`;
+}

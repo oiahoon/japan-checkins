@@ -1,9 +1,26 @@
-# Current handoff
+# Current handoff / 当前交接
 
-Local folder moved by request to ~/ownwork/japan-checkins. Source origin git@github.com:oiahoon/japan-checkins.git. Original private Site unchanged.
+更新：2026-10-03。仓库：`oiahoon/japan-checkins`，分支 main；GitHub → Vercel 自动部署，线上入口 https://japan-checkins.vercel.app 。项目方向和长期约束见 CONTEXT.md。
 
-Implemented photo metadata proposals, explicit confirmation/manual coordinates, nullable D1 coordinates through additive migration, clickable true-coordinate markers and preserved metadata stripping. Synthetic tests cover endian parsing, no GPS, malformed offsets, date ambiguity, orientation, multiple independent proposals, boundary/holes, confirmation and EXIF removal. Local endpoint smoke verifies save/reload, retries, repeated visits, missing coords and authorization. Desktop/browser tools were unavailable for this continuation: actual new review UI and real-device orientation/camera still need visual/device QA.
+## 当前实现
 
-Independent production hosting is deliberately blocked pending verified auth adapter. Trusted Sites identity headers are unsafe on a generic public Worker. Never deploy current app unprotected.
+Next.js + 服务端密码认证已经用于生产，原有生产 SESSION_SECRET / ADMIN_PASSWORD_HASH 沿用。可配置管理密码、只读密码、公开模式与 GitHub OAuth。所有私人记录 / 照片接口要求主人会话和所有权；原 Sites / D1 / R2 资源没有迁移、修改或公开。
 
-Current conversation could not be assigned to a Codex project through available tools; add local folder as project and move conversation using client UI.
+旅行地图切换日本、四川、中国、世界。同一份 GitHub 日志新增 country 字段，旧记录默认为 JP；四川在中国 / 世界视图中显示，不复制记录。地图 / 时间线 / 全地区查看可用。日本餐厅目录保留；非日本不显示无关的日本目录。地理覆盖和边界局限见 GEOGRAPHY.md。
+
+收藏旅行地图支持全部 / 按年、标题、A4 / 桌面 / 手机、PNG / SVG、系统分享或下载回退、打印 / PDF。默认只输出地区汇总与日期范围；精确落点另行勾选。图像保存在本机，不自动托管公开分享 URL。
+
+## 本轮验证
+
+- `npm run typecheck`、`npm test`（32 tests）、`npm run build` 通过。
+- 覆盖旧记录兼容、国家字段持久化、多层地域筛选、全局坐标有限值 / 边界 / 确认、跨国状态名称隔离、所有权 / 只读角色、公开投影、丢失保存响应恢复。已有合成 JPEG GPS 缺失 / 损坏、日期、元数据清除和上传重试测试继续通过。
+- In-app browser 桌面 1280×720 和手机 390×844：地区切换、四川市州筛选、地图与时间线、导出面板 / 画幅 / 年份、没有横向溢出。发现并修正了世界 CN 名称与默认选择不一致、切换栏外边距、导出面板居中问题。
+- 仓库外隔离合成日志：四川新增记录第一次保存中断，重试使用同一 ID 成功，记录仍保留 CN / 四川省 / 乐山市。该记录出现在四川、中国和世界视图中，不是实际行程。
+- 实际浏览器下载检查：桌面 PNG 为 3840×2160，手机 PNG 为 1440×2560，中文文字和地图正常，默认无精确落点。临时 QA 图片未提交公共代码仓库。
+- 发布由 main 推送触发 GitHub CI / Vercel；具体部署状态与源码 SHA 对齐，以 GitHub commit status 为准。
+
+## 下一步与未验收部分
+
+用户选择先上线入口，私人 GitHub 数据 token 稍后配置。生产仍禁用照片上传 / 保存；请勿将合成保存验证当作实际仓库写入验收。无需启用 Supabase。
+
+四川市州边界、完整国家 / 小岛覆盖、行程时间段和更多地图构图下一轮推进。当前实体打印、Safari / iPhone 原生分享、真实相机 / HEIC 仍未验收；现有浏览器下载和本地渲染不代表物理设备验收。不能离线保存，也不执行照片视觉定位或自动推断旅行经历。

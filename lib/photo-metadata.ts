@@ -27,8 +27,8 @@ export type GeoFeature={properties:{name:string};geometry:{coordinates:number[][
 function inRing(lon:number,lat:number,ring:number[][]){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const [xi,yi]=ring[i],[xj,yj]=ring[j];const cross=(lon-xi)*(yj-yi)-(lat-yi)*(xj-xi);if(Math.abs(cross)<1e-9&&lon>=Math.min(xi,xj)&&lon<=Math.max(xi,xj)&&lat>=Math.min(yi,yj)&&lat<=Math.max(yi,yj))return true;if((yi>lat)!==(yj>lat)&&lon<(xj-xi)*(lat-yi)/(yj-yi)+xi)inside=!inside;}return inside;}
 export function prefectureAt(lat:number,lon:number,features:GeoFeature[]){if(!validCoordinate(lat,lon))return;return features.find(f=>f.geometry.coordinates.some(poly=>inRing(lon,lat,poly[0])&&!poly.slice(1).some(hole=>inRing(lon,lat,hole))))?.properties.name;}
 // Persist only explicit confirmation, never an unreviewed EXIF proposal.
-export function confirmedLocation(value:unknown):{latitude:number;longitude:number;source:'photo'|'manual'}|null {
+export function confirmedLocation(value:unknown,country='JP'):{latitude:number;longitude:number;source:'photo'|'manual'}|null {
  if(value==null)return null;if(typeof value!=='object')throw Error('请确认地图坐标');const v=value as Record<string,unknown>;
- if(v.confirmed!==true||!validCoordinate(v.latitude,v.longitude)||!['photo','manual'].includes(String(v.source))||Number(v.latitude)<20||Number(v.latitude)>46||Number(v.longitude)<122||Number(v.longitude)>154)throw Error('请确认有效地图坐标');
+ if(v.confirmed!==true||!validCoordinate(v.latitude,v.longitude)||!['photo','manual'].includes(String(v.source))||(country==='JP'&&(Number(v.latitude)<20||Number(v.latitude)>46||Number(v.longitude)<122||Number(v.longitude)>154)))throw Error('请确认有效地图坐标');
  return {latitude:v.latitude as number,longitude:v.longitude as number,source:v.source as 'photo'|'manual'};
 }

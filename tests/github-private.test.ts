@@ -108,3 +108,16 @@ test('public photo requests require a currently published visit; revocation take
  assert.equal((await journalAPI({...ctx,readOnly:false,sharedOnly:false},request,'publish')).status,200);
  assert.equal((await journalAPI(ctx,undefined,'photo','synthetic-photo-01')).status,404);
 });
+
+test('global save endpoint preserves country and recovers a lost commit response',async()=>{
+ const git=fakeGit({lostResponse:true}),ctx={userId:owner,origin:'https://journal.test',store:git.store};
+ const body={...input(),country:'US',location:{confirmed:true,latitude:-1,longitude:-1,source:'manual'}};
+ const request=()=>new Request('https://journal.test/api/checkins',{method:'POST',headers:{origin:'https://journal.test'},body:JSON.stringify(body)});
+ assert.equal((await journalAPI(ctx,request(),'save')).status,503);
+ assert.equal((await journalAPI(ctx,request(),'save')).status,201);
+ assert.equal(git.data().checkins.length,1);assert.equal(git.data().checkins[0].country,'US');assert.equal(git.data().checkins[0].latitude,-1);assert.equal(git.updates(),1);
+ assert.equal((await journalAPI({...ctx,readOnly:true},request(),'save')).status,403);
+ const bad={...body,id:'synthetic-visit-03',location:{...body.location,confirmed:false}};
+ assert.equal((await journalAPI(ctx,new Request('https://journal.test/api/checkins',{method:'POST',headers:{origin:'https://journal.test'},body:JSON.stringify(bad)}),'save')).status,400);
+ assert.equal(git.data().checkins.length,1);
+});

@@ -34,3 +34,7 @@ Retain source attribution and disclose modifications when using the geography. T
 The HTML includes no user's saved visits or photographs. Empty state means unrecorded, never unvisited. Its state shape is `modelContent.japanFoodMap` with version 1, a prefecture map (`depth`, `note`), city records (`id`, `prefId`, `name`, `depth`, `note`) and restaurant markers (`unknown`, `want`, `eaten`). Depth values are `unknown`, `never`, `transit`, `brief`, `regular`, `deep`.
 
 A standalone private app must replace host-only persistence with authenticated durable storage. Save photo objects separately from check-in records; do not put photo bytes or base64 into this widget state. Keep restaurant facts, visit depth and dated repeat check-ins separate. Existing Page state is file-bound and is not included here; do not claim it has been migrated. The prior fragment's interactions passed DOM simulations, but real Page rendering and cross-session host persistence were not verified.
+
+## Multi-region expansion (2026-10-03)
+
+China/Sichuan outlines use geoBoundaries gbOpen CHN ADM1; world uses Natural Earth 1:110m admin-0. Both source releases are public-domain assets, downloaded and normalized without private data. Exact versions, licenses, caveats, importer and export dimensions are recorded in the repository `docs/GEOGRAPHY.md`: https://github.com/oiahoon/japan-checkins/blob/main/docs/GEOGRAPHY.md . Sichuan currently has a province outline and city filters, not city polygons. World low-resolution geometry omits small countries/islands.

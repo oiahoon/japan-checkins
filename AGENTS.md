@@ -1,6 +1,7 @@
 # Codex working instructions
 
-Read README.md, docs/ARCHITECTURE.md and docs/ROADMAP.md before changes.
+Read README.md, docs/ARCHITECTURE.md, docs/ROADMAP.md, docs/CONTEXT.md and docs/PROGRESS.md before changes.
+Keep durable project context and design decisions in this Git repository. Geography source/coverage and export contracts live in docs/GEOGRAPHY.md.
 Preserve Chinese mobile UX and Japanese minimal styling. Primary flow: photo → confirm location/date → save → map/timeline.
 Never infer travel history, eaten status or visit depth from a photo. EXIF GPS/date are proposals requiring user confirmation.
 Never commit photos, EXIF examples containing real location, credentials, .wrangler state or personal Site identifiers. Use synthetic isolated fixtures only.
