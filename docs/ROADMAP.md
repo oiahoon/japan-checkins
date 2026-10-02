@@ -18,7 +18,7 @@
 
 The chosen release mode is a single-owner private web journal. Next.js is now the default runtime; the old Sites adapter is retained separately. Implemented GitHub OAuth state/PKCE, server-verified numeric owner and signed sessions; private GitHub index/photo persistence; owner validation; non-forced atomic Git commits and bounded conflict retry; stable upload/save IDs; authenticated photo reads; configuration template, Vercel build configuration, CI and deployment guide.
 
-EXIF proposals remain local for privacy; Actions runs code validation, not personal-photo processing. No credentials, personal Site or old data migration were introduced. Synthetic tests and local builds verify the core implementation. Actual OAuth, GitHub private writes, mobile use and Vercel deployment require deployer configuration and remain unverified.
+EXIF proposals remain local for privacy; Actions runs code validation, not personal-photo processing. No credentials, personal Site or old data migration were introduced. Synthetic tests and local builds verify the core implementation. Actual OAuth, GitHub private writes and physical-device acceptance require deployer configuration and remain unverified. Vercel production password login has been verified.
 
 Next: real deployment acceptance; then saved-record deletion/export and scalable photo retention as needed. Global geography, offline mode and multi-location automatic splitting remain planned.
 
@@ -26,4 +26,10 @@ Next: real deployment acceptance; then saved-record deletion/export and scalable
 
 Default password login replaces required OAuth setup. Private mode accepts administrator or read-only visitor password; public mode serves only records explicitly published by the owner. Drafts, old records and private-only status aggregates remain private. Administrative APIs always require administrator access. Added salted password hashing, session revocation on password/provider changes, production WAF configuration guard, publishing controls, and role/public projection tests. GitHub OAuth remains optional.
 
-Release acceptance: GitHub/Vercel connection and project WAF are configured. Local browser QA verified administrator/visitor passwords, denied visitor writes, logout, mobile layout, and disabled uploads without storage. Remote build/CI and runtime secret activation are being completed. Private GitHub write acceptance depends on a deployer-supplied repository-scoped token. No original Sites resources have been changed.
+Release acceptance: GitHub/Vercel connection and project WAF are configured. Local browser QA verified administrator/visitor passwords, denied visitor writes, logout, mobile layout, and disabled uploads without storage. GitHub Actions and Vercel production builds have succeeded. The owner authorized production SESSION_SECRET / ADMIN_PASSWORD_HASH activation, and the production administrator password login was verified in the in-app browser. Private GitHub write acceptance depends on a deployer-supplied repository-scoped token. No original Sites resources have been changed.
+
+## Delivered: quiet photo-first interaction refinement
+
+Split the long entry form into photo selection and visit confirmation, retained photo-free entries and in-memory back navigation, folded optional precision/classification/history fields, and moved the primary action into a fixed footer. Timeline cards now prioritize photos and notes, with exact coordinates disclosed on demand. Warm paper, ink and cinnabar styling remains flat and restrained.
+
+In-app browser verification at desktop 1280×720 and mobile 390×844 used an isolated synthetic journal outside the repository: interrupted upload and save recovered with the same IDs, unconfirmed coordinates prevented saving, date editing revoked consent, and uploaded JPEG metadata was removed. The production data token is still deferred; this does not constitute real GitHub write or physical-device acceptance.
