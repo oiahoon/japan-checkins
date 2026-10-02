@@ -33,3 +33,9 @@ Release acceptance: GitHub/Vercel connection and project WAF are configured. Loc
 Split the long entry form into photo selection and visit confirmation, retained photo-free entries and in-memory back navigation, folded optional precision/classification/history fields, and moved the primary action into a fixed footer. Timeline cards now prioritize photos and notes, with exact coordinates disclosed on demand. Warm paper, ink and cinnabar styling remains flat and restrained.
 
 In-app browser verification at desktop 1280×720 and mobile 390×844 used an isolated synthetic journal outside the repository: interrupted upload and save recovered with the same IDs, unconfirmed coordinates prevented saving, date editing revoked consent, and uploaded JPEG metadata was removed. The production data token is still deferred; this does not constitute real GitHub write or physical-device acceptance.
+
+## Delivered: aligned native selects and restrained soft controls
+
+A shared SelectField preserves native selection, labels, disabled states and change handlers while replacing the browser-drawn arrow with a 16 px Lucide chevron. Form/timeline arrows use a consistent 16 px trailing inset and vertical centering. The map selector retains its compact icon layout.
+
+Neumorphism is limited to control surfaces: faint inset fields, raised map tools/photo pickers/close buttons, and pressed mobile navigation. Main actions stay cinnabar and flat; photos, prose and panels retain the paper layout. Borders and focus outlines remain visible; increased-contrast / forced-color modes remove shadows. In-app browser screenshots verify desktop and a 390 px viewport; physical-device native pickers remain unverified.

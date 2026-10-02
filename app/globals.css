@@ -32,3 +32,90 @@ dialog{background:#fffdf7;box-shadow:0 20px 70px #33452d25;border-radius:8px}dia
 @media(max-width:800px){.entry-steps{padding:12px 20px}.entry-heading{font-size:22px;margin-bottom:20px}.checkin-dialog{height:90dvh;max-height:90dvh}.sheet-header{padding:14px 20px}.sheet-header h2{font-size:24px}.upload-zone{padding:28px 10px}.travel-app:has(>.setup-banner) .atlas-workspace{height:calc(100dvh - 188px);min-height:440px}.setup-banner{font-size:12px;padding:10px 18px;min-height:48px}.visit-body{padding:20px 0 24px}.photo-review{margin-bottom:20px}}
 @media(max-width:360px){.photo-actions{flex-direction:column}.entry-heading{font-size:20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Soft touch on controls; journal pages and photos remain flat. */
+:root {
+  --control-paper:#f5f3ed;
+  --control-raised:3px 3px 7px #dddcd3,-3px -3px 7px #ffffff;
+  --control-inset:inset 2px 2px 5px #deddd5,inset -2px -2px 5px #ffffff;
+}
+.select-field {
+  display:block;
+  position:relative;
+  width:100%;
+  min-width:0;
+  margin-top:8px;
+}
+.select-field select {
+  appearance:none;
+  -webkit-appearance:none;
+  width:100%;
+  margin-top:0;
+  padding-inline-end:44px;
+  border-radius:6px;
+  background:var(--control-paper);
+  box-shadow:var(--control-inset);
+}
+.select-chevron {
+  position:absolute;
+  inset-inline-end:16px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#58634f;
+  pointer-events:none;
+}
+.select-field:has(select:disabled) .select-chevron {opacity:.45}
+.pref-selector {
+  background:#f1f2e9;
+  border-radius:7px;
+  box-shadow:3px 3px 8px #daddd1,-3px -3px 8px #fffdf7;
+}
+.pref-selector .select-field {width:155px;margin:0}
+.pref-selector .select-field select {background:transparent;box-shadow:none;padding-inline-end:28px}
+.pref-selector .select-chevron {inset-inline-end:4px}
+.zoom-controls>div,.zoom-controls>button {
+  background:#f1f2e9;
+  border-radius:8px;
+  box-shadow:3px 3px 8px #daddd1,-3px -3px 8px #fffdf7;
+}
+.zoom-controls button:active:not(:disabled) {
+  background:#ebece2;
+  box-shadow:inset 2px 2px 5px #d7dbcf,inset -2px -2px 5px #ffffff;
+  transform:none;
+}
+.login-card input,.sheet-scroll input:not([type=checkbox]):not([type=file]),.sheet-scroll textarea {
+  background:var(--control-paper);
+  border-radius:6px;
+  box-shadow:var(--control-inset);
+}
+.icon-button,.picker {
+  background:var(--control-paper);
+  box-shadow:var(--control-raised);
+}
+.icon-button {width:44px;height:44px}
+.icon-button:active:not(:disabled),.picker:active {
+  box-shadow:var(--control-inset);
+  transform:none;
+}
+.picker.camera-picker {background:#f8f3e9}
+.select-field select:focus-visible,.login-card input:focus-visible,
+.sheet-scroll input:focus-visible,.sheet-scroll textarea:focus-visible {
+  border-color:#bd4635;
+  outline:2px solid #bd4635;
+  outline-offset:3px;
+}
+@media(max-width:800px) {
+  .pref-selector .select-field {width:130px}
+  .pref-selector .select-field select {width:100%;padding-inline-end:28px}
+  .mobile-navigation>button[aria-pressed=true] {
+    background:var(--control-paper);
+    box-shadow:var(--control-inset);
+    border-radius:9px;
+  }
+}
+@media(prefers-contrast:more),(forced-colors:active) {
+  .select-field select,.login-card input,.sheet-scroll input,.sheet-scroll textarea,
+  .pref-selector,.zoom-controls>div,.zoom-controls>button,.icon-button,.picker,
+  .mobile-navigation>button[aria-pressed=true] {box-shadow:none;border-color:currentColor}
+  .select-chevron {color:currentColor}
+}
