@@ -27,7 +27,8 @@
 | NeoSwitch | 原生复选框 + role=switch；即时切换 | 导出精确落点、实验室 |
 | NeoRange | label / value / min / max / step / unit | 材质参数、进度演示 |
 | NeoBadge | neutral / accent / success | 实验室语义状态 |
-| NeoNotice | success / error；原生 div 属性与可选 role | 实验室反馈；生产提示保持实际业务含义 |
+| NeoNotice | success / error；原生 div 属性 | 兼容保留的基础提示 |
+| NeoNotification | success / info / warning / error；inline / floating；关闭、操作按钮、可选自动收起 | 主页、编辑、管理、查看器、导出、登录及实验室 |
 | NeoProgress | 原生 progress 属性 | 实验室；实际上传仍使用原生进度条 |
 | NeoDialog | 原生 dialog + ref；showModal / close / Escape | 实验室，生产弹窗继续使用现有对话框生命周期 |
 
@@ -75,3 +76,13 @@
 SelectField 使用项目已有的 `@base-ui/react/select`，不是系统弹出菜单。支持方向键、Home / End、键入查找、Enter 选择和 Escape 关闭，菜单列表有界滚动，长名称可换行；保持原生隐藏 select 的表单值和 change 事件。调用者提供明确 aria-label 或关联 id 标签。普通页面通过 Portal 避免地图裁切，原生 dialog 内使用 dialog 容器，保持顶层显示与焦点约束。
 
 地点选择器对齐修正：MapPin 放进 Select.Trigger，整个胶囊为同一个 hover / 点击目标和定位锚点；菜单宽度与锚点一致，文字列保持相同的 45px 左缩进。桌面 216px、手机 190px，其他表单选择器保持原样。
+
+## 通知与操作按钮（2026-10-03）
+
+新增 `app/ui/notification.tsx`，共享纸色与左上光源，浮起外壳、内凹圆形图标、小型浮起操作按钮，常态无描边 / 分割线。成功、信息、提醒、错误靠不同图标和语义文案区分，色彩只作辅助。原横向描边 toast 与实验室提示已替换；登录错误的旧红色竖线已移除。
+
+API：children 为正文；tone 默认为 success；placement 默认为 inline；action 接受 label / onClick；onDismiss 启用关闭按钮；duration 为毫秒，0 表示不自动收起。有关闭回调的浮动 success / info 默认 5000ms，warning / error 及 inline 默认常驻。指针停留或键盘焦点进入时暂停，离开重新计时；卸载 / 新消息会清理旧计时器，不主动抢焦点。错误正文为 role=alert，其余 role=status，aria-atomic；关闭 / 重试有独立 44px 触控目标。减少动态效果关闭入场动画，高对比 / forced-colors 使用可辨识轮廓。
+
+桌面浮动提示位于右下；手机位于底部导航上方并适配安全区。原生 dialog 内使用 inline 提示，避免顶层遮挡；编辑失败保留输入和保存动作，导出失败不伪装为成功通知。实验室新增“轻声提醒”四态、重试 / 关闭演示；所有演示仅当前页面状态，不上传照片或保存虚构行程。
+
+地图管理、常用地区、回收站统一为带图标的 NeoButton；常用状态用内凹表面和 aria-pressed 表达。小屏仍折叠入地图选项，各按钮整行触控。拼图底色解释、重复保存说明、上传 / 导出技术说明与查看器手势长句已清理；明确确认、缺项、读取 / 保存失败、相关公开 / 删除 / 精确位置分享的必要信息仍在对应操作中呈现。来源 / 格式资料保留在可展开的帮助内。

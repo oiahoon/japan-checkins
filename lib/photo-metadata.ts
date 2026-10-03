@@ -1,9 +1,14 @@
 // Bounded JPEG EXIF reader. Metadata stays in the browser until reviewed.
-export type PhotoMetadata = {gps?: {latitude:number;longitude:number};date?:string;offset?:string;orientation?:number;warning?:string;camera?:Record<string,string|number>};
+export type PhotoMetadata = {gps?: {latitude:number;longitude:number};date?:string;dateSource?:'original'|'digitized';dateStatus?:'read'|'missing'|'invalid'|'error';offset?:string;orientation?:number;warning?:string;camera?:Record<string,string|number>};
+export function exifDate(raw:unknown){
+ if(typeof raw!=='string')return;
+ const m=raw.trim().match(/^(\d{4})[:-](\d{2})[:-](\d{2})[ T]([0-2]\d):([0-5]\d):([0-5]\d)(?:\.\d+)?(?:Z|[+-](?:0\d|1[0-4]):[0-5]\d)?$/);
+ if(!m||+m[4]>23)return;const date=m.slice(1,4).join('-');return validDate(date)?date:undefined;
+}
 export function readPhotoMetadata(bytes:Uint8Array):PhotoMetadata {
  const out:PhotoMetadata={};
  try {
-  if(bytes.length<4||bytes[0]!==255||bytes[1]!==216)return {warning:'图片没有可读取的 JPEG EXIF，请手动确认地点和日期'};
+  if(bytes.length<4||bytes[0]!==255||bytes[1]!==216)return {dateStatus:'error',warning:'图片没有可读取的 JPEG EXIF，请手动确认地点和日期'};
   const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);let p=2;
   while(p+4<=bytes.length){if(bytes[p++]!==255)throw Error();let marker=bytes[p++];while(marker===255)marker=bytes[p++];if(marker===218||marker===217)break;if(marker===1||(marker>=208&&marker<=215))continue;const size=view.getUint16(p);if(size<2||p+size>bytes.length)throw Error();const start=p+2,end=p+size;p=end;
    if(marker!==225||end-start<14||String.fromCharCode(...bytes.slice(start,start+6))!=='Exif\0\0')continue;
@@ -13,11 +18,12 @@ export function readPhotoMetadata(bytes:Uint8Array):PhotoMetadata {
    const number=(e?:Entry)=>!e?undefined:e.count===1&&e.type===3?u16(e.at):e.count===1&&e.type===4?u32(e.at):undefined;
    const ascii=(e?:Entry)=>e?.type===2?String.fromCharCode(...bytes.slice(e.at,e.at+Math.min(e.count,128))).replace(/\0.*$/,'').trim():undefined;
    const root=ifd(u32(base+4));const orientation=number(root.get(0x112));if(orientation&&orientation>=1&&orientation<=8)out.orientation=orientation;
-   const exifOffset=number(root.get(0x8769));if(exifOffset){const e=ifd(exifOffset),raw=ascii(e.get(0x9003)),offset=ascii(e.get(0x9011));if(raw&&/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(raw)){const date=raw.slice(0,10).replaceAll(':','-');const hours=+raw.slice(11,13),minutes=+raw.slice(14,16),seconds=+raw.slice(17,19);if(validDate(date)&&hours<24&&minutes<60&&seconds<60)out.date=date;}if(offset&&/^[+-](?:0\d|1[0-4]):[0-5]\d$/.test(offset))out.offset=offset;}
+   const exifOffset=number(root.get(0x8769));if(exifOffset){const e=ifd(exifOffset),raw=ascii(e.get(0x9003)),digitizedRaw=ascii(e.get(0x9004)),original=exifDate(raw),digitized=exifDate(digitizedRaw),offset=ascii(e.get(0x9011));out.date=original||digitized;out.dateSource=original?'original':digitized?'digitized':undefined;out.dateStatus=out.date?'read':raw||digitizedRaw?'invalid':'missing';if(offset&&/^[+-](?:0\d|1[0-4]):[0-5]\d$/.test(offset))out.offset=offset;}
    const gpsOffset=number(root.get(0x8825));if(gpsOffset){const gps=ifd(gpsOffset);const dms=(e?:Entry)=>{if(!e||e.type!==5||e.count!==3)return;const n=[0,1,2].map(i=>{const den=u32(e.at+i*8+4);if(!den)throw Error();return u32(e.at+i*8)/den;});if(n[1]>=60||n[2]>=60)return;return n[0]+n[1]/60+n[2]/3600;};const lat=dms(gps.get(2)),lon=dms(gps.get(4)),ns=ascii(gps.get(1)),ew=ascii(gps.get(3));if(lat!==undefined&&lon!==undefined&&['N','S'].includes(ns||'')&&['E','W'].includes(ew||'')){const latitude=lat*(ns==='S'?-1:1),longitude=lon*(ew==='W'?-1:1);if(validCoordinate(latitude,longitude))out.gps={latitude,longitude};}}
    break;
   }
- }catch{return {warning:'照片元数据不完整或无效，请手动确认地点和日期'};}
+ }catch{return {dateStatus:'error',warning:'照片元数据不完整或无效，请手动确认地点和日期'};}
+ out.dateStatus??='missing';
  if(!out.gps)out.warning='照片没有有效定位，请手动填写坐标或仅记录地区';
  return out;
 }

@@ -48,3 +48,7 @@ China/Sichuan outlines use geoBoundaries gbOpen CHN ADM1; world uses Natural Ear
 ## Chengdu districts
 
 chengdu-districts.json: geoBoundaries gbOpen CHN ADM3 (boundaryID CHN-ADM3-62558664, represented year 2017), Lee Beryman / OpenStreetMap, ODbL 1.0 https://opendatacommons.org/licenses/odbl/1-0/ . Source API https://www.geoboundaries.org/api/current/gbOpen/CHN/ADM3/ ; source commit 9469f09 simplified dataset. Selected 20 Chengdu districts, translated display names, retained sourceName and rounded coordinates. Derived data is distributed under ODbL, separately from application code/private journal. © OpenStreetMap contributors https://www.openstreetmap.org/copyright . Historic reference polygons, not current official administrative/planning boundaries.
+
+## 地点名称索引（2026-10-03）
+
+`place-index.json` 由 `node scripts/build-place-index.mjs` 从上述日本市区町村、中国省份、四川市州、成都区县和世界国家名称生成，保留各来源的使用条件（成都衍生条目为 ODbL）。附常见简体写法；仅辅助填写所属地区，不是地址定位服务，不生成坐标。博多 / 博多区 / 博多駅（站）归属福岡市的辅助别名，参考福岡市官网与官方路线： https://www.city.fukuoka.lg.jp/ 、 https://bunkazai.city.fukuoka.lg.jp/files/NewsBlocks/48063ea5-ecc2-4b83-8122-6a2d61cc0ff8/value01/6d7a89687c0f6e47f2990ce2dc53011d.pdf 。日本政令指定都市已合并，区级名称并不完整；中央区等常见重名需要用户选择。无全球街道 / 商家 / 景点大全。

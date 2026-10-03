@@ -106,3 +106,15 @@ GitHub 照片增加可选 removed 布尔字段；旧照片默认可见。PATCH /
 照片卡片过去只在填入具体地点时展示位置，导致已保存国家 / 地区 / 城市仍显示“地点待补充”。现在使用 `lib/photo-summary.ts` 展示所有已保存的位置层级，缺少具体地点单独提示；“已标记地图 / 尚未确认地图标记”与信息缺失分开。日期优先使用手填值，EXIF 日期仍明确待确认；笔记筛选和显式地图确认规则不变。长位置用省略号和完整 title，图标不被挤压；手机标记提示可换行。编辑框明确显示已保存信息与是否已标记，不把部分保存当作无信息。
 
 实际 GitHubStore 的合成传输测试覆盖 PATCH 编辑 → Git 序列化 → 新 Store 读取 → list 投影，验证部分字段、完整字段、空笔记覆盖及确认前无地图记录；保存链路未复现字段丢失。浏览器在隔离合成数据下验证保存、重新打开、刷新、显式标记、筛选及 390px / 1366px 布局。真实索引仅检查字段存在性，未修改、补全或删除私人照片 / 到访；真实手机仍需设备验收。
+
+### 2026-10-03 通知体系与文案精简
+
+地图“管理记录与照片”“设为常用地区”与回收站改为带图标的拟物按钮，手机 / 平板折叠菜单沿用相同组件。删去拼图底色说明、重复上传 / 保存提示、导出技术解释和查看器手势长句；缺项、明确地点日期确认、错误重试及发布 / 删除 / 精确位置分享的直接后果在对应操作中保留简短信息，数据与权限逻辑未改变。
+
+新增 UI Kit 的 NeoNotification，成功 / 信息 / 提醒 / 错误四态、内嵌 / 浮动、关闭和重试。浮动成功 / 信息默认 5 秒收起，错误与提醒常驻；悬停 / 键盘操作暂停。页面消息、编辑 / 管理 / 查看器 / 导出 / 登录反馈统一；导出区分成功与错误语义。常态用光影而非边框构成边界，亮暗、键盘、减少动态效果与高对比规则见 UI-KIT.md。浏览器本机验证 320 / 390 / 1100 / 1366px，临时 QA 不交付；未改动真实照片 / 行程。物理设备与辅助设备验收仍独立进行。
+
+### Place-first editing and EXIF date diagnostics (2026-10-03)
+
+`lib/place-lookup.ts` searches the local public-name index, lazily loaded by PhotoEditor. Chinese/Japanese aliases resolve country / province / municipality and known Chengdu districts; ambiguous, conflicting and prefix-only names require choosing a candidate. Changing the inferred parent clears incompatible old coordinates, never invents a city-centre point and revokes UI confirmation. Country / region / city remain editable in a collapsed disclosure; unknown names retain manual input. Known photo GPS supplies a boundary-derived proposal when no location has been saved; it never creates a visit.
+
+Date extraction precedes image re-encoding. The exifr importer and bounded JPEG reader prefer DateTimeOriginal, then CreateDate / EXIF DateTimeDigitized (explicitly labeled digitized date, not guaranteed capture date). Shared strict calendar validation keeps the camera's local day and excludes ModifyDate, file/upload dates. Private optional proposal fields dateSource and dateStatus survive index/list roundtrips; missing / invalid / unreadable are distinct, without retaining raw EXIF. Legacy proposals remain readable and shared lists omit these diagnostics. Editor can read a selected original locally to recover a date and offer GPS; it does not re-upload the original or rewrite stored photo bytes. Old sanitized photos cannot recover missing EXIF without the original. Full XMP / IPTC date parsing, arbitrary landmark reverse-geocoding and real iPhone/GR/Q3 fixture acceptance remain unverified/unimplemented.

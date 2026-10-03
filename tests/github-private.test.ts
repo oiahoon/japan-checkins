@@ -208,9 +208,9 @@ test('photo edits enforce role/origin and recover a lost save response without a
 });
 test('draft EXIF proposals are private, bounded and distinct from confirmed map history',async()=>{
  const git=fakeGit(),ctx={userId:owner,origin:'https://journal.test',store:git.store};
- const req=uploadRequest();req.headers.set('X-Photo-Proposal',encodeURIComponent(JSON.stringify({date:'2026-01-02',gps:{latitude:0,longitude:0}})));
+ const req=uploadRequest();req.headers.set('X-Photo-Proposal',encodeURIComponent(JSON.stringify({date:'2026-01-02',dateSource:'original',dateStatus:'read',gps:{latitude:0,longitude:0}})));
  assert.equal((await journalAPI(ctx,req,'upload')).status,201);assert.equal(git.data().checkins.length,0);
- const data=await (await journalAPI(ctx,undefined,'list')).json() as {drafts:{proposal:{date:string}}[]};assert.equal(data.drafts[0].proposal.date,'2026-01-02');
+ const data=await (await journalAPI(ctx,undefined,'list')).json() as {drafts:{proposal:{date:string}}[]};assert.equal(data.drafts[0].proposal.date,'2026-01-02');assert.equal((data.drafts[0].proposal as {dateStatus?:string}).dateStatus,'read');
  const shared=await (await journalAPI({...ctx,sharedOnly:true,readOnly:true},undefined,'list')).json() as {drafts:unknown[];photos:unknown[]};assert.equal(shared.drafts.length,0);assert.equal(shared.photos.length,0);
  const bad=uploadRequest();bad.headers.set('X-Photo-Proposal',encodeURIComponent(JSON.stringify({gps:{latitude:NaN,longitude:0}})));assert.equal((await journalAPI(ctx,bad,'upload')).status,400);
 });

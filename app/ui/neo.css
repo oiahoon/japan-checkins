@@ -83,3 +83,47 @@ html .neo-segment button:active,html .inspector-tabs button:active{box-shadow:va
 @media(max-width:800px){.mobile-navigation .mobile-add{padding:8px;gap:6px;white-space:nowrap}.mobile-navigation .mobile-add svg{width:20px;height:20px;flex-shrink:0}.mobile-navigation>button span{white-space:nowrap}.mobile-navigation>button{padding-inline:8px}.travel-app .region-toolbar .select-trigger{height:44px;min-height:44px;padding:8px 36px 8px 14px;line-height:20px}.travel-app .region-toolbar .select-chevron{right:14px}.map-mode-actions .neo-choice{margin:0;gap:12px;min-height:44px;align-items:center}.poster-settings .neo-choice{min-height:44px;margin-bottom:12px;gap:12px}}
 @media(max-width:800px){.poster-dialog.settings-open .poster-actions .neo-button--primary{grid-column:auto}.poster-dialog .poster-settings .neo-input{margin-top:8px}.poster-dialog .poster-settings .select-trigger{height:48px;min-height:48px}}
 @media(max-width:800px){.poster-dialog .poster-settings input.neo-input{height:48px;min-height:48px;font-size:16px}.poster-dialog .poster-settings .select-trigger{font-size:16px}.sheet-scroll input.neo-input,.sheet-scroll textarea.neo-input{font-size:16px}}
+
+/* Notifications: same paper, recessed icon, raised body; no normal border. */
+.neo-notification{--notification-tone:#4e6954;display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border:0;border-radius:18px;background:var(--neo-paper);color:var(--neo-ink);box-shadow:var(--neo-raised);font-size:13px;line-height:1.6;text-align:left;animation:notification-arrive .24s ease-out}
+.neo-notification--info{--notification-tone:#516c83}.neo-notification--warning{--notification-tone:#936528}.neo-notification--error{--notification-tone:#ad4335}
+.neo-notification-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:0 0 34px;border-radius:50%;box-shadow:var(--neo-inset);color:var(--notification-tone)}
+.neo-notification-body{flex:1;min-width:0;overflow-wrap:anywhere}.neo-notification-body p{margin:0;color:inherit;font:inherit}
+.neo-notification-action,.neo-notification-close{border:0;background:var(--neo-paper);box-shadow:var(--neo-raised);border-radius:10px;min-height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:8px 12px;color:var(--neo-ink);font-size:12px;transition:box-shadow .16s,transform .16s}
+.neo-notification-close{width:44px;padding:8px;color:var(--neo-muted)}.neo-notification-action:hover,.neo-notification-close:hover{box-shadow:var(--neo-panel)}.neo-notification-action:active,.neo-notification-close:active{box-shadow:var(--neo-inset);transform:translateY(1px)}
+.neo-notification--floating{position:fixed;right:24px;bottom:24px;width:max-content;max-width:min(440px,calc(100vw - 48px));z-index:60;box-shadow:var(--neo-panel),0 16px 40px #0002}
+.neo-notification--inline{margin:12px 0}.kit-notification-samples{display:grid;gap:12px}.kit-notification-samples .neo-notification{margin:0}
+html[data-theme=dark] .neo-notification{--notification-tone:#afc7a7}html[data-theme=dark] .neo-notification--info{--notification-tone:#a4bfd4}html[data-theme=dark] .neo-notification--warning{--notification-tone:#e3bc7a}html[data-theme=dark] .neo-notification--error{--notification-tone:#eba58f}
+@keyframes notification-arrive{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:800px){.neo-notification--floating{left:16px;right:16px;bottom:calc(82px + env(safe-area-inset-bottom));width:auto;max-width:none}.neo-notification{gap:10px;padding:12px;border-radius:16px}.neo-notification-body{font-size:12px}.neo-notification-action{padding-inline:10px}}
+@media(prefers-reduced-motion:reduce){.neo-notification{animation:none}.neo-notification-action,.neo-notification-close{transition:none}}
+@media(prefers-contrast:more){.neo-notification{box-shadow:none;outline:1px solid currentColor}.neo-notification-icon{box-shadow:none}.neo-notification-action,.neo-notification-close{outline:1px solid currentColor;box-shadow:none}}
+@media(forced-colors:active){.neo-notification,.neo-notification-action,.neo-notification-close{color:CanvasText;background:Canvas;box-shadow:none;outline:1px solid CanvasText}.neo-notification-icon{color:CanvasText;box-shadow:none}}
+/* Map actions use real control surfaces at every breakpoint. */
+.travel-app .map-mode-actions>.map-action{width:auto;min-height:44px;padding:10px 14px;gap:8px;font-size:12px;white-space:nowrap;flex:0 0 auto}.map-action[aria-pressed=true]{box-shadow:var(--neo-inset);color:var(--neo-accent)}
+@media(min-width:1101px) and (max-width:1350px){.travel-app .map-mode-actions{gap:12px}.travel-app .map-mode-actions>.map-action{padding-inline:10px;gap:6px}}
+@media(max-width:1100px){.travel-app .options-open .map-mode-actions>.map-action{width:100%;justify-content:flex-start}}
+@media(max-width:800px){.travel-app .map-mode-actions{gap:14px}.travel-app .map-mode-actions>.map-action{width:100%;justify-content:flex-start}}
+.kit-notification-actions{margin-top:20px}.checkin-dialog>.sheet-notification{margin:0 24px 12px;flex-shrink:0}.photo-editor-footer .neo-notification{margin:0 0 12px}.poster-export>.neo-notification{margin:12px 0 0;box-shadow:var(--neo-inset)}.batch-footer>.neo-notification{margin:0 0 12px}.batch-confirm>p{width:100%;margin:0;color:var(--neo-muted);font-size:12px;line-height:1.6}
+@media(max-width:800px){.checkin-dialog>.sheet-notification{margin-inline:16px}.batch-confirm{flex-wrap:wrap}}
+@media print{.neo-notification{display:none!important}}
+.photo-viewer>.viewer-notification{margin:12px 20px;flex-shrink:0}.viewer-stage>.neo-notification.viewer-error{display:flex;text-align:left;padding:14px;max-width:calc(100% - 32px);background:var(--neo-paper);color:var(--neo-ink)}.viewer-error .neo-notification-action{margin:0}.login-card>.neo-notification{margin:20px 0}.poster-export .neo-notification-close{min-height:44px}
+.viewer-stage>.neo-notification.viewer-error{inset:auto;top:50%;left:50%;transform:translate(-50%,-50%);flex-direction:row;width:min(420px,calc(100% - 32px));animation:none}.viewer-error .neo-notification-action{background:var(--neo-paper);box-shadow:var(--neo-raised)}
+
+/* Place comes first. Administrative fields stay available in a quiet disclosure. */
+.photo-place-search{position:relative;min-width:0}
+.photo-place-candidates{display:grid;gap:4px;padding:8px;margin-top:8px;border-radius:14px;background:var(--neo-paper);box-shadow:var(--neo-raised);max-height:230px;overflow:auto}
+.photo-place-candidates button{border:0;background:transparent;color:var(--neo-ink);display:flex;align-items:center;gap:12px;padding:12px;text-align:left;border-radius:10px;min-height:48px;cursor:pointer}
+.photo-place-candidates button:hover,.photo-place-candidates button:focus-visible{background:var(--neo-paper);box-shadow:var(--neo-inset)}
+.photo-place-candidates button>span{display:grid;gap:4px;min-width:0;font-size:13px}
+.photo-place-candidates small{font-size:11px;color:var(--neo-muted)}
+.photo-region-adjust{border-radius:14px;background:var(--neo-paper);box-shadow:var(--neo-inset);padding:0 14px}
+.photo-region-adjust summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;min-height:48px;padding:12px 0;color:var(--neo-ink);font-size:12px}
+.photo-region-adjust summary::-webkit-details-marker{display:none}
+.photo-region-adjust summary>span{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0}
+.photo-region-adjust summary small{font-size:11px;color:var(--neo-accent)}
+.photo-region-adjust summary>svg{flex-shrink:0;transition:transform .2s}
+.photo-region-adjust[open] summary>svg{transform:rotate(180deg)}
+.photo-region-fields{display:grid;gap:16px;padding:4px 0 16px}
+.photo-date-hint{display:block;margin-top:8px;color:var(--neo-muted);font-size:11px;line-height:1.5}
+@media(prefers-reduced-motion:reduce){.photo-region-adjust summary>svg{transition:none}}
