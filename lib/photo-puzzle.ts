@@ -6,7 +6,7 @@ export type PuzzleRegion=MapFeature&{properties:MapFeature['properties']&{prefec
 export function photoAreas(scope:Scope,features:PuzzleRegion[],visits:PuzzleVisit[],photos:PuzzlePhoto[]){
  const grouped=new Map<string,{feature:PuzzleRegion;photos:(PuzzlePhoto&{note:string})[]}>();
  for(const visit of visits){let feature:PuzzleRegion|undefined;
- if(scope==='japan'){feature=features.find(f=>f.properties.prefecture===visit.prefecture&&f.properties.name===visit.city);if(!feature&&visit.latitude!=null&&visit.longitude!=null){const candidates=features.filter(f=>f.properties.prefecture===visit.prefecture),name=prefectureAt(visit.latitude,visit.longitude,candidates);feature=candidates.find(f=>f.properties.name===name);}}
+ if(scope==='japan'){const matches=features.filter(f=>f.properties.prefecture===visit.prefecture&&f.properties.name===visit.city);feature=matches.length===1?matches[0]:undefined;if(!feature&&visit.latitude!=null&&visit.longitude!=null){const candidates=features.filter(f=>f.properties.prefecture===visit.prefecture);feature=candidates.find(f=>Boolean(prefectureAt(visit.latitude!,visit.longitude!,[f])));}}
  else feature=features.find(f=>f.properties.name===visitArea(visit,scope,features));
  if(!feature)continue;const matching=photos.filter(p=>p.checkin===visit.id);if(!matching.length)continue;const key=String(feature.properties.id),group=grouped.get(key)||{feature,photos:[]};for(const p of matching)if(!group.photos.some(old=>old.id===p.id))group.photos.push({...p,note:(p.details?.note??visit.note)?.trim()||''});grouped.set(key,group);
  }return [...grouped.values()];
@@ -30,6 +30,6 @@ export function puzzleSVG({scope,features,visits,photos,project,prefix,notes=fal
  pieces.push(`<clipPath id="${pid}"><path d="${d}"/></clipPath><g class="photo-puzzle-piece" ${notes&&p.note?'data-photo-note="'+xml(p.note)+'"':''} clip-path="url(#${pid})"><image href="${xml(p.url)}" x="${left.x-px}" y="${top.y-pad}" width="${right.x-left.x+px*2}" height="${rh+pad*2}" preserveAspectRatio="xMidYMid slice"/>${count>1?`<path d="${d}" fill="none" stroke="#f5f3ed" stroke-opacity=".65" stroke-width=".6"/>`:''}</g>`)}pieces.push('</g>');
  }
 
- return `<g data-area="${xml(feature.properties.prefecture||feature.properties.name)}" data-puzzle-region="${xml(feature.properties.name)}"><defs><clipPath id="${id}"><path d="${outline}" clip-rule="evenodd"/></clipPath></defs><g clip-path="url(#${id})">${pieces.join('')}</g></g>`;
+ return `<g data-puzzle-id="${xml(String(feature.properties.id))}" data-area="${xml(feature.properties.prefecture||feature.properties.name)}" data-puzzle-region="${xml(feature.properties.name)}"><defs><clipPath id="${id}"><path d="${outline}" clip-rule="evenodd"/></clipPath></defs><g clip-path="url(#${id})">${pieces.join('')}</g></g>`;
  }).join('');
 }

@@ -1,6 +1,6 @@
 import {prefectureAt,validCoordinate} from './photo-metadata.ts';
 export type Scope='japan'|'sichuan'|'china'|'world'|'chengdu';
-export type MapFeature={type?:string;properties:{id:number;name:string;code?:string};geometry:{type?:string;coordinates:number[][][][]}};
+export type MapFeature={type?:string;properties:{id:number;name:string;code?:string;continent?:string};geometry:{type?:string;coordinates:number[][][][]}};
 export const scopes:{id:Scope;name:string;label:string}[]=[{id:'japan',name:'日本',label:'都道府县'},{id:'sichuan',name:'四川',label:'城市 / 州'},{id:'china',name:'中国',label:'省 / 自治区 / 直辖市'},{id:'chengdu',name:'成都',label:'区 / 县 / 县级市'},{id:'world',name:'世界',label:'国家 / 地区'}];
 export const sichuanCities=['成都市','自贡市','攀枝花市','泸州市','德阳市','绵阳市','广元市','遂宁市','内江市','乐山市','南充市','眉山市','宜宾市','广安市','达州市','雅安市','巴中市','资阳市','阿坝藏族羌族自治州','甘孜藏族自治州','凉山彝族自治州'];
 export type GeographicVisit={country?:string;prefecture:string;city:string;district?:string;latitude?:number|null;longitude?:number|null;id:string;place:string;date:string};

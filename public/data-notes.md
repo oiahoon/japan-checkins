@@ -37,7 +37,7 @@ A standalone private app must replace host-only persistence with authenticated d
 
 ## Multi-region expansion (2026-10-03)
 
-China/Sichuan outlines use geoBoundaries gbOpen CHN ADM1; world uses Natural Earth 1:110m admin-0. Both source releases are public-domain assets, downloaded and normalized without private data. Exact versions, licenses, caveats, importer and export dimensions are recorded in the repository `docs/GEOGRAPHY.md`: https://github.com/oiahoon/japan-checkins/blob/main/docs/GEOGRAPHY.md . Sichuan currently has a province outline and city filters, not city polygons. World low-resolution geometry omits small countries/islands.
+China/Sichuan outlines use geoBoundaries gbOpen CHN ADM1; world uses Natural Earth 1:110m admin-0. Both source releases are public-domain assets, downloaded and normalized without private data. Exact versions, licenses, caveats, importer and export dimensions are recorded in the repository `docs/GEOGRAPHY.md`: https://github.com/oiahoon/japan-checkins/blob/main/docs/GEOGRAPHY.md . Sichuan has 21 source city/prefecture polygons; Chengdu has 20 historical district polygons with separate provenance below. World low-resolution geometry omits small countries/islands.
 
 四川市州：geoBoundaries gbHumanitarian / HDX CHN ADM2（2020），CC BY 3.0 IGO；本项目筛选、翻译并简化，非来源背书。西沙小岛：Natural Earth 1:10m land，Public Domain；18 个物理岛屿简化多边形及非同比例放大框，不含完整岛礁或海上边界。版本与许可见 docs/GEOGRAPHY.md。
 
@@ -52,3 +52,7 @@ chengdu-districts.json: geoBoundaries gbOpen CHN ADM3 (boundaryID CHN-ADM3-62558
 ## 地点名称索引（2026-10-03）
 
 `place-index.json` 由 `node scripts/build-place-index.mjs` 从上述日本市区町村、中国省份、四川市州、成都区县和世界国家名称生成，保留各来源的使用条件（成都衍生条目为 ODbL）。附常见简体写法；仅辅助填写所属地区，不是地址定位服务，不生成坐标。博多 / 博多区 / 博多駅（站）归属福岡市的辅助别名，参考福岡市官网与官方路线： https://www.city.fukuoka.lg.jp/ 、 https://bunkazai.city.fukuoka.lg.jp/files/NewsBlocks/48063ea5-ecc2-4b83-8122-6a2d61cc0ff8/value01/6d7a89687c0f6e47f2990ce2dc53011d.pdf 。日本政令指定都市已合并，区级名称并不完整；中央区等常见重名需要用户选择。无全球街道 / 商家 / 景点大全。
+
+## 连续探索与日本町村标签
+
+主地图使用经度 / Mercator 纬度连续相机；亚洲为视窗。西沙物理岛屿在主地图按原位显示，导出保留局部放大框。日本 2021 数据的町村标签已改为 N03_004 优先，郡名保存为辅助字段；1751 个 feature 的 ID / 几何不变，非边界年份更新。固定源与校验脚本见 docs/GEOGRAPHY.md。同名地点无确认坐标不自动归属。

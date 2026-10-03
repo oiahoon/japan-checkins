@@ -25,6 +25,6 @@ w=json.load(open(args.world));out=[]
 for i,f in enumerate(w['features']):
     p=f['properties'];code=p['ISO_A2_EH']
     if code=='-99':code=p['ADM0_A3']
-    out.append({'type':'Feature','properties':{'id':i+1,'name':({'CN':'中国','TW':'台湾地区'}.get(code) or p['NAME_ZH'] or p['NAME']),'code':code},'geometry':geometry(f['geometry'])})
+    out.append({'type':'Feature','properties':{'id':i+1,'name':({'CN':'中国','TW':'台湾地区'}.get(code) or p['NAME_ZH'] or p['NAME']),'code':code,'continent':p['CONTINENT']},'geometry':geometry(f['geometry'])})
 (output / 'world-simple.json').write_text(json.dumps({'type':'FeatureCollection','features':out},ensure_ascii=False,separators=(',',':')))
 print('Geography:',len(c['features']),len(out))

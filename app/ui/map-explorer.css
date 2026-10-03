@@ -1,0 +1,77 @@
+/* A quiet navigation layer, using the journal's existing material and type. */
+.map-explorer { overflow:clip; }
+.explorer-canvas { position:absolute; inset:0; display:block; width:100%; height:100%; touch-action:none; cursor:grab; }
+.explorer-canvas { outline:none; }
+.explorer-canvas:focus-visible { box-shadow:inset 0 0 0 2px var(--amber); }
+.explorer-boundaries .prefecture:focus-visible { outline:none; stroke:var(--amber); }
+.map-explorer.is-dragging .explorer-canvas { cursor:grabbing; }
+.explorer-navigation { position:absolute; top:20px; left:20px; z-index:7; display:flex; gap:10px; align-items:center; max-width:calc(100% - 96px); }
+.explorer-back,.explorer-search-button,.explorer-zoom button { width:44px; height:44px; min-width:44px; padding:0; display:flex; align-items:center; justify-content:center; border:0; border-radius:14px; background:var(--panel); color:var(--text); box-shadow:var(--control-raised); transition:box-shadow .18s, color .18s; }
+.explorer-back:hover,.explorer-search-button:hover,.explorer-zoom button:hover { color:var(--amber); }
+.explorer-back:active,.explorer-search-button:active,.explorer-zoom button:active { box-shadow:var(--control-inset); }
+.explorer-path { display:flex; min-width:0; align-items:center; padding:0 6px; overflow-x:auto; scrollbar-width:none; border-radius:15px; background:var(--panel); box-shadow:var(--control-raised); }
+.explorer-path>span { display:flex; align-items:center; flex-shrink:0; color:var(--muted); }
+.explorer-path button { min-height:44px; min-width:44px; padding:8px 11px; font-size:13px; font-weight:500; display:flex; align-items:center; justify-content:center; white-space:nowrap; border-radius:12px; }
+.explorer-path button[aria-current] { color:var(--amber); }
+.explorer-path button:hover { color:var(--text); }
+.explorer-path>span>svg { flex-shrink:0; opacity:.55; }
+.explorer-search-button { position:absolute; top:20px; right:20px; z-index:8; }
+.explorer-search { position:absolute; top:76px; right:20px; z-index:12; width:min(360px,calc(100% - 40px)); border-radius:20px; padding:12px; background:var(--panel); box-shadow:var(--control-raised),0 16px 40px #0002; animation:explorer-reveal .18s ease-out; }
+.explorer-search-field { display:flex; align-items:center; gap:10px; min-height:48px; padding:4px 8px 4px 12px; border-radius:14px; box-shadow:var(--control-inset); color:var(--muted); }
+.explorer-search-field>svg { flex-shrink:0; }
+.explorer-search-field input { width:100%; min-width:0; border:0; background:transparent; box-shadow:none; color:var(--text); padding:8px 0; margin:0; font-size:16px; }
+.explorer-search-field button { display:flex; align-items:center; justify-content:center; min-width:36px; min-height:44px; padding:0; }
+.explorer-search-results { display:grid; gap:4px; max-height:min(52dvh,400px); overflow-y:auto; padding-top:8px; scrollbar-width:thin; }
+.explorer-search-results>button { display:flex; align-items:center; gap:12px; padding:12px; min-height:56px; text-align:left; border-radius:12px; }
+.explorer-search-results>button:hover,.explorer-search-results>button:focus-visible { background:var(--bg); box-shadow:var(--control-inset); }
+.explorer-search-results>button>svg { color:var(--muted); flex-shrink:0; }
+.explorer-search-results>button>span { flex:1; min-width:0; }
+.explorer-search-results strong { display:block; font-size:14px; font-weight:550; }
+.explorer-search-results small { display:block; font-size:11px; color:var(--muted); margin-top:4px; line-height:1.6; overflow-wrap:anywhere; }
+.explorer-search-results p { font-size:13px; color:var(--muted); padding:12px; margin:0; }
+.explorer-zoom { position:absolute; left:20px; top:84px; z-index:6; display:grid; gap:12px; }
+.explorer-zoom>div { display:grid; gap:4px; border-radius:16px; padding:4px; background:var(--panel); box-shadow:var(--control-raised); }
+.explorer-zoom>div>button { box-shadow:none; background:transparent; width:40px; min-width:40px; height:44px; border-radius:12px; }
+.explorer-zoom>div>button:hover:not(:disabled),.explorer-zoom>div>button:active { box-shadow:var(--control-inset); }
+.explorer-zoom>button { margin-left:2px; }
+.explorer-background path { fill:#d3d9ce; stroke:none; }
+[data-theme=dark] .explorer-background path { fill:#424c3d; }
+.explorer-boundaries { animation:explorer-boundaries .22s ease-out; }
+.explorer-labels { pointer-events:none; }
+.explorer-labels text { fill:var(--text); font-family:inherit; font-weight:500; paint-order:stroke; stroke:var(--bg); stroke-width:.025; stroke-opacity:.6; }
+.explorer-visit { cursor:pointer; outline:none; }
+.explorer-visit-dot { fill:var(--amber); stroke:var(--panel); }
+.explorer-visit-halo { fill:var(--amber); opacity:.2; }
+.explorer-visit:focus-visible .explorer-visit-dot { stroke:var(--text); }
+.explorer-hover { position:absolute; bottom:78px; left:20px; z-index:5; padding:12px 16px; font-size:14px; border-radius:14px; color:var(--text); background:var(--panel); box-shadow:var(--control-raised); pointer-events:none; }
+.explorer-footer { position:absolute; bottom:20px; left:20px; right:20px; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:12px; pointer-events:none; }
+.atlas-workspace:has(.focused-visit-card) .explorer-footer .map-legend { display:none; }
+.explorer-footer .map-legend { border:0; gap:16px; padding:12px 14px; border-radius:14px; font-size:12px; background:var(--panel); box-shadow:var(--control-raised); }
+.explorer-source { color:var(--muted); font-size:11px; min-height:44px; padding:12px 6px; display:flex; align-items:center; pointer-events:auto; text-shadow:0 1px var(--bg); }
+.explorer-toolbar.region-toolbar { justify-content:flex-end; }
+.explorer-toolbar .map-mode-actions { margin-left:auto; }
+@keyframes explorer-reveal { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes explorer-boundaries { from { opacity:.45; } to { opacity:1; } }
+@media (max-width:800px) {
+ .journal-shell.map-view { position:relative; }
+ .journal-map-toolbar.explorer-toolbar.region-toolbar { position:absolute; top:72px; right:16px; width:44px; padding:0; min-height:44px; z-index:16; }
+ .explorer-toolbar .mobile-map-options { width:44px; height:44px; padding:0; font-size:0; border-radius:14px; box-shadow:var(--control-raised); background:var(--panel); }
+ .explorer-toolbar .mobile-map-options svg { width:19px; height:19px; }
+ .explorer-toolbar .map-mode-actions { left:auto; right:0; top:56px; width:min(320px,calc(100vw - 32px)); }
+ .explorer-navigation { top:12px; left:16px; max-width:calc(100% - 136px); gap:6px; }
+ .explorer-path { padding:0 3px; }
+ .explorer-path .crumb-ancestor { display:none; }
+ .explorer-path button { padding-inline:8px; font-size:12px; }
+ .explorer-search-button { top:12px; right:68px; }
+ .explorer-search { top:68px; left:16px; right:16px; width:auto; }
+ .explorer-zoom { top:76px; left:16px; }
+ .explorer-footer { bottom:76px; left:16px; right:16px; }
+ .explorer-footer .map-legend { gap:12px; padding:10px 12px; font-size:11px; }
+ .explorer-hover { bottom:130px; left:16px; }
+}
+@media (max-width:360px) {
+ .explorer-path>span:not(:last-child) { display:none; }
+ .explorer-path button { max-width:105px; overflow:hidden; text-overflow:ellipsis; display:block; }
+}
+@media (prefers-reduced-motion:reduce) { .explorer-boundaries,.explorer-search { animation:none; } }
+@media (prefers-contrast:more),(forced-colors:active) { .explorer-back,.explorer-search-button,.explorer-path,.explorer-zoom>div,.explorer-zoom>button,.explorer-search,.explorer-search-field { box-shadow:none; border:1px solid currentColor; } }

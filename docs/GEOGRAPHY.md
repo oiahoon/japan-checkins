@@ -1,6 +1,6 @@
 # 地理数据与导出来源
 
-公开概览数据下载于 2026-10-03，无用户照片、轨迹或私人 EXIF。以经度 / 纬度 WGS84 为输入，转换成统一 MultiPolygon，保留内环，四舍五入到 4 位小数。视图和导出采用同一批数据；投影为按纬度调整横轴比例的平面概览，不是导航地图或官方审定边界。
+公开概览数据下载于 2026-10-03，无用户照片、轨迹或私人 EXIF。以经度 / 纬度 WGS84 为输入，转换成统一 MultiPolygon，保留内环，四舍五入到 4 位小数。视图和导出采用同一批数据；主地图采用统一经度 / Mercator 纬度概览（纬度截断 ±80°），导出仍按作品画幅使用纬度调整的平面投影；二者共享原 WGS84 数据。不是导航地图或官方审定边界。
 
 ## 中国与四川
 
@@ -15,7 +15,7 @@
 
 ## 世界
 
-Natural Earth 1:110m admin-0 countries，177 个国家 / 地区 feature。低分辨率不包含所有小国与小岛，当前选择器覆盖这些 feature；完整国家选择器、微小地区与更细地理层仍在路线图。
+Natural Earth 1:110m admin-0 countries，177 个国家 / 地区 feature。低分辨率不包含所有小国与小岛，当前地图搜索 / 点击覆盖这些 feature；完整国家选择器、微小地区与更细地理层仍在路线图。
 
 - [使用条款：Public Domain](https://www.naturalearthdata.com/about/terms-of-use/)
 - [固定数据版本 9380cca](https://raw.githubusercontent.com/nvkelso/natural-earth-vector/9380cca83db5f9aef52d5e762765100745f84b27/geojson/ne_110m_admin_0_countries.geojson)
@@ -64,3 +64,16 @@ python3 scripts/prepare-map-details.py --prefectures /tmp/chn-prefectures.json -
 ```
 
 两个脚本均使用标准库和固定 SHA；不可用来源不以任意第三方“代码 MIT”替代数据许可。此次检查发现 gbOpen CHN ADM2 有 2391 个单位，实际粒度不能直接当作 21 市州，因此采用上述独立 gbHumanitarian 数据。
+
+## 连续层级与日本市区町村名称修正
+
+世界 / 亚洲 → 国家 → 已有行政细节。亚洲使用经度 35–155、纬度 -12–65 的视窗，并保留 Natural Earth 同一快照的 CONTINENT 属性供无坐标记录筛选；不是政治 / 行政边界。其他国家停在国家层，中国其他省停在省层。地图相机在换层时保持原坐标，不采用局部非同比例插图；西沙 18 岛原几何未删除、可放大查看，导出原插图继续保留。
+
+日本市区町村：1751 个由 SmartNews 处理的 2021 MLIT 区域。原导入错误地在町村优先使用 N03_003（郡名），本轮将 932 个标签改为真实 N03_004，补 municipalityCode=N03_007、county=N03_003。原 feature ID、顺序和四位小数几何逐项验证不变；没有更新边界年份。政令指定都市仍合并为市，不包含内部区层。北海道两个“泊村”使用源 ID 分开，记录无确认坐标时不能猜选其中一个。
+
+- 固定源版本：[SmartNews ebabf6a](https://raw.githubusercontent.com/smartnews-smri/japan-topography/ebabf6a0f1b26eacce279566ac1e29a4da474ee5/data/municipality/geojson/s0010/N03-21_210101_designated_city.json)
+- 原始 SHA-256：`8e38c250108fbf40a2307bd8a6ba905c0995e1511fcf83fdfab3318acbcbd4e8`
+- MLIT 国土数值信息，[GSI 内容利用规则](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)；SmartNews 为处理来源，几何数据许可与应用代码分开。现有来源署名保留。
+- 名称修正复现：`python3 scripts/prepare-japan-municipal-names.py /tmp/japan-municipal-source.json`，之后 `node scripts/build-place-index.mjs`。
+
+此轮不增加私人地理数据，不重新识别或改写用户记录。地图层级和照片裁切仅使用明确地区 / 确认坐标。导出仍是五种既有地域作品，不新增亚洲或日本单个市的海报投影。
