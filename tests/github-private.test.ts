@@ -123,3 +123,37 @@ test('global save endpoint preserves country and recovers a lost commit response
 });
 
 test('camera metadata survives retries and stays private; GPS header rejected',async()=>{const git=fakeGit(),ctx={userId:owner,origin:'https://journal.test',store:git.store};const request=()=>{const r=uploadRequest();r.headers.set('X-Photo-Metadata',encodeURIComponent(JSON.stringify({make:'Synthetic',model:'Test Q',iso:100})));return r;};assert.equal((await journalAPI(ctx,request(),'upload')).status,201);assert.equal((await journalAPI(ctx,request(),'upload')).status,201);assert.equal(git.data().photos.length,1);assert.equal(git.data().photos[0].metadata?.model,'Test Q');const list=await (await journalAPI(ctx,undefined,'list')).json() as {drafts:{metadata:{iso:number}}[]};assert.equal(list.drafts[0].metadata.iso,100);const invalid=uploadRequest();invalid.headers.set('X-Photo-Metadata',encodeURIComponent(JSON.stringify({latitude:0})));assert.equal((await journalAPI(ctx,invalid,'upload')).status,400);});
+
+import {setPhotoRemoved,journalSchema,sharedJournal} from '../lib/travel-data.ts';
+test('photo removal is recoverable, idempotent, owner-scoped and hides public media only',()=>{
+ const j=emptyJournal(owner);j.photos.push({id:'synthetic-photo-01',owner,sha:'a'.repeat(40),digest:'synthetic',created:'',checkin:null});
+ appendVisit(j,owner,{...input(),published:true,photos:['synthetic-photo-01']});
+ assert.equal(setPhotoRemoved(j,owner,'synthetic-photo-01',true),true);assert.equal(setPhotoRemoved(j,owner,'synthetic-photo-01',true),false);
+ assert.equal(j.checkins.length,1);assert.equal(j.photos[0].checkin,j.checkins[0].id);assert.equal(sharedJournal(j).photos.length,0);
+ assert.throws(()=>setPhotoRemoved(j,'wrong-owner','synthetic-photo-01',false));assert.throws(()=>setPhotoRemoved(j,owner,'missing-photo-01',true));
+ assert.equal(journalSchema.parse(j).photos[0].removed,true);assert.equal(setPhotoRemoved(j,owner,'synthetic-photo-01',false),true);assert.equal(sharedJournal(j).photos.length,1);
+});
+test('removed drafts cannot be silently reused in a new visit',()=>{
+ const j=emptyJournal(owner);j.photos.push({id:'synthetic-photo-01',owner,sha:'a'.repeat(40),digest:'synthetic',created:'',checkin:null,removed:true});
+ assert.throws(()=>appendVisit(j,owner,{...input(),photos:['synthetic-photo-01']}));assert.equal(j.checkins.length,0);
+});
+
+test('photo management API rejects read-only and cross-origin callers before mutation',async()=>{
+ let calls=0;const store={mutate:async()=>{calls++}} as unknown as GitHubStore;
+ const context={userId:owner,origin:'https://synthetic.example',store};
+ const valid=new Request('https://synthetic.example/api/photos/synthetic-photo-01',{method:'PATCH',headers:{origin:'https://synthetic.example'}});
+ assert.equal((await journalAPI({...context,readOnly:true},valid,'hide-photo','synthetic-photo-01')).status,403);
+ const foreign=new Request('https://synthetic.example/api/photos/synthetic-photo-01',{method:'PATCH',headers:{origin:'https://another.example'}});
+ assert.equal((await journalAPI(context,foreign,'restore-photo','synthetic-photo-01')).status,403);assert.equal(calls,0);
+});
+
+test('removed photos stay out of normal and shared lists while admin can restore',async()=>{
+ const j=emptyJournal(owner);j.photos.push({id:'synthetic-photo-01',owner,sha:'a'.repeat(40),digest:'synthetic',created:'',checkin:null});appendVisit(j,owner,{...input(),published:true,photos:['synthetic-photo-01']});
+ const store={read:async()=>j,mutate:async(_owner:string,change:(j:Journal)=>unknown)=>{change(j)}} as unknown as GitHubStore;
+ const context={userId:owner,origin:'https://synthetic.example',store},request=new Request('https://synthetic.example/api/photos/synthetic-photo-01',{method:'PATCH',headers:{origin:'https://synthetic.example'}});
+ assert.equal((await journalAPI(context,request,'hide-photo','synthetic-photo-01')).status,200);
+ type Listed={photos:unknown[];removedPhotos:unknown[];checkins:unknown[]};
+ const own=await (await journalAPI(context,undefined,'list')).json() as Listed;assert.equal(own.photos.length,0);assert.equal(own.removedPhotos.length,1);assert.equal(own.checkins.length,1);
+ const shared=await (await journalAPI({...context,readOnly:true,sharedOnly:true},undefined,'list')).json() as Listed;assert.equal(shared.photos.length,0);assert.deepEqual(shared.removedPhotos,[]);
+ assert.equal((await journalAPI(context,request,'restore-photo','synthetic-photo-01')).status,200);const restored=await (await journalAPI(context,undefined,'list')).json() as Listed;assert.equal(restored.photos.length,1);
+});
