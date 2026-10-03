@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {photoAreas,puzzleSVG,type PuzzleRegion} from '../lib/photo-puzzle.ts';
+import {buildPoster} from '../lib/travel-poster.ts';
+const feature:PuzzleRegion={properties:{id:1001,name:'合成市',prefecture:'合成県'},geometry:{type:'MultiPolygon',coordinates:[[[[0,0],[2,0],[2,2],[0,2],[0,0]]]]}};
+const visit={id:'synthetic-visit',prefecture:'合成県',city:'合成市',place:'test',date:'2026-01-01',note:'<手动笔记>'};
+const photos=[{id:'synthetic-photo',checkin:visit.id,url:'data:image/jpeg;base64,c3ludGhldGlj'}];
+test('drafts and unassociated photos never become puzzle history',()=>{assert.equal(photoAreas('japan',[feature],[visit],[{...photos[0],checkin:null}]).length,0);assert.equal(photoAreas('japan',[feature],[{...visit,city:'未知市'}],photos).length,0);});
+test('single photo has one image clipped to actual feature; no pattern tiling',()=>{const s=puzzleSVG({scope:'japan',features:[feature],visits:[visit],photos,project:p=>p,prefix:'test'});assert.equal((s.match(/<image /g)||[]).length,1);assert.ok(s.includes('clip-path="url(#test-0)"'));assert.ok(!s.includes('<pattern'));assert.ok(!s.includes('手动笔记'));});
+test('multiple photos have stable cubic pieces and optional escaped manual notes',()=>{const args={scope:'japan' as const,features:[feature],visits:[visit],photos:Array.from({length:7},(_,i)=>({...photos[0],id:'synthetic-'+i})),project:(p:number[])=>p,prefix:'test',notes:true};const s=puzzleSVG(args);assert.equal(s,puzzleSVG(args));assert.equal((s.match(/<image /g)||[]).length,7);assert.ok(s.includes(' C'));assert.ok(s.includes('&lt;手动笔记&gt;'));assert.ok(!s.includes('<手动笔记>'));});
+test('export toggle embeds photos only when enabled and omits notes',()=>{const opts={scope:'japan' as const,features:[feature],puzzleFeatures:[feature],visits:[visit],photos,title:'合成地图',format:'print' as const};assert.ok(!buildPoster(opts).includes('<image '));const enabled=buildPoster({...opts,puzzle:true});assert.ok(enabled.includes('data:image/jpeg;base64,'));assert.ok(!enabled.includes('手动笔记'));});

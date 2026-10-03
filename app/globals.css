@@ -161,3 +161,9 @@ dialog{background:#fffdf7;box-shadow:0 20px 70px #33452d25;border-radius:8px}dia
 @media(max-width:800px){.xisha-inset{transform:translate(665px,310px) scale(1.5)}}
 /* Clip transformed geography without creating a focus-scroll container. */
 .regional-atlas{overflow:clip}
+
+.map-mode-actions{display:flex;align-items:center;gap:18px}.puzzle-map-toggle{display:flex;flex-direction:column;gap:6px;color:var(--text);max-width:250px}.puzzle-map-toggle small{font-size:11px;color:var(--muted)}.photo-puzzle-piece:hover{filter:brightness(1.07)}.photo-puzzle-piece image{pointer-events:visiblePainted}@media(max-width:760px){.map-mode-actions{gap:12px;flex-wrap:wrap;justify-content:flex-end}.puzzle-map-toggle{max-width:150px}.puzzle-map-toggle small{display:none}}
+
+@media(max-width:760px){.region-toolbar{flex-wrap:wrap}.region-toolbar>label{white-space:nowrap;flex-shrink:0}.map-mode-actions{flex:1 1 100%;justify-content:space-between}.puzzle-map-toggle .neo-choice{white-space:nowrap}}
+
+.puzzle-note-popup{position:fixed;z-index:50;pointer-events:none;max-width:250px;max-height:128px;overflow:hidden;white-space:pre-wrap;padding:14px 18px;border-radius:16px;color:var(--text);background:var(--panel);font-size:13px;line-height:1.7;box-shadow:8px 8px 24px #0003,-4px -4px 14px #fff1}

@@ -40,3 +40,7 @@ A standalone private app must replace host-only persistence with authenticated d
 China/Sichuan outlines use geoBoundaries gbOpen CHN ADM1; world uses Natural Earth 1:110m admin-0. Both source releases are public-domain assets, downloaded and normalized without private data. Exact versions, licenses, caveats, importer and export dimensions are recorded in the repository `docs/GEOGRAPHY.md`: https://github.com/oiahoon/japan-checkins/blob/main/docs/GEOGRAPHY.md . Sichuan currently has a province outline and city filters, not city polygons. World low-resolution geometry omits small countries/islands.
 
 四川市州：geoBoundaries gbHumanitarian / HDX CHN ADM2（2020），CC BY 3.0 IGO；本项目筛选、翻译并简化，非来源背书。西沙小岛：Natural Earth 1:10m land，Public Domain；18 个物理岛屿简化多边形及非同比例放大框，不含完整岛礁或海上边界。版本与许可见 docs/GEOGRAPHY.md。
+
+## 日本城市照片拼图
+
+市区町村行政边界：国土交通省「国土数値情報（行政区域）」2021 年，由 SmartNews japan-topography 处理并将政令指定都市合并。本项目投影并将坐标保留 4 位小数，供旅行概览，非现行行政边界测绘。源文件： https://github.com/smartnews-smri/japan-topography/blob/main/data/municipality/geojson/s0010/N03-21_210101_designated_city.json 。
