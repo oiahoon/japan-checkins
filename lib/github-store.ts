@@ -36,7 +36,7 @@ export class GitHubStore {
     if(owner!==this.config.ownerId)throw new Error('Owner denied');
     const journal=await this.read(owner);
     const row=journal.photos.find(p=>p.id===id&&p.owner===owner);
-    if(!row||row.removed||(publishedOnly&&!journal.checkins.some(v=>v.id===row.checkin&&v.published)))return null;
+    if(!row||row.removed||journal.checkins.some(c=>c.id===row.checkin&&c.removed)||(publishedOnly&&!journal.checkins.some(v=>v.id===row.checkin&&v.published)))return null;
     const blob=await this.api<{encoding:string;size:number;content:string}>(`/git/blobs/${row.sha}`);
     if(blob.encoding!=='base64'||blob.size>3*1024*1024)throw new Error('Invalid photo blob');
     return Buffer.from(blob.content,'base64');

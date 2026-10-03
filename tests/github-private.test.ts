@@ -157,3 +157,38 @@ test('removed photos stay out of normal and shared lists while admin can restore
  const shared=await (await journalAPI({...context,readOnly:true,sharedOnly:true},undefined,'list')).json() as Listed;assert.equal(shared.photos.length,0);assert.deepEqual(shared.removedPhotos,[]);
  assert.equal((await journalAPI(context,request,'restore-photo','synthetic-photo-01')).status,200);const restored=await (await journalAPI(context,undefined,'list')).json() as Listed;assert.equal(restored.photos.length,1);
 });
+
+test('batch record removal hides linked photos and shared content without erasing independent photo choices',async()=>{
+ const {manageItems}=await import('../lib/travel-data.ts');const j=emptyJournal(owner);
+ j.photos.push({id:'synthetic-photo-01',owner,sha:'a'.repeat(40),digest:'synthetic',created:'',checkin:null},{id:'synthetic-photo-02',owner,sha:'a'.repeat(40),digest:'synthetic',created:'',checkin:null});
+ appendVisit(j,owner,{...input(),published:true,photos:['synthetic-photo-01','synthetic-photo-02']});manageItems(j,owner,'photos',['synthetic-photo-02'],true);
+ assert.equal(manageItems(j,owner,'records',['synthetic-visit-01'],true),true);assert.equal(manageItems(j,owner,'records',['synthetic-visit-01'],true),false);assert.equal(sharedJournal(j).checkins.length,0);
+ const store={read:async()=>j} as unknown as GitHubStore,context={userId:owner,origin:'https://synthetic.example',store};
+ const hidden=await (await journalAPI(context,undefined,'list')).json() as {checkins:unknown[];photos:unknown[];removedCheckins:unknown[]};assert.equal(hidden.checkins.length,0);assert.equal(hidden.photos.length,0);assert.equal(hidden.removedCheckins.length,1);
+ assert.throws(()=>manageItems(j,owner,'photos',['synthetic-photo-02'],false),/先恢复/);
+ manageItems(j,owner,'records',['synthetic-visit-01'],false);assert.equal(sharedJournal(j).photos.length,1);assert.equal(j.photos[1].removed,true);assert.equal(j.photos.length,2);
+});
+test('batch mutation validates all items first and enforces owner, bounded selection and retry semantics',async()=>{
+ const {manageItems}=await import('../lib/travel-data.ts');const j=emptyJournal(owner);appendVisit(j,owner,input());
+ assert.throws(()=>manageItems(j,owner,'records',['synthetic-visit-01','synthetic-missing-01'],true),/不存在/);assert.equal(j.checkins[0].removed,undefined);
+ assert.throws(()=>manageItems(j,'other-owner','records',['synthetic-visit-01'],true),/owner mismatch/);
+ assert.throws(()=>manageItems(j,owner,'records',Array.from({length:101},(_,i)=>'synthetic-id-'+i),true),/100/);
+ assert.equal(manageItems(j,owner,'records',['synthetic-visit-01','synthetic-visit-01'],true),true);assert.equal(manageItems(j,owner,'records',['synthetic-visit-01'],true),false);
+ assert.equal(appendVisit(j,owner,input()),false);assert.equal(j.checkins[0].removed,true);
+});
+test('batch API rejects read-only, foreign origin and invalid selection without mutation',async()=>{
+ let calls=0;const store={mutate:async()=>{calls++}} as unknown as GitHubStore;const context={userId:owner,origin:'https://synthetic.example',store};
+ const req=(origin='https://synthetic.example',body:unknown={kind:'records',ids:['synthetic-visit-01'],removed:true})=>new Request('https://synthetic.example/api/manage',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify(body)});
+ assert.equal((await journalAPI({...context,readOnly:true},req(),'manage')).status,403);assert.equal((await journalAPI(context,req('https://foreign.example'),'manage')).status,403);assert.equal((await journalAPI(context,req(undefined,{kind:'records',ids:[],removed:true}),'manage')).status,400);assert.equal(calls,0);
+});
+test('direct photo reads reject a removed parent record before requesting the blob',async()=>{
+ const {manageItems}=await import('../lib/travel-data.ts');const j=emptyJournal(owner);j.photos.push({id:'synthetic-photo-01',owner,sha:'a'.repeat(40),digest:'synthetic',created:'',checkin:null});appendVisit(j,owner,{...input(),photos:['synthetic-photo-01']});manageItems(j,owner,'records',['synthetic-visit-01'],true);
+ const store=new GitHubStore(config);store.read=async()=>j;assert.equal(await store.photo('synthetic-photo-01',owner),null);
+});
+test('batch API applies a single atomic change and accepts repeated removal and restoration',async()=>{
+ const j=emptyJournal(owner);appendVisit(j,owner,input());appendVisit(j,owner,input('synthetic-visit-02'));let changes=0;
+ const store={read:async()=>j,mutate:async(_owner:string,change:(j:Journal)=>{changed:boolean})=>{const result=change(j);if(result.changed)changes++}} as unknown as GitHubStore;
+ const context={userId:owner,origin:'https://synthetic.example',store};const req=(removed:boolean)=>new Request('https://synthetic.example/api/manage',{method:'POST',headers:{origin:context.origin},body:JSON.stringify({kind:'records',ids:['synthetic-visit-01','synthetic-visit-02'],removed})});
+ assert.equal((await journalAPI(context,req(true),'manage')).status,200);assert.equal((await journalAPI(context,req(true),'manage')).status,200);assert.equal(changes,1);assert.equal(j.checkins.filter(c=>c.removed).length,2);
+ assert.equal((await journalAPI(context,req(false),'manage')).status,200);assert.equal(changes,2);assert.equal(j.checkins.filter(c=>c.removed).length,0);
+});

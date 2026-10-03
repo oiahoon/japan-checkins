@@ -86,3 +86,5 @@ PhotoViewer 使用原有认证图片 URL，不创建公开链接。支持 keyboa
 GitHub 照片增加可选 removed 布尔字段；旧照片默认可见。PATCH /api/photos/:id 经过主人身份、同源、owner 与 mutation 冲突重试验证，只修改 removed，不删照片文件或到访。普通 / 公开列表和图片读取排除已移除照片；主人列表返回 removedPhotos 标识用于恢复。读取公开快照不暴露回收站。原 DELETE 仅处理未保存草稿，行为保持。历史 Sites 路径未新增回收站，不修改部署迁移。
 
 移动端视图层：Travel 保存聚焦记录、详情 ID 与地图选项展开状态；VisitDetail 使用 native dialog，Photos viewer 可在详情上方打开，重新上传与再记到访关闭详情后进入原确认流程。数据端点及授权不变。TravelPoster 将配置与导出操作区拆开，手机默认预览优先，桌面仍使用两栏。CSS 动态视口和安全区适配，不添加设备定位或推断行为。
+
+批量管理：POST /api/manage 复用 currentAccess / githubAPI 的主人身份、同源和 owner 检查，严格校验 kind(records/photos)、1–100 个 ID 和 removed 布尔值；GitHubStore 单次原子 journal mutation 先验证全部 ID 后更新，重复请求幂等。checkin 增加可选 removed，旧记录默认可见；关联照片的可见性同时依赖 photo.removed 与父记录 removed，不级联修改照片标记。list / shared / blob read 隐藏父记录已移除的照片；回收站内容仅主人 list 提供。删除记录保留历史 statuses 和发布选择，恢复沿用原设置；已单独移除的照片仍隐藏。恢复照片前若父记录已移除，拒绝并提示先恢复记录。旧 Sites 适配器认证后返回 405，未更动既有数据库 / 私人数据。

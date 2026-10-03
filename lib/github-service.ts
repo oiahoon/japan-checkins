@@ -1,8 +1,9 @@
+import {z} from 'zod';
 import {cameraMetadataSchema} from './travel-data.ts';
 import {createHash} from 'node:crypto';
 import {GitHubStore} from './github-store.ts';
 import {sanitizeJPEG} from './photo.ts';
-import {setPhotoRemoved,appendVisit, setMarkers, recordId, visitInput, markersInput, InputError,sharedJournal} from './travel-data.ts';
+import {manageItems,appendVisit, setMarkers, recordId, visitInput, markersInput, InputError,sharedJournal} from './travel-data.ts';
 const privateHeaders={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Vary':'Cookie'};
 const json=(value:unknown,status=200)=>Response.json(value,{status,headers:privateHeaders});
 export async function boundedBytes(request:Request,limit:number) {
@@ -12,18 +13,18 @@ export async function boundedBytes(request:Request,limit:number) {
   while(true){const chunk=await reader.read();if(chunk.done)break;size+=chunk.value.length;if(size>limit){await reader.cancel();throw new InputError('上传内容过大');}chunks.push(chunk.value);}
   return Buffer.concat(chunks,size);
 }
-export type Action = 'list'|'save'|'markers'|'upload'|'photo'|'delete'|'publish'|'hide-photo'|'restore-photo';
+export type Action = 'list'|'save'|'markers'|'upload'|'photo'|'delete'|'publish'|'hide-photo'|'restore-photo'|'manage';
 export async function journalAPI(context:{userId:string;origin:string;store:GitHubStore;readOnly?:boolean;sharedOnly?:boolean},request:Request|undefined,action:Action,id?:string) {
   const user={userId:context.userId};
   try {
     if(context.readOnly&&!['list','photo'].includes(action))return json({error:'只读访问不能修改记录'},403);
     const config={origin:context.origin};
-    if(request&&['save','markers','upload','delete','publish','hide-photo','restore-photo'].includes(action)&&request.headers.get('origin')!==config.origin)return json({error:'无效请求来源'},403);
+    if(request&&['save','markers','upload','delete','publish','hide-photo','restore-photo','manage'].includes(action)&&request.headers.get('origin')!==config.origin)return json({error:'无效请求来源'},403);
     const store=context.store;
     if(action==='list') {
       const original=await store.read(user.userId);
       const data=context.sharedOnly?sharedJournal(original):original;
-      return json({checkins:data.checkins.sort((a,b)=>b.date.localeCompare(a.date)||b.created.localeCompare(a.created)),statuses:data.statuses,removedPhotos:context.readOnly?[]:data.photos.filter(p=>p.removed).map(p=>({id:p.id,checkin:p.checkin})),photos:data.photos.filter(p=>!p.removed&&p.checkin!==null).map(p=>({id:p.id,checkin:p.checkin,...(!context.sharedOnly?{metadata:p.metadata}:{})})),drafts:context.readOnly?[]:data.photos.filter(p=>!p.removed&&p.checkin===null).map(p=>({id:p.id,metadata:p.metadata}))});
+      return json({removedCheckins:context.readOnly?[]:data.checkins.filter(c=>c.removed),checkins:data.checkins.filter(c=>!c.removed).sort((a,b)=>b.date.localeCompare(a.date)||b.created.localeCompare(a.created)),statuses:data.statuses,removedPhotos:context.readOnly?[]:data.photos.filter(p=>p.removed).map(p=>({id:p.id,checkin:p.checkin})),photos:data.photos.filter(p=>!p.removed&&p.checkin!==null&&!data.checkins.some(c=>c.id===p.checkin&&c.removed)).map(p=>({id:p.id,checkin:p.checkin,...(!context.sharedOnly?{metadata:p.metadata}:{})})),drafts:context.readOnly?[]:data.photos.filter(p=>!p.removed&&p.checkin===null).map(p=>({id:p.id,metadata:p.metadata}))});
     }
     if(action==='photo'||action==='delete') {
       if(!recordId.safeParse(id).success)return json({error:'照片不存在'},404);
@@ -32,7 +33,8 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
       await store.mutate(user.userId,j=>{const row=j.photos.find(p=>p.id===id&&p.owner===user.userId);if(!row)return {changed:false};if(row.checkin!==null){blocked=true;return {changed:false};}j.photos=j.photos.filter(p=>p.id!==id);return {changed:true,files:[{path:`travel/photos/${id}.jpg`,mode:'100644',type:'blob',sha:null}]};});
       return new Response(null,{status:blocked?409:204,headers:privateHeaders});
     }
-    if(action==='hide-photo'||action==='restore-photo'){if(!recordId.safeParse(id).success)return json({error:'照片不存在'},404);await store.mutate(user.userId,j=>({changed:setPhotoRemoved(j,user.userId,id!,action==='hide-photo')}));return json({saved:true});}
+    if(action==='manage'){let body;try{body=z.object({kind:z.enum(['records','photos']),ids:z.array(recordId).min(1).max(100),removed:z.boolean()}).strict().parse(JSON.parse((await boundedBytes(request!,20000)).toString('utf8')))}catch{return json({error:'请选择有效的项目，每次最多 100 项'},400)}await store.mutate(user.userId,j=>({changed:manageItems(j,user.userId,body.kind,body.ids,body.removed)}));return json({saved:true});}
+    if(action==='hide-photo'||action==='restore-photo'){if(!recordId.safeParse(id).success)return json({error:'照片不存在'},404);await store.mutate(user.userId,j=>({changed:manageItems(j,user.userId,'photos',[id!],action==='hide-photo')}));return json({saved:true});}
     if(action==='upload') {
       const photoId=request!.headers.get('x-upload-id');
       let metadata;try{const raw=request!.headers.get('x-photo-metadata');if(raw&&raw.length>4096)throw Error();metadata=raw?cameraMetadataSchema.parse(JSON.parse(decodeURIComponent(raw))):undefined;}catch{return json({error:'相机信息无效'},400);}
@@ -52,7 +54,7 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
     if(action==='publish'){
       const b=body as {id?:unknown;published?:unknown};
       if(!b||!recordId.safeParse(b.id).success||typeof b.published!=='boolean')return json({error:'公开设置无效'},400);
-      const published=b.published;let found=false;await store.mutate(user.userId,j=>{const visit=j.checkins.find(v=>v.id===b.id&&v.owner===user.userId);if(!visit)return {changed:false};found=true;if(visit.published===published)return {changed:false};visit.published=published;return {changed:true};});
+      const published=b.published;let found=false;await store.mutate(user.userId,j=>{const visit=j.checkins.find(v=>v.id===b.id&&v.owner===user.userId&&!v.removed);if(!visit)return {changed:false};found=true;if(visit.published===published)return {changed:false};visit.published=published;return {changed:true};});
       return found?json({saved:true}):json({error:'记录不存在'},404);
     }
     if(action==='save') {

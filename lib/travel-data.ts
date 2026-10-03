@@ -13,7 +13,7 @@ export const visitInput = z.object({
   published:z.boolean().default(false),
   location:z.unknown(),
 }).transform(b=>({...b,location:confirmedLocation(b.location,b.country)}));
-const storedVisit = z.object({country:z.string().regex(/^[A-Z]{2,3}$/).default('JP'),published:z.boolean().default(false),pref_depth:depth.default(0),city_depth:depth.default(0),id:recordId,owner:z.string(),prefecture:z.string(),city:z.string(),district:z.string().default(''),place:z.string(),place_key:z.string(),kind:z.string(),date:z.string(),note:z.string(),depth,eaten:z.number().int().min(0).max(1),created:z.string(),latitude:z.number().nullable(),longitude:z.number().nullable(),location_source:z.string().nullable()});
+const storedVisit = z.object({removed:z.boolean().optional(),country:z.string().regex(/^[A-Z]{2,3}$/).default('JP'),published:z.boolean().default(false),pref_depth:depth.default(0),city_depth:depth.default(0),id:recordId,owner:z.string(),prefecture:z.string(),city:z.string(),district:z.string().default(''),place:z.string(),place_key:z.string(),kind:z.string(),date:z.string(),note:z.string(),depth,eaten:z.number().int().min(0).max(1),created:z.string(),latitude:z.number().nullable(),longitude:z.number().nullable(),location_source:z.string().nullable()});
 const storedStatus = z.object({owner:z.string(),scope:z.enum(['prefecture','city','place']),label:z.string(),depth,eaten:z.number().int().min(0).max(1)});
 export const cameraMetadataSchema=z.object({make:z.string().max(120).optional(),model:z.string().max(120).optional(),lens:z.string().max(120).optional(),aperture:z.number().positive().finite().optional(),exposureSeconds:z.number().positive().finite().optional(),iso:z.number().positive().finite().optional(),focalLength:z.number().positive().finite().optional()}).strict();
 const storedPhoto = z.object({removed:z.boolean().optional(),id:recordId,owner:z.string(),checkin:recordId.nullable(),sha:z.string().regex(/^[a-f0-9]{40}$/),digest:z.string(),metadata:cameraMetadataSchema.optional(),created:z.string()});
@@ -43,11 +43,17 @@ export function appendVisit(journal:Journal,owner:string,b:z.infer<typeof visitI
 }
 
 export function sharedJournal(journal:Journal):Journal{
-  const checkins=journal.checkins.filter(v=>v.published),ids=new Set(checkins.map(v=>v.id));
+  const checkins=journal.checkins.filter(v=>v.published&&!v.removed),ids=new Set(checkins.map(v=>v.id));
   const shared:Journal={version:1,owner:journal.owner,checkins,statuses:[],photos:journal.photos.filter(p=>!p.removed&&p.checkin!==null&&ids.has(p.checkin))};
   // Only explicit status choices saved with published visits; never expose private aggregates.
   for(const v of [...checkins].sort((a,b)=>a.created.localeCompare(b.created)))setMarkers(shared,journal.owner,[{scope:'prefecture',label:statusPrefix(v.country,v.prefecture),depth:v.pref_depth,eaten:false},...(v.city?[{scope:'city' as const,label:statusPrefix(v.country,v.prefecture)+' / '+v.city,depth:v.city_depth,eaten:false}]:[]),{scope:'place',label:v.place_key,depth:v.depth,eaten:!!v.eaten}]);
   return shared;
 }
 
-export function setPhotoRemoved(journal:Journal,owner:string,id:string,removed:boolean){assertOwner(journal,owner);const photo=journal.photos.find(p=>p.id===id&&p.owner===owner);if(!photo)throw new InputError('照片不存在');if(Boolean(photo.removed)===removed)return false;photo.removed=removed;return true;}
+export function setPhotoRemoved(journal:Journal,owner:string,id:string,removed:boolean){return manageItems(journal,owner,'photos',[id],removed)}
+
+export function manageItems(journal:Journal,owner:string,kind:'records'|'photos',ids:string[],removed:boolean){
+ assertOwner(journal,owner);const unique=[...new Set(ids)];if(!unique.length||unique.length>100)throw new InputError('每次请选择 1–100 项');
+ const rows=unique.map(id=>{const row=(kind==='records'?journal.checkins:journal.photos).find(r=>r.id===id&&r.owner===owner);if(!row)throw new InputError('部分项目不存在，请刷新后重试');if(kind==='photos'&&!removed){const photo=journal.photos.find(p=>p.id===id)!;if(journal.checkins.some(c=>c.id===photo.checkin&&c.removed))throw new InputError('请先恢复照片所属的到访记录');}return row});
+ let changed=false;for(const row of rows)if(Boolean(row.removed)!==removed){row.removed=removed;changed=true}return changed;
+}
