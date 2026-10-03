@@ -146,3 +146,5 @@ Exports retain five existing lenses and all three configurable compositions. Bro
 `lib/place-search.ts` 投影合法地址字段、有限 WGS84 坐标，并与既有行政区轮廓同源归一化。行政区中心只用于归属推导，不作为精确落点。可选 `details.placeSource` / `checkins.place_source` 保留 Geoapify 署名；旧索引无字段继续读取，共享副本只保留公开到访的来源。来源通过图库、地图和海报显示，不新增公开照片接口。
 
 `lib/photo-save-intent.ts` 将明确的“保存并标记地图”动作映射到既有 `{details,confirmed:true}`；缺项保存仍为 false，不改变服务端确认约束。没有独立确认勾选。改变地点清除旧坐标，识别到其他 / 同名地区时清除旧归属；手动填入未收录具体地点保留已审阅的父地区。修改已标记照片仍由服务端核对完整信息、坐标与地区、所有权，并撤销发布。
+
+地点索引加载与失败有独立状态：输入期间尚未读取到索引时暂不允许把旧父地区作为新地点确认；数据到达后使用当前值重新检查冲突。明确手动地区 / 搜索结果选择优先，关闭编辑不会写入试填内容。
