@@ -9,6 +9,8 @@
 3. 照片拼图导出 → 失败 → 重试 / 关闭拼图：已补齐。过去串行读图无超时，边界失败要求重开弹窗；现在两路并发、进度、单次 / 总预算、总量限制和就地重试。合成404失败阻止下载；点击重试再次实际请求；取消拼图恢复导出。受控失败标签的404是注入证据，非正式站请求异常。
 4. 文字记录 → 修改 → 关闭 / Escape → 继续或保存：已补齐。以前关闭直接丢失文字。现在保留输入并内嵌提示；继续、放弃、成功保存关闭、失败保留字段通过合成表单验收。切换相册 / 进入照片补充 / 回收也经过同一保护；不是刷新浏览器的持久草稿。
 
+正式复核补充：地图与日志尚在读取时禁用“收藏旅行地图”，防止过早进入空数据作品；读完且有地域轮廓后才启用。
+
 新增组件复用 SelectField / NeoButton / NeoNotification，不增加描边式卡片或新的色系。修正收藏 summary 的 SVG 默认块级导致图标另起行；其文字、图标和展开箭头现同排。手机保持预览与设置分开、固定动作，设置区可滚动；平板横向作品预览独立适配。
 
 ## 自动与浏览器证据
@@ -35,4 +37,4 @@
 
 ## 发布
 
-发布后记录精确提交、两个 GitHub Actions、Vercel Production Ready 和正式域名复核；没有只用本地 build 宣称上线。
+功能提交 `b8e984295907174ed9ea41c35a1a1a8829f4e7d7` 已推送；[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37144640363) 和 [Verify clone-and-deploy build](https://github.com/oiahoon/japan-checkins/actions/runs/37144640368) 均 success。Vercel Production `dpl_58o3Ny2EkJKxx9oVsgprJ1MFrK7z` Ready，travel.miaowu.org 与默认域名均指向该部署。正式页实际出现“我的样式”控件与无已确认足迹的整理入口，控制台无 error / warn，没有调用真实保存或修改私人数据。收尾的加载守卫会再跑 typecheck / build，并以其提交对应 CI / Vercel 复核为最终版本。
