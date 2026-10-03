@@ -4,6 +4,8 @@
 
 自定义域名登录修复：此前 APP_URL 仍为默认 Vercel 域名，自定义域名登录 POST 因 Origin 不匹配返回 403，发生在密码验证前。已将生产 APP_URL 更新为 https://travel.miaowu.org；变更需要重新部署生效。保持单一正式来源校验，不放宽认证或信任客户端 Host。
 
+验收：提交 `1112897` 对应 Vercel 生产部署 Ready，两个域名均已指向该部署。使用原管理密码从自定义域名的登录页提交后，浏览器进入 https://travel.miaowu.org/，显示“主人空间”和“退出登录”，地图正常加载。未更换密码、会话密钥或数据仓库，未进行私人数据写入。
+
 ## 当前实现
 
 Next.js + 服务端密码认证已经用于生产，原有生产 SESSION_SECRET / ADMIN_PASSWORD_HASH 沿用。可配置管理密码、只读密码、公开模式与 GitHub OAuth。所有私人记录 / 照片接口要求主人会话和所有权；原 Sites / D1 / R2 资源没有迁移、修改或公开。
