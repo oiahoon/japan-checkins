@@ -10,7 +10,7 @@ function textOf(node: ReactNode): string {
 }
 
 // The hidden select preserves existing change handlers and native form values.
-export default function SelectField({children, value, defaultValue, onChange, disabled, id, ...props}: ComponentProps<'select'>) {
+export default function SelectField({children, value, defaultValue, onChange, disabled, id, leadingIcon, ...props}: ComponentProps<'select'> & {leadingIcon?: ReactNode}) {
   const native = useRef<HTMLSelectElement>(null);
   const [open, setOpen] = useState(false);
   const [internal, setInternal] = useState<string | undefined>(defaultValue === undefined ? undefined : String(defaultValue));
@@ -35,13 +35,14 @@ export default function SelectField({children, value, defaultValue, onChange, di
       }
     }}>
       <Select.Trigger id={id} aria-label={props['aria-label']} aria-describedby={props['aria-describedby']} className="select-trigger">
-        <Select.Value/>
+        {leadingIcon && <span className="select-leading" aria-hidden="true">{leadingIcon}</span>}
+        <Select.Value className="select-value"/>
         <Select.Icon className="select-chevron"><ChevronDown size={16} aria-hidden="true"/></Select.Icon>
       </Select.Trigger>
       {/* Native dialog top-layer requires its popup to stay inside that dialog. */}
       <Select.Portal container={native.current?.closest('dialog') ?? undefined}>
         <Select.Positioner className="select-positioner" sideOffset={8} alignItemWithTrigger={false}>
-          <Select.Popup className="select-popup">
+          <Select.Popup className={'select-popup'+(leadingIcon?' select-popup--location':'')}>
             <Select.List className="select-list">
               {items.map(item => <Select.Item className="select-option" key={item.value} value={item.value} disabled={item.disabled}>
                 <Select.ItemIndicator className="select-check"><Check size={15}/></Select.ItemIndicator>

@@ -71,3 +71,7 @@ final result: passed
 Local outcome: passed for named UI behavior. OS forced-colors / Safari / physical-device and real private storage acceptance remain separate gates. Production verification completed for implementation df69553 on travel.miaowu.org.
 
 Production receipt df69553: GitHub verify/build and Vercel success. Actual domain custom menu, scope change, dark zoom hover (#343a37 with #e5e5da foreground), map 甘孜州 hover (#849776), reset click and navigation thumb 260ms / translate 117.5px verified. Dual-theme kit menus operated; mobile 390×844 scrollWidth=390. No production console errors observed. Evidence: /tmp/travel-polish-production-menu.png, /tmp/travel-polish-production-hover.png, /tmp/travel-polish-production-kit-dark.png, /tmp/travel-polish-production-kit-light.png, /tmp/travel-polish-production-mobile.png. Final result: passed for requested web UI, physical held-state and assistive-device acceptance remain unclaimed.
+
+## Location selector alignment follow-up
+
+User supplied two dark production screenshots showing text-only hover and offset popup. Moved MapPin into the actual trigger, using the complete pill as popup anchor. Location popup matches trigger width and both text columns have 45px inset. Actual local DOM measurements: desktop trigger/popup left=46 right=262, label/item left=91; mobile left=28 right=218, label/item left=73, scrollWidth=390. Both light and dark rendered; typecheck and build passed. No data/authentication changes. Production check follows deployment.
