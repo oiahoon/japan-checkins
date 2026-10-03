@@ -79,3 +79,30 @@ User supplied two dark production screenshots showing text-only hover and offset
 ## Production storage activation
 
 2026-10-03: existing production deployment redeployed to apply user-supplied sensitive GITHUB_DATA_TOKEN (value never read or logged). Vercel deployment dpl_261GGLoYAGHmz7yXXQUx9REk5fkh Ready, travel.miaowu.org alias verified. Actual owner session showed entry enabled and setup banner absent. Synthetic 640×480 JPEG with no EXIF uploaded through real chooser, reached upload-complete state; detail screen honestly reported no GPS. Restaurant kind and note fields operated without saving. Reload recovered draft; authenticated image completed with expected size. Draft removed through UI; current private repository index has zero photos/checkins/statuses. No invented travel history persisted; synthetic bytes remain recoverable in Git history. Actual check-in save not claimed. Existing typecheck, 38 tests and build passed; tests cover metadata stripping, malformed GPS, consent, ownership and retry. Evidence /tmp/travel-storage-enabled-form.png and /tmp/travel-storage-enabled-entry.png.
+
+
+## 2026-10-03 photo library and three export styles
+
+Flow: upload -> private photo record -> click a card -> save partial information or explicitly confirm location/date -> photo library / map. Export: map -> collect travel map -> choose paper / night / memories -> adjust scale/caption/format -> preview and PNG generation.
+
+Reference: the user's two mobile upload screenshots and the three selected poster concepts. Kept the paper / charcoal palettes, large real geographic silhouettes and memory-style bottom caption. Intentional deviation: generated concept geography and fictitious visited areas are replaced with actual licensed boundary data and user-confirmed records. Decorative mountains/bamboo and raster paper texture are not part of this vector implementation. Photos come only from authenticated journal images, not invented travel imagery.
+
+Browser plugin not available; used Codex CUA in-app browser with its built-in locators and viewport controls. Isolated synthetic images and a temporary in-memory adapter exercised actual components at /mobile-qa; that route, adapter, and fixture endpoint were removed before delivery. No production travel records were created or modified during QA.
+
+| Check | Result |
+| --- | --- |
+| Page identity / nonblank / no framework overlay | Passed |
+| Relevant browser errors / warnings | None observed |
+| Phone 320 / 390 / 430; tablet 768; desktop 1366 | Rendered; checked dialog/list/export boundaries |
+| Partial note save | Remains unmarked, visible on card; no invented visit |
+| Unmarked + no-note filters | Combined filters update visible cards |
+| Explicit per-photo confirmation | Adds one stable visit; date field updates React state |
+| Optional fields | Coordinates/camera info collapsed by default; expanded without horizontal overflow |
+| Three styles / photo toggle | Updated preview; memory style enables photo toggle, can turn it off |
+| PNG | Canvas generation completed and fallback save link appeared |
+
+Mismatch/fix ledger: desktop settings originally stretched preview and hid export buttons (P1); bounded grid, independent settings scrolling and fixed visible actions fixed it. Native date fill originally updated the DOM without updating state (P1); onInput synchronization fixed and confirmation was exercised. Mobile long coordinates now display six decimals without discarding underlying precision. Upload-in-progress is distinct from server-save-complete; failures remain retryable and can be removed. Legacy album per-photo notes override album notes, including explicit empty notes; regression tested.
+
+Final local result: passed. npm run typecheck, 69 synthetic tests and npm run build. Next file tracing includes the three boundary datasets used for server-side coordinate consistency. No changes to deployed migrations, Site resources, credentials or existing private data.
+
+Evidence outside Git: /tmp/travel-photo-library-final.png, /tmp/travel-photo-editor-final.png, /tmp/travel-export-desktop-final.png, /tmp/travel-export-memories-final.png, /tmp/travel-sichuan-night-final.png. Browser download-event receipt was unavailable; actual file delivery, system share, print, physical iPhone/Safari keyboard and safe-area behavior remain device acceptance gates. No pixel-perfect or real-photo end-to-end production write acceptance is claimed.

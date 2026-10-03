@@ -192,3 +192,25 @@ test('batch API applies a single atomic change and accepts repeated removal and 
  assert.equal((await journalAPI(context,req(true),'manage')).status,200);assert.equal((await journalAPI(context,req(true),'manage')).status,200);assert.equal(changes,1);assert.equal(j.checkins.filter(c=>c.removed).length,2);
  assert.equal((await journalAPI(context,req(false),'manage')).status,200);assert.equal(changes,2);assert.equal(j.checkins.filter(c=>c.removed).length,0);
 });
+test('photo edits enforce role/origin and recover a lost save response without another visit',async()=>{
+ const initial=emptyJournal(owner);initial.photos.push({id:'synthetic-photo-01',owner,sha:'a'.repeat(40),digest:'synthetic',checkin:null,created:''});const git=fakeGit({lostResponse:true,initial}),ctx={userId:owner,origin:'https://journal.test',store:git.store};
+ const details={country:'JP',prefecture:'架空県',city:'',place:'合成地点',date:'2026-01-02',note:'合成笔记',latitude:null,longitude:null};
+ const req=(origin='https://journal.test')=>new Request(origin+'/api/photos/synthetic-photo-01',{method:'PATCH',headers:{origin},body:JSON.stringify({details,confirmed:true})});
+ assert.equal((await journalAPI({...ctx,readOnly:true},req(),'edit-photo','synthetic-photo-01')).status,403);
+ assert.equal((await journalAPI(ctx,req('https://foreign.test'),'edit-photo','synthetic-photo-01')).status,403);
+ assert.equal(git.data().checkins.length,0);
+ assert.equal((await journalAPI(ctx,req(),'edit-photo','synthetic-photo-01')).status,503);
+ assert.equal((await journalAPI(ctx,req(),'edit-photo','synthetic-photo-01')).status,200);
+ assert.equal(git.data().checkins.length,1);
+ assert.equal((await journalAPI(ctx,req(),'edit-photo','missing-photo-01')).status,400);
+ const mismatch=new Request('https://journal.test/api/photos/synthetic-photo-01',{method:'PATCH',headers:{origin:ctx.origin},body:JSON.stringify({details:{...details,latitude:0,longitude:0},confirmed:true})});
+ assert.equal((await journalAPI(ctx,mismatch,'edit-photo','synthetic-photo-01')).status,400);assert.equal(git.data().checkins[0].latitude,null);
+});
+test('draft EXIF proposals are private, bounded and distinct from confirmed map history',async()=>{
+ const git=fakeGit(),ctx={userId:owner,origin:'https://journal.test',store:git.store};
+ const req=uploadRequest();req.headers.set('X-Photo-Proposal',encodeURIComponent(JSON.stringify({date:'2026-01-02',gps:{latitude:0,longitude:0}})));
+ assert.equal((await journalAPI(ctx,req,'upload')).status,201);assert.equal(git.data().checkins.length,0);
+ const data=await (await journalAPI(ctx,undefined,'list')).json() as {drafts:{proposal:{date:string}}[]};assert.equal(data.drafts[0].proposal.date,'2026-01-02');
+ const shared=await (await journalAPI({...ctx,sharedOnly:true,readOnly:true},undefined,'list')).json() as {drafts:unknown[];photos:unknown[]};assert.equal(shared.drafts.length,0);assert.equal(shared.photos.length,0);
+ const bad=uploadRequest();bad.headers.set('X-Photo-Proposal',encodeURIComponent(JSON.stringify({gps:{latitude:NaN,longitude:0}})));assert.equal((await journalAPI(ctx,bad,'upload')).status,400);
+});

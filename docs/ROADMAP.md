@@ -5,7 +5,7 @@
 - GitHub source project, Codex instructions, documented auth/storage boundaries.
 - Existing owner-isolated persistence, upload retry and curated provenance preserved.
 
-## Delivered: local EXIF proposals
+## Historical foundation: local EXIF proposals (superseded in GitHub mode below)
 1. Parse bounded JPEG EXIF in-browser BEFORE canvas conversion, retaining only a proposed GPS/date in ephemeral state. No original EXIF sent to server.
 2. Validate finite lat/lon ranges and actual dates; missing/malformed metadata offers manual selection. Point-in-polygon against GeoJSON proposes a prefecture; the first release supported Japan only; the multi-region release now offers China/world proposals after explicit adoption.
 3. Display location/date proposal and an explicit confirm/edit step. Multiple photos with conflicting locations require separate proposed visits; never silently assign all to one place.
@@ -108,3 +108,14 @@ HEIC 原生解码失败时动态加载 heic2any 本机转换；RAW 不做显影�
 - 已实现：手机地图主区域、按需设置与自动收起记录抽屉、全屏记录详情和地图导出预览；轻量展开动效与减少动态效果支持。下一步：真实 iPhone Safari 动态地址栏、安全区、分享与触控验收。
 
 - 已实现：主人旅行记录删除、记录 / 已保存照片批量移除与恢复，回收站与关联照片可见性，100 项上限、原子校验和幂等重试。永久删除 / Git 历史清理未实现；旧 Sites 批量管理未扩展。
+
+## Delivered implementation: photo library and export styles (2026-10-03)
+
+- Three selectable map export styles: paper editorial, dark collector, photo memory; real Japan/Sichuan boundaries, caption, scale, A4/desktop/phone adaptation.
+- Private unfinished photos immediately enter the photo library. Location/date/notes can be completed later; combinable unmarked/no-note filters and per-photo editing.
+- Persist normalized EXIF proposals privately after upload so refresh does not lose suggestions. These remain unconfirmed and excluded from map/public/export history.
+- Progressive disclosure for coordinates/camera info, mobile full-screen editing and a fixed save action.
+- Stable per-photo visit IDs, consent on changes, owner/role/Origin enforcement; edits revoke publication and retain explicit history choices.
+- Pending: actual iPhone/Safari keyboard and share/print verification by the owner; permanent history erasure and journey merging remain outside this change.
+
+Earlier paragraphs describing EXIF proposals as exclusively ephemeral refer to the former upload flow. GitHub mode now stores a bounded normalized private proposal separately from confirmed location; original EXIF and RAW files still never enter the store. Sites remains on its previous flow.

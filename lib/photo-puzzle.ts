@@ -1,6 +1,6 @@
 import {featurePath,visitArea,type Scope,type MapFeature,type GeographicVisit} from './geography.ts';
 import {prefectureAt} from './photo-metadata.ts';
-export type PuzzlePhoto={id:string;checkin:string|null;url:string};
+export type PuzzlePhoto={id:string;checkin:string|null;url:string;details?:{note:string}};
 export type PuzzleVisit=GeographicVisit&{note?:string};
 export type PuzzleRegion=MapFeature&{properties:MapFeature['properties']&{prefecture?:string}};
 export function photoAreas(scope:Scope,features:PuzzleRegion[],visits:PuzzleVisit[],photos:PuzzlePhoto[]){
@@ -8,7 +8,7 @@ export function photoAreas(scope:Scope,features:PuzzleRegion[],visits:PuzzleVisi
  for(const visit of visits){let feature:PuzzleRegion|undefined;
  if(scope==='japan'){feature=features.find(f=>f.properties.prefecture===visit.prefecture&&f.properties.name===visit.city);if(!feature&&visit.latitude!=null&&visit.longitude!=null){const candidates=features.filter(f=>f.properties.prefecture===visit.prefecture),name=prefectureAt(visit.latitude,visit.longitude,candidates);feature=candidates.find(f=>f.properties.name===name);}}
  else feature=features.find(f=>f.properties.name===visitArea(visit,scope,features));
- if(!feature)continue;const matching=photos.filter(p=>p.checkin===visit.id);if(!matching.length)continue;const key=String(feature.properties.id),group=grouped.get(key)||{feature,photos:[]};for(const p of matching)if(!group.photos.some(old=>old.id===p.id))group.photos.push({...p,note:visit.note?.trim()||''});grouped.set(key,group);
+ if(!feature)continue;const matching=photos.filter(p=>p.checkin===visit.id);if(!matching.length)continue;const key=String(feature.properties.id),group=grouped.get(key)||{feature,photos:[]};for(const p of matching)if(!group.photos.some(old=>old.id===p.id))group.photos.push({...p,note:(p.details?.note??visit.note)?.trim()||''});grouped.set(key,group);
  }return [...grouped.values()];
 }
 const xml=(s:string)=>s.replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]!));
