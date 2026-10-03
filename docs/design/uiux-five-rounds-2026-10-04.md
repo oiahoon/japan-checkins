@@ -36,4 +36,6 @@
 
 ## 发布
 
-待核对main提交、两个GitHub检查、Vercel Ready及正式域名浏览器回归。后续发布记录更新本节和PROGRESS，不改写私有数据。
+功能提交 `5267fd8a29a28543c645a560e06fa8ba50da46d7` 已推送main。[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37147996358) 和 [Verify clone-and-deploy build](https://github.com/oiahoon/japan-checkins/actions/runs/37147996322) 均success。Vercel Production `dpl_FGSnDfr4ngG3uZDkKbUjRha1EmHs` Ready，`travel.miaowu.org` 与默认域名指向该部署。后续文档提交不改变功能代码。
+
+正式域名768×1024只读复核：日本概览→福岡県详细边界→键盘进入福岡市→返回；照片库6张完成受保护读取，编辑器保留既有地区、拍摄日期和笔记；混合时间线月份计数6；内置查看器焦点在照片区域、序号和缩放比例可见；记录上传面板正常打开；导出设置展开、自定义画幅下拉选择手机壁纸、收起后预览为主。未执行真实上传、保存、关联、删除、分享或发布私人照片。页面无横向溢出，浏览器控制台error/warn为空；这是本轮只读前端回归，不代表服务端长期监控或真机验收。正式截图 `14-production-map-768.png`、`15-production-export-768.png` 存于本机上述临时目录。
