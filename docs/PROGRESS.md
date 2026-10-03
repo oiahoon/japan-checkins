@@ -1,6 +1,8 @@
 # Current handoff / 当前交接
 
-更新：2026-10-03。仓库：`oiahoon/japan-checkins`，分支 main；GitHub → Vercel 自动部署，线上入口 https://japan-checkins.vercel.app 。项目方向和长期约束见 CONTEXT.md。
+更新：2026-10-03。仓库：`oiahoon/japan-checkins`，分支 main；GitHub → Vercel 自动部署，正式入口 https://travel.miaowu.org 。项目方向和长期约束见 CONTEXT.md。
+
+自定义域名登录修复：此前 APP_URL 仍为默认 Vercel 域名，自定义域名登录 POST 因 Origin 不匹配返回 403，发生在密码验证前。已将生产 APP_URL 更新为 https://travel.miaowu.org；变更需要重新部署生效。保持单一正式来源校验，不放宽认证或信任客户端 Host。
 
 ## 当前实现
 

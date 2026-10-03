@@ -74,6 +74,8 @@ npm run password:hash
 
 在 Vercel 项目 Domains 添加域名，按提示配置 DNS，等待 HTTPS 证书完成；再把 `APP_URL` 更新为该域名 origin 并重新部署。使用新域名重新登录。数据仓库与 owner 不变，不迁移旅行数据。密码模式无需调整 OAuth App 回调。
 
+如果登录页可以打开，但提交密码出现 HTTP 403，检查生产 `APP_URL` 是否与浏览器地址的 origin 完全一致（协议、域名、端口）。登录、退出和写入接口使用它校验来源；只添加 Domains 不会更新应用配置。环境变量修改后必须重新部署，从新域名重新登录。不要通过取消来源校验修复此问题；旧域名也不作为第二个登录入口。
+
 ## 可选 GitHub OAuth
 
 设置 `AUTH_PROVIDER=github`，建立自己的 GitHub OAuth App，homepage 为站点 origin，callback 为 `APP_URL/api/auth/callback`。配置 `GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET` 和数字 `GITHUB_ALLOWED_USER_ID`，并在首次保存前让 `JOURNAL_OWNER_ID` 与该 ID 一致。已有日志改变 owner 需要迁移设计，不能直接修改环境变量。
