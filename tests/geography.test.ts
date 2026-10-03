@@ -38,3 +38,10 @@ test('Chengdu photos use district clipping and never fall back to the entire cit
  assert.equal(photoAreas('chengdu',chengdu,[{...v,district:''}],photos).length,0);
  const svg=puzzleSVG({scope:'chengdu',features:chengdu,visits:[v],photos,project:projection(chengdu,900,600),prefix:'test'});assert.equal((svg.match(/<image /g)||[]).length,1);assert.ok(svg.includes('clip-path='));assert.ok(!svg.includes('NaN'));
 });
+
+test('separate photo confirmations append independent visits with isolated dates and retries',()=>{
+ const j=emptyJournal('synthetic');
+ for(const [id,digest] of [['synthetic-photo-01','a'],['synthetic-photo-02','b']])j.photos.push({id,owner:'synthetic',checkin:null,sha:'a'.repeat(40),digest,created:'2026-01-01'});
+ const a=visitInput.parse({...payload,id:'synthetic-visit-01',date:'2024-01-02',photos:['synthetic-photo-01']}),b=visitInput.parse({...payload,id:'synthetic-visit-02',date:'2024-02-03',photos:['synthetic-photo-02']});
+ appendVisit(j,'synthetic',a);assert.equal(j.photos[1].checkin,null);appendVisit(j,'synthetic',b);assert.equal(appendVisit(j,'synthetic',b),false);assert.deepEqual(j.checkins.map(c=>c.date),['2024-01-02','2024-02-03']);assert.deepEqual(j.photos.map(p=>p.checkin),['synthetic-visit-01','synthetic-visit-02']);assert.throws(()=>appendVisit(j,'another-owner',b));
+});

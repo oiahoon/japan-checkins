@@ -72,3 +72,9 @@ HEIC 原生解码失败时动态加载 heic2any 本机转换；RAW 不做显影�
 Scope 增加 chengdu，Geographies.chengdu 对应独立 ODbL 区县数据文件。inScope 严格匹配 CN / 四川省 / 成都市，visitArea 优先明确 district，再用已保存确认坐标匹配边界。GitHub schema 添加 district 默认空串，历史 Sites 适配器不扩展。主地图、照片拼图和海报共用地区匹配，避免丢失区县时扩大照片到城市。
 
 travel-home-region 仅是设备 localStorage 的 scope / area 偏好，读取先验证 scope 和已加载地区名单；不改变公开设置、记录和服务端权限。道路 / 地铁图层未实现，见 REGION-LAYERS.md。
+
+## 逐张照片到访（2026-10-03 修正）
+
+上传队列允许每批最多 6 张，但当前保存只提交队列头的一个 photo ID。每张待确认草稿保留其浏览器 EXIF 建议，日期与坐标来自自己的源照片，不写入其他照片记录。确认保存后移除队列头、清空记录 ID / 笔记 / 地点 / 日期，再确认下一张。失败保留原幂等 ID；保存成功而列表刷新失败不会重做保存。每张到访显式核对，GPS 与所选地区存在可判定冲突时拒绝提交。历史多照片结构仍可读取，未自动拆分；旅程合并未实现。
+
+focusedVisit 独立于 expandedVisit：首次点击聚焦地图（无坐标时聚焦已确认地区），再次点击内联显示内容，保留地图交互及可选时间线。
