@@ -40,3 +40,7 @@ Do not replay onto an initialized schema. `start:sites` binds loopback and uses 
 ## 暖纸组件体系（2026-10-03）
 
 `app/ui/neo.tsx` / `neo.css` 提供原生语义与统一光影，`lib/neo-theme.ts` 提供有界配置和 CSS 生成。`/ui-kit` 由服务器验证主人访问，只提供材质和交互演示，不请求私人记录写入接口，也不修改生产安全 / 主题设置。主导航、登录、照片确认输入 / 复选框和导出使用这些组件。视觉与状态契约见 [UI-KIT.md](UI-KIT.md)。
+
+### 2026-10-03 UI 交互修正
+
+已实现：双主题缩放 / 重置 hover 与按压材质、地图行政区 hover 恢复、Base UI 自定义下拉（长列表 / 键盘 / dialog 层级）、桌面与手机 tab 滑块动画。未新增存储、行程推断或权限能力；真实保存仍等待私人 GitHub token。验收见 `design-qa.md`。

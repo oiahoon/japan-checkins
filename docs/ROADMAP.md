@@ -66,3 +66,7 @@ Controls now share upper-left lighting, raised / pressed states and recessed inp
 - 地图 / 时间线 / 登录 / 到访确认 / 导出统一材质；保留焦点和高对比模式。
 - 后续：Safari / iPhone 原生控件和辅助设备验收；极端自选参数的全站主题持久化未实现。
 - 暗调主题与本机偏好、单选 / 搜索 / 步进 / 折叠已实现；导出作品维持独立暖纸构图。
+
+### 2026-10-03 UI 交互修正
+
+已实现：双主题缩放 / 重置 hover 与按压材质、地图行政区 hover 恢复、Base UI 自定义下拉（长列表 / 键盘 / dialog 层级）、桌面与手机 tab 滑块动画。未新增存储、行程推断或权限能力；真实保存仍等待私人 GitHub token。验收见 `design-qa.md`。

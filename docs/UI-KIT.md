@@ -13,7 +13,7 @@
 - `app/ui/neo.tsx`：原生 HTML 语义的 React 组件。
 - `app/ui/neo.css`：令牌、材质与页面适配；在 globals.css 后导入。
 - `lib/neo-theme.ts`：配置归一化、明暗色、前景对比与 CSS 导出。
-- `app/select-field.tsx`：原生选择器和独立居中箭头。
+- `app/select-field.tsx`：基于已有 Base UI 的可访问下拉菜单、隐藏原生表单值和居中箭头。
 - `app/ui-kit/kit.tsx`：可操作的配置与组件演示，不保存旅行记录。
 
 | 组件 | 主要参数 / 行为 | 使用位置 |
@@ -21,7 +21,7 @@
 | NeoButton | neutral / primary / quiet；loading 禁止重复点击；支持原生 type | 登录、地图收藏、导出、实验室 |
 | NeoSurface | raised / inset；普通 section 属性 | 实验室配置与组件卡 |
 | NeoInput / NeoTextarea | 原生 input / textarea 属性，凹陷材质 | 登录、确认表单、导出标题、实验室 |
-| SelectField | 原生 select 属性；装饰箭头不截获点击 | 地区、类型、年份、画幅 |
+| SelectField | 兼容现有 select 属性和 change 事件；浮起菜单、选中勾号、长列表滚动 | 地区、类型、年份、画幅 |
 | NeoSegmented | label / value / options / onChange；aria-pressed | 主导航、实验室 |
 | NeoCheckbox | 原生 checked / disabled / onChange；明确确认 | 地点日期确认、餐厅已吃过、实验室 |
 | NeoSwitch | 原生复选框 + role=switch；即时切换 | 导出精确落点、实验室 |
@@ -54,7 +54,7 @@
 
 ## 状态与可访问性
 
-常态 / 悬停 / 按压 / 选中 / 禁用 / 加载 / 焦点；开关与复选框有形状和勾号，不单靠阴影或颜色传达状态。禁用无浮起交互暗示。原生下拉框、滑杆、输入、对话框保留键盘操作；焦点有朱红外轮廓。prefers-reduced-motion 关闭控件动效；prefers-contrast:more / forced-colors 改为系统轮廓，关闭阴影，不牺牲操作可见性。实际辅助设备、高对比 OS 和 Safari 仍需设备验收。
+常态 / 悬停 / 按压 / 选中 / 禁用 / 加载 / 焦点；开关与复选框有形状和勾号，不单靠阴影或颜色传达状态。禁用无浮起交互暗示。自定义下拉菜单、原生滑杆、输入、对话框保留键盘操作；焦点有朱红外轮廓。prefers-reduced-motion 关闭控件动效；prefers-contrast:more / forced-colors 改为系统轮廓，关闭阴影，不牺牲操作可见性。实际辅助设备、高对比 OS 和 Safari 仍需设备验收。
 
 ## 参考与许可
 
@@ -67,3 +67,9 @@
 暗调为炭纸 `#292c2c`，墨色前景 `#e5e5da`，次要文字 `#acb2a8`，强调 `#d77860`；动作按钮用更深朱红确保白字对比。亮影仅比表面略亮，不用白色光晕。页面右上月亮 / 太阳切换，保存在本机 `travel-theme`；首次未选择时跟随系统初始偏好。登录 / 地图 / 时间线 / 表单 / 导出 / 实验室共用主题。导出的收藏图片仍为暖纸作品，屏幕暗调不改变打印配色。CSS 首屏脚本尽早应用主题；实验室的材质预览会随切换选择对应默认颜色，但手动参数仍只影响预览。
 
 追加 NeoRadio（原生单选）、NeoAccordion（原生 details / summary）、NeoStepper（有界数字步进）；实验室提供可过滤的搜索输入和标签结果。步进达到上下界禁用按钮，单选与折叠支持键盘。开启的开关保留凹陷同色轨道，用有位置差异的朱红滑块和中心亮点表示开启；输入焦点深化凹陷、朱红光标和淡轮廓；弹窗增加内凹正文区、取消 / 确认动作和柔焦遮罩。均不修改真实行程。
+
+## 交互打磨（2026-10-03）
+
+地图放大、重置、图标按钮、步进器及历史列表统一使用主题令牌的 hover / pressed 材质，暗调不再闪白；地图行政区 hover / 键盘焦点用主题对应的填充与地理轮廓反馈。分段导航、足迹页签及手机导航共享 260ms 滑块过渡；减少动态效果偏好关闭动画。
+
+SelectField 使用项目已有的 `@base-ui/react/select`，不是系统弹出菜单。支持方向键、Home / End、键入查找、Enter 选择和 Escape 关闭，菜单列表有界滚动，长名称可换行；保持原生隐藏 select 的表单值和 change 事件。调用者提供明确 aria-label 或关联 id 标签。普通页面通过 Portal 避免地图裁切，原生 dialog 内使用 dialog 容器，保持顶层显示与焦点约束。

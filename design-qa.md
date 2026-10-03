@@ -56,3 +56,16 @@ final result: passed
 ## Production receipt
 
 实现提交 `f863256`：两项 GitHub CI success、Vercel success。正式域名实际截图 `/tmp/neo-production-dialog-light.png` / `/tmp/neo-production-dialog-dark.png`（1280×720）、`/tmp/neo-production-map-dark.png`（1280×720）。线上操作双主题弹窗 / 开关与地图乐山键盘选择，导出按钮为 0px border + #ac4b37 / white。控制台无错误。认证和真实数据存储的边界仍保持；无私人写入。final result: passed。
+
+## 2026-10-03 interaction polish
+
+参考为用户四张实际生产截图：暗调重置按压发白、放大 hover 发白、系统下拉、足迹 tab 无动画。临时截图不进入 Git。
+
+- P1 fixed: dark map base fill had higher specificity than hover. Theme-aware hovered / focused fill restores visible geographic feedback. Local actual pointer hover in 甘孜州 settled to #849776.
+- P2 fixed: legacy hardcoded light control backgrounds overrode dark pressed / hover. Zoom, reset, neutral export, timeline tools, stepper, shapes and list controls now share surface tokens. Pointer-hover zoom stays dark and reset click preserves map selection. Held-pointer active appearance was reviewed in CSS; no separate held-state screenshot claimed.
+- P2 fixed: dropdown now uses existing Base UI Select, raised popup and recessed highlight / check; no new dependency. Keyboard End → Enter selected 沖縄県 and returned focus; changing scope rendered 21 Sichuan areas. Hidden native change dispatch retained controlled state. Explicit labels preserve accessible names. Popup inside poster dialog is visible and choosing desktop format updates preview. First runtime found unselected labels in first grid column; explicit ItemText class fixed it before release.
+- P2 fixed: moving shared thumb (260ms) in desktop navigation, inspector and phone navigation; actual switched transform differs by one cell. Reduced-motion rule disables it.
+- Other controls operated: switch, checkbox, radio, stepper, Enter accordion, text input; no console errors observed.
+- Mobile 390×844: custom menu, scope switch and navigation operated; document scrollWidth=390. Evidence /tmp/travel-polish-mobile-dark.png and /tmp/travel-polish-mobile-light.png. Desktop 1280×720 also inspected; no private writes performed.
+
+Local outcome: passed for named UI behavior. OS forced-colors / Safari / physical-device and real private storage acceptance remain separate gates. Production verification pending push.
