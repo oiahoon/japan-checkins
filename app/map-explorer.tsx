@@ -9,8 +9,8 @@ export type ExplorerRequest={scope:Scope;area?:string;nodeId?:string;revision:nu
 type Props=PuzzleLayerProps&{geographies:ExplorerGeographies;request:ExplorerRequest;focusedVisit?:GeographicVisit;visits:GeographicVisit[];historical:Set<string>;historyScope:Scope;onContext:(node:ExplorerNode)=>void;onVisit:(id:string)=>void;onNavigate:()=>void;extended?:boolean};
 type Pointer={x:number;y:number;startX:number;startY:number};
 export default function MapExplorer({geographies:g,request,focusedVisit,visits,historical,historyScope,onContext,onVisit,onNavigate,extended=true,...puzzle}:Props){
- const [chinaCities,setChinaCities]=useState<MapFeature[]>([]),[districtShards,setDistrictShards]=useState<Record<string,MapFeature[]>>({}),[dataError,setDataError]=useState(false),[dataLoading,setDataLoading]=useState(false),[retry,setRetry]=useState(0);
- const tree=useMemo(()=>createExplorerTree({...g,chinaCities,chinaDistricts:Object.values(districtShards).flat()}),[g.japan,g.china,g.world,g.sichuan,g.chengdu,g.japanCities,g.chinaAdmin,chinaCities,districtShards]);
+ const [cityShards,setCityShards]=useState<Record<string,MapFeature[]>>({}),[districtShards,setDistrictShards]=useState<Record<string,MapFeature[]>>({}),[dataError,setDataError]=useState(false),[dataLoading,setDataLoading]=useState(false),[retry,setRetry]=useState(0);
+ const tree=useMemo(()=>createExplorerTree({...g,chinaCities:Object.values(cityShards).flat(),chinaDistricts:Object.values(districtShards).flat()}),[g.japan,g.china,g.world,g.sichuan,g.chengdu,g.japanCities,g.chinaAdmin,cityShards,districtShards]);
  const pendingFit=useRef<string|null>(null);
  const container=useRef<HTMLDivElement>(null),svg=useRef<SVGSVGElement>(null),searchInput=useRef<HTMLInputElement>(null),searchButton=useRef<HTMLButtonElement>(null),searchPanel=useRef<HTMLDivElement>(null),pathNav=useRef<HTMLElement>(null),lastFocus=useRef<string|undefined>(undefined);
  const [size,setSize]=useState({width:900,height:600}),[camera,setCamera]=useState<MapCamera>({x:138,y:-40,span:40}),[nodeId,setNodeId]=useState('japan'),[searchOpen,setSearchOpen]=useState(false),[query,setQuery]=useState(''),[hover,setHover]=useState(''),[dragging,setDragging]=useState(false);
@@ -44,7 +44,7 @@ export default function MapExplorer({geographies:g,request,focusedVisit,visits,h
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);let cancelled=false;
   const load=async()=>{setDataLoading(true);setDataError(false);try{
    const jobs:Promise<void>[]=[];
-   if(!chinaCities.length)jobs.push(fetch('/china-cities.json',{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('city layer');return r.json() as Promise<{features:MapFeature[]}>}).then(v=>{if(!cancelled)setChinaCities(v.features)}));
+   if(provinceCode&&!cityShards[provinceCode])jobs.push(fetch('/china-cities/'+provinceCode+'.json',{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('city layer');return r.json() as Promise<{features:MapFeature[]}>}).then(v=>{if(!cancelled)setCityShards(old=>({...old,[provinceCode!]:v.features}))}));
    if(provinceCode&&!districtShards[provinceCode])jobs.push(fetch('/china-districts/'+provinceCode+'.json',{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('district layer');return r.json() as Promise<{features:MapFeature[]}>}).then(v=>{if(!cancelled)setDistrictShards(old=>({...old,[provinceCode]:v.features}))}));
    await Promise.all(jobs);
   }catch{if(!cancelled)setDataError(true)}finally{clearTimeout(timeout);if(!cancelled)setDataLoading(false)}};void load();

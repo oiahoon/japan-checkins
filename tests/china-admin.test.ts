@@ -34,6 +34,7 @@ test('same-name districts retain full parent paths and resolve only with suffici
 test('public historical geometry and per-province coverage agree; missing names never get invented polygons',()=>{
  assert.equal(districts.filter((f:any)=>f.properties.prefecture==='北京市').length,16);assert.ok(districts.some((f:any)=>f.properties.adminCode==='110105'&&f.properties.sourceName==='Chaoyang District'));
  assert.equal(cities.length,382);assert.equal(districts.length,2663);
+ for(const r of directory.regions)assert.deepEqual(read('china-cities/'+r.code).features,cities.filter((f:any)=>f.properties.prefecture===r.name));
  for(const fs of [cities,districts]){assert.equal(new Set(fs.map((f:any)=>f.properties.adminCode)).size,fs.length);for(const f of fs){assert.equal(f.geometry.type,'MultiPolygon');assert.ok(f.geometry.coordinates.length);assert.ok(f.geometry.coordinates.flat(3).every(Number.isFinite));assert.ok(f.properties.source);assert.ok([2017,2019,2020,2021].includes(f.properties.year));}}
  for(const row of coverage.regions){assert.equal(cities.filter((f:any)=>f.properties.prefecture===row.name).length,row.mappedCities);assert.equal(districts.filter((f:any)=>f.properties.prefecture===row.name).length,row.mappedDistricts)}
  for(const code of coverage.missingDistrictCodes)assert.ok(!districts.some((f:any)=>f.properties.adminCode===code));

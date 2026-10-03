@@ -135,9 +135,11 @@ for r in regions[-2:]:
  c=r['cities'][0];city_features.append(polygon_feature(c['code'],c['name'],r['name'],c['name'],province_shapes[r['name']],'geoBoundaries gbOpen ADM1 · Public Domain',2019))
 write(out/'china-cities.json',{'type':'FeatureCollection','features':city_features})
 shards=out/'china-districts';shards.mkdir(exist_ok=True)
+city_shards=out/'china-cities';city_shards.mkdir(exist_ok=True)
 coverage=[]
 for r in regions:
  cf=[f for f in city_features if f['properties']['prefecture']==r['name']];df=[f for f in district_features if f['properties']['prefecture']==r['name']]
+ write(city_shards/(r['code']+'.json'),{'type':'FeatureCollection','features':cf})
  write(shards/(r['code']+'.json'),{'type':'FeatureCollection','features':df})
  coverage.append({'code':r['code'],'name':r['name'],'directoryCities':len(r['cities']),'directoryDistricts':sum(len(c['districts']) for c in r['cities']),'mappedCities':len(cf),'mappedDistricts':len(df)})
 write(out/'china-coverage.json',{'version':1,'regions':coverage,'unmatchedSourceCities':unmatched_source_cities,'unmatchedSourceDistricts':unmatched_source_districts,'missingCityCodes':[c['code'] for r in regions for c in r['cities'] if c['code'] not in {f['properties']['adminCode'] for f in city_features}],'missingDistrictCodes':[d['code'] for r in regions for c in r['cities'] for d in c['districts'] if d['code'] not in {f['properties']['adminCode'] for f in district_features}]})
