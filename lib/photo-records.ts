@@ -1,10 +1,10 @@
 import {z} from 'zod';
-import {photoDetailsSchema,appendVisit,assertOwner,visitInput,InputError,type Journal,type PhotoDetails} from './travel-data.ts';
+import {photoDetailsSchema,appendVisit,assertOwner,visitInput,InputError,photoEntry,photoParentRemoved,type Journal,type PhotoDetails} from './travel-data.ts';
 export const photoEditInput=z.object({details:photoDetailsSchema,confirmed:z.boolean()}).strict();
 export const blankPhotoDetails:PhotoDetails={country:'',prefecture:'',city:'',place:'',date:'',note:'',latitude:null,longitude:null};
 export function savePhotoDetails(j:Journal,owner:string,id:string,input:z.infer<typeof photoEditInput>){
  assertOwner(j,owner);const p=j.photos.find(p=>p.id===id&&p.owner===owner&&!p.removed);
- if(!p||j.checkins.some(c=>c.id===p.checkin&&c.removed))throw new InputError('照片不存在或已移除');
+ if(!p||photoParentRemoved(j,p))throw new InputError('照片不存在或已移除');
  const before=JSON.stringify(j),old=j.checkins.find(c=>c.id===p.checkin),d=input.details;
  if(!input.confirmed){
   if(old&&[old.country,old.prefecture,old.city,old.district||'',old.place,old.date,old.latitude,old.longitude].some((v,i)=>v!==[d.country,d.prefecture,d.city,d.district??old.district??'',d.place,d.date,d.latitude,d.longitude][i]))throw new InputError('修改已标记地点或日期后，请重新确认再保存');
@@ -17,7 +17,7 @@ export function savePhotoDetails(j:Journal,owner:string,id:string,input:z.infer<
   Object.assign(old,{country:visit.country,prefecture:visit.prefecture,city:visit.city,district:visit.district,place:visit.place,place_key:visit.placeKey,date:visit.date,note:visit.note,latitude:visit.location?.latitude??null,longitude:visit.location?.longitude??null,location_source:visit.location?.source??null,published:false});
  }else{
   // An old multi-photo visit remains intact; this photo becomes its own explicit visit.
-  if(j.checkins.some(c=>c.id===id&&c.id!==old?.id))throw new InputError('照片记录标识冲突，请刷新后重试');const next={...visit,id,photos:[id]},statuses=structuredClone(j.statuses);if(old)p.checkin=null;appendVisit(j,owner,next);j.statuses=statuses;
+  if(j.checkins.some(c=>c.id===id&&c.id!==old?.id))throw new InputError('照片记录标识冲突，请刷新后重试');const next={...visit,id,photos:[id]},statuses=structuredClone(j.statuses);if(old){if(p.entry===undefined)p.entry=photoEntry(p);p.checkin=null;}appendVisit(j,owner,next);j.statuses=statuses;
  }
  const saved=j.checkins.find(c=>c.id===p.checkin);if(saved){if(d.placeSource)saved.place_source=d.placeSource;else delete saved.place_source}
  p.details=d;return JSON.stringify(j)!==before;

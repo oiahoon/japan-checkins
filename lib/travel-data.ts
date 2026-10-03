@@ -2,6 +2,11 @@ import {z} from 'zod';
 import {statusPrefix} from './geography.ts';
 import {confirmedLocation, validDate} from './photo-metadata.ts';
 export const recordId = z.string().regex(/^[a-zA-Z0-9-]{10,60}$/);
+export const entrySchema=z.object({id:recordId,owner:z.string(),type:z.enum(['trip','text']),title:z.string().trim().min(1).max(150),date:z.string().refine(v=>!v||validDate(v)),note:z.string().max(1000),created:z.string(),removed:z.boolean().optional()});
+export type JournalEntry=z.infer<typeof entrySchema>;
+type LinkedPhoto={id:string;checkin:string|null;entry?:string|null};
+/** Explicit null overrides a legacy album association. Per-photo map visits stay independent. */
+export function photoEntry(p:LinkedPhoto){return p.entry!==undefined?p.entry:p.checkin&&p.checkin!==p.id?p.checkin:null}
 const depth = z.number().int().min(0).max(5);
 const short = (n: number) => z.string().trim().min(1).max(n);
 const marker = z.object({scope:z.enum(['prefecture','city','place']),label:short(250),depth,eaten:z.boolean()});
@@ -20,12 +25,14 @@ export const photoProposalSchema=z.object({date:z.string().refine(validDate).opt
 export const photoDetailsSchema=z.object({placeSource:z.literal('geoapify').optional(),country:z.string().regex(/^[A-Z]{2,3}$/).or(z.literal('')),prefecture:z.string().trim().max(50),city:z.string().trim().max(100),district:z.string().trim().max(100).optional(),place:z.string().trim().max(150),date:z.string().refine(v=>!v||validDate(v)),note:z.string().max(1000),latitude:z.number().min(-90).max(90).finite().nullable(),longitude:z.number().min(-180).max(180).finite().nullable()}).strict();
 export type PhotoDetails=z.infer<typeof photoDetailsSchema>;
 export type PhotoProposal=z.infer<typeof photoProposalSchema>;
-const storedPhoto = z.object({details:photoDetailsSchema.optional(),proposal:photoProposalSchema.optional(),removed:z.boolean().optional(),id:recordId,owner:z.string(),checkin:recordId.nullable(),sha:z.string().regex(/^[a-f0-9]{40}$/),digest:z.string(),metadata:cameraMetadataSchema.optional(),created:z.string()});
-export const journalSchema = z.object({version:z.literal(1),owner:z.string(),checkins:z.array(storedVisit),statuses:z.array(storedStatus),photos:z.array(storedPhoto)});
+const storedPhoto = z.object({entry:recordId.nullable().optional(),details:photoDetailsSchema.optional(),proposal:photoProposalSchema.optional(),removed:z.boolean().optional(),id:recordId,owner:z.string(),checkin:recordId.nullable(),sha:z.string().regex(/^[a-f0-9]{40}$/),digest:z.string(),metadata:cameraMetadataSchema.optional(),created:z.string()});
+export const journalSchema = z.object({version:z.literal(1),owner:z.string(),checkins:z.array(storedVisit),statuses:z.array(storedStatus),photos:z.array(storedPhoto),entries:z.array(entrySchema).default([])});
 export type Journal = z.infer<typeof journalSchema>;
-export function emptyJournal(owner: string):Journal {return {version:1,owner,checkins:[],statuses:[],photos:[]};}
+/** Both the confirmed visit and an explicit album parent must be active. */
+export function photoParentRemoved(j:Journal,p:LinkedPhoto){const entry=photoEntry(p);return j.checkins.some(c=>c.removed&&(c.id===p.checkin||c.id===entry))||j.entries.some(e=>e.removed&&e.id===entry)}
+export function emptyJournal(owner: string):Journal {return {version:1,owner,checkins:[],statuses:[],photos:[],entries:[]};}
 export function assertOwner(journal: Journal, owner: string) {
-  if (journal.owner !== owner || [...journal.checkins,...journal.statuses,...journal.photos].some(row=>row.owner!==owner)) throw new Error('Journal owner mismatch');
+  if (journal.owner !== owner || [...journal.checkins,...journal.statuses,...journal.photos,...journal.entries].some(row=>row.owner!==owner)) throw new Error('Journal owner mismatch');
 }
 export class InputError extends Error {}
 export function setMarkers(journal:Journal,owner:string,markers:z.infer<typeof marker>[]) {
@@ -47,8 +54,8 @@ export function appendVisit(journal:Journal,owner:string,b:z.infer<typeof visitI
 }
 
 export function sharedJournal(journal:Journal):Journal{
-  const checkins=journal.checkins.filter(v=>v.published&&!v.removed),ids=new Set(checkins.map(v=>v.id));
-  const shared:Journal={version:1,owner:journal.owner,checkins,statuses:[],photos:journal.photos.filter(p=>!p.removed&&p.checkin!==null&&ids.has(p.checkin))};
+  const checkins=journal.checkins.filter(v=>v.published&&!v.removed&&!journal.photos.some(p=>p.checkin===v.id&&(photoParentRemoved(journal,p)||journal.entries.some(e=>e.id===photoEntry(p))))),ids=new Set(checkins.map(v=>v.id));
+  const shared:Journal={version:1,owner:journal.owner,checkins,statuses:[],entries:[],photos:journal.photos.filter(p=>!p.removed&&!photoParentRemoved(journal,p)&&p.checkin!==null&&ids.has(p.checkin)&&!journal.entries.some(e=>e.id===photoEntry(p)))};
   // Only explicit status choices saved with published visits; never expose private aggregates.
   for(const v of [...checkins].sort((a,b)=>a.created.localeCompare(b.created)))setMarkers(shared,journal.owner,[{scope:'prefecture',label:statusPrefix(v.country,v.prefecture),depth:v.pref_depth,eaten:false},...(v.city?[{scope:'city' as const,label:statusPrefix(v.country,v.prefecture)+' / '+v.city,depth:v.city_depth,eaten:false}]:[]),{scope:'place',label:v.place_key,depth:v.depth,eaten:!!v.eaten}]);
   return shared;
@@ -58,6 +65,6 @@ export function setPhotoRemoved(journal:Journal,owner:string,id:string,removed:b
 
 export function manageItems(journal:Journal,owner:string,kind:'records'|'photos',ids:string[],removed:boolean){
  assertOwner(journal,owner);const unique=[...new Set(ids)];if(!unique.length||unique.length>100)throw new InputError('每次请选择 1–100 项');
- const rows=unique.map(id=>{const row=(kind==='records'?journal.checkins:journal.photos).find(r=>r.id===id&&r.owner===owner);if(!row)throw new InputError('部分项目不存在，请刷新后重试');if(kind==='photos'&&!removed){const photo=journal.photos.find(p=>p.id===id)!;if(journal.checkins.some(c=>c.id===photo.checkin&&c.removed))throw new InputError('请先恢复照片所属的到访记录');}return row});
+ const rows=unique.map(id=>{const row=(kind==='records'?[...journal.checkins,...journal.entries]:journal.photos).find(r=>r.id===id&&r.owner===owner);if(!row)throw new InputError('部分项目不存在，请刷新后重试');if(kind==='photos'&&!removed){const photo=journal.photos.find(p=>p.id===id)!;if(photoParentRemoved(journal,photo))throw new InputError('请先恢复照片所属的到访记录');}return row});
  let changed=false;for(const row of rows)if(Boolean(row.removed)!==removed){row.removed=removed;changed=true}return changed;
 }

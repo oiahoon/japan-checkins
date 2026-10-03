@@ -22,3 +22,13 @@ export function timelineGroups<T extends DatedRecord>(records:readonly T[]) {
  }
  return months;
 }
+
+export type ChronicleRecord={id:string;title:string;date:string;note:string;type:'trip'|'text';legacy?:boolean;location?:string;kind?:string;depth?:number;eaten?:number};
+export type ChroniclePhoto={id:string;url:string;entry?:string|null;marked:boolean;details:{date:string;place:string;city:string;prefecture:string;district?:string;note:string};proposal?:{date?:string};mapId?:string};
+export type ChronicleItem={id:string;date:string;title:string;note:string;type:'trip'|'photo'|'text';photos:{id:string;url:string}[];location:string;mapId?:string;proposedDate?:boolean;kind?:string;depth?:number;eaten?:number};
+/** Display aggregation uses explicit associations; no time/place heuristics or inferred visits. */
+export function chronicleItems(records:ChronicleRecord[],photos:ChroniclePhoto[]):ChronicleItem[]{
+ const items:ChronicleItem[]=records.map(r=>{const members=photos.filter(p=>p.entry===r.id);return {id:'entry-'+r.id,date:r.date,title:r.title,note:r.note,type:r.type,kind:r.kind,depth:r.depth,eaten:r.eaten,photos:members.map(p=>({id:p.id,url:p.url})),location:[...new Set(members.map(p=>p.details.city||p.details.prefecture).filter(Boolean))].join(' / ')||r.location||'',mapId:r.legacy?r.id:members.find(p=>p.marked)?.mapId}});
+ for(const p of photos.filter(p=>!p.entry))items.push({id:'photo-'+p.id,date:p.details.date||p.proposal?.date||'',title:p.details.place||p.details.city||'这一张的记忆',note:p.details.note,type:'photo',photos:[{id:p.id,url:p.url}],location:[p.details.prefecture,p.details.city,p.details.district].filter(Boolean).join(' / '),mapId:p.marked?p.mapId:undefined,proposedDate:!p.details.date&&!!p.proposal?.date});
+ return items;
+}

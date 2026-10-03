@@ -1,9 +1,10 @@
 import {z} from 'zod';
+import {entryMutation,mutateEntry,photoEntry} from './journal-entries.ts';
 import {cameraMetadataSchema,photoProposalSchema} from './travel-data.ts';
 import {createHash} from 'node:crypto';
 import {GitHubStore} from './github-store.ts';
 import {sanitizeJPEG} from './photo.ts';
-import {manageItems,appendVisit, setMarkers, recordId, visitInput, markersInput, InputError,sharedJournal} from './travel-data.ts';
+import {manageItems,appendVisit, setMarkers, recordId, visitInput, markersInput, InputError,sharedJournal,photoParentRemoved} from './travel-data.ts';
 import {savePhotoDetails,photoEditInput} from './photo-records.ts';
 const privateHeaders={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Vary':'Cookie'};
 const json=(value:unknown,status=200)=>Response.json(value,{status,headers:privateHeaders});
@@ -14,18 +15,20 @@ export async function boundedBytes(request:Request,limit:number) {
   while(true){const chunk=await reader.read();if(chunk.done)break;size+=chunk.value.length;if(size>limit){await reader.cancel();throw new InputError('上传内容过大');}chunks.push(chunk.value);}
   return Buffer.concat(chunks,size);
 }
-export type Action = 'list'|'save'|'markers'|'upload'|'photo'|'delete'|'publish'|'hide-photo'|'restore-photo'|'manage'|'edit-photo';
+export type Action = 'list'|'save'|'markers'|'upload'|'photo'|'delete'|'publish'|'hide-photo'|'restore-photo'|'manage'|'edit-photo'|'entry';
 export async function journalAPI(context:{userId:string;origin:string;store:GitHubStore;readOnly?:boolean;sharedOnly?:boolean},request:Request|undefined,action:Action,id?:string) {
   const user={userId:context.userId};
   try {
     if(context.readOnly&&!['list','photo'].includes(action))return json({error:'只读访问不能修改记录'},403);
     const config={origin:context.origin};
-    if(request&&['save','markers','upload','delete','publish','hide-photo','restore-photo','manage','edit-photo'].includes(action)&&request.headers.get('origin')!==config.origin)return json({error:'无效请求来源'},403);
+    if(request&&['save','markers','upload','delete','publish','hide-photo','restore-photo','manage','edit-photo','entry'].includes(action)&&request.headers.get('origin')!==config.origin)return json({error:'无效请求来源'},403);
     const store=context.store;
+    if(action==='entry'){let body;try{body=entryMutation.parse(JSON.parse((await boundedBytes(request!,30000)).toString('utf8')))}catch{return json({error:'请检查记录信息与照片选择'},400)}await store.mutate(user.userId,j=>({changed:mutateEntry(j,user.userId,body)}));return json({saved:true});}
     if(action==='list') {
       const original=await store.read(user.userId);
       const data=context.sharedOnly?sharedJournal(original):original;
-      return json({removedCheckins:context.readOnly?[]:data.checkins.filter(c=>c.removed),checkins:data.checkins.filter(c=>!c.removed).sort((a,b)=>b.date.localeCompare(a.date)||b.created.localeCompare(a.created)),statuses:data.statuses,removedPhotos:context.readOnly?[]:data.photos.filter(p=>p.removed).map(p=>({id:p.id,checkin:p.checkin})),photos:data.photos.filter(p=>!p.removed&&p.checkin!==null&&!data.checkins.some(c=>c.id===p.checkin&&c.removed)).map(p=>({id:p.id,checkin:p.checkin,...(!context.sharedOnly?{metadata:p.metadata,details:p.details,proposal:p.proposal}:{})})),drafts:context.readOnly?[]:data.photos.filter(p=>!p.removed&&p.checkin===null).map(p=>({id:p.id,metadata:p.metadata,details:p.details,proposal:p.proposal}))});
+      const visible=(p:typeof data.photos[number])=>!p.removed&&!photoParentRemoved(data,p);
+      return json({entries:data.entries.filter(e=>!e.removed),removedEntries:context.readOnly?[]:data.entries.filter(e=>e.removed),removedCheckins:context.readOnly?[]:data.checkins.filter(c=>c.removed),checkins:data.checkins.filter(c=>!c.removed&&!data.photos.some(p=>p.checkin===c.id&&p.id===c.id&&photoParentRemoved(data,p))).sort((a,b)=>b.date.localeCompare(a.date)||b.created.localeCompare(a.created)),statuses:data.statuses,removedPhotos:context.readOnly?[]:data.photos.filter(p=>p.removed).map(p=>({id:p.id,checkin:p.checkin,entry:p.entry})),photos:data.photos.filter(p=>visible(p)&&p.checkin!==null).map(p=>({id:p.id,checkin:p.checkin,entry:p.entry,...(!context.sharedOnly?{metadata:p.metadata,details:p.details,proposal:p.proposal}:{})})),drafts:context.readOnly?[]:data.photos.filter(p=>visible(p)&&p.checkin===null).map(p=>({id:p.id,entry:p.entry,metadata:p.metadata,details:p.details,proposal:p.proposal}))});
     }
     if(action==='photo'||action==='delete') {
       if(!recordId.safeParse(id).success)return json({error:'照片不存在'},404);
@@ -63,16 +66,16 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
       const current=await store.read(user.userId);
       const previous=current.photos.find(p=>p.id===photoId&&p.owner===user.userId);
       if(previous){if(previous.digest!==digest)throw new InputError('上传标识已用于另一张照片');return json({id:photoId},201);}
-      if(current.photos.filter(p=>!p.removed&&p.checkin===null).length>=30)throw new InputError('未完成照片过多，请先保存或移除');
+      if(current.photos.filter(p=>!p.removed&&p.checkin===null&&!photoEntry(p)).length>=30)throw new InputError('未完成照片过多，请先保存或移除');
       const sha=await store.blob(bytes);
-      await store.mutate(user.userId,j=>{const existing=j.photos.find(p=>p.id===photoId&&p.owner===user.userId);if(existing){if(existing.digest!==digest)throw new InputError('上传标识已用于另一张照片');return {changed:false};}if(j.photos.filter(p=>!p.removed&&p.checkin===null).length>=30)throw new InputError('未完成照片过多');j.photos.push({id:photoId!,owner:user.userId,checkin:null,sha,digest,metadata,proposal,created:new Date().toISOString()});return {changed:true,files:[{path:`travel/photos/${photoId}.jpg`,mode:'100644',type:'blob',sha}]};});
+      await store.mutate(user.userId,j=>{const existing=j.photos.find(p=>p.id===photoId&&p.owner===user.userId);if(existing){if(existing.digest!==digest)throw new InputError('上传标识已用于另一张照片');return {changed:false};}if(j.photos.filter(p=>!p.removed&&p.checkin===null&&!photoEntry(p)).length>=30)throw new InputError('未完成照片过多');j.photos.push({id:photoId!,owner:user.userId,checkin:null,sha,digest,metadata,proposal,created:new Date().toISOString()});return {changed:true,files:[{path:`travel/photos/${photoId}.jpg`,mode:'100644',type:'blob',sha}]};});
       return json({id:photoId},201);
     }
     let body:unknown;try{body=JSON.parse((await boundedBytes(request!,20000)).toString('utf8'));}catch{return json({error:'请求内容无效或过长'},400);}
     if(action==='publish'){
       const b=body as {id?:unknown;published?:unknown};
       if(!b||!recordId.safeParse(b.id).success||typeof b.published!=='boolean')return json({error:'公开设置无效'},400);
-      const published=b.published;let found=false;await store.mutate(user.userId,j=>{const visit=j.checkins.find(v=>v.id===b.id&&v.owner===user.userId&&!v.removed);if(!visit)return {changed:false};found=true;if(visit.published===published)return {changed:false};visit.published=published;return {changed:true};});
+      const published=b.published;let found=false;await store.mutate(user.userId,j=>{const visit=j.checkins.find(v=>v.id===b.id&&v.owner===user.userId&&!v.removed);if(!visit)return {changed:false};if(published&&j.photos.some(p=>p.checkin===visit.id&&j.entries.some(e=>e.id===photoEntry(p))))throw new InputError('旅行相册暂不支持公开，请先移出相册再单独发布');found=true;if(visit.published===published)return {changed:false};visit.published=published;return {changed:true};});
       return found?json({saved:true}):json({error:'记录不存在'},404);
     }
     if(action==='save') {
