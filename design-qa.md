@@ -68,4 +68,6 @@ final result: passed
 - Other controls operated: switch, checkbox, radio, stepper, Enter accordion, text input; no console errors observed.
 - Mobile 390×844: custom menu, scope switch and navigation operated; document scrollWidth=390. Evidence /tmp/travel-polish-mobile-dark.png and /tmp/travel-polish-mobile-light.png. Desktop 1280×720 also inspected; no private writes performed.
 
-Local outcome: passed for named UI behavior. OS forced-colors / Safari / physical-device and real private storage acceptance remain separate gates. Production verification pending push.
+Local outcome: passed for named UI behavior. OS forced-colors / Safari / physical-device and real private storage acceptance remain separate gates. Production verification completed for implementation df69553 on travel.miaowu.org.
+
+Production receipt df69553: GitHub verify/build and Vercel success. Actual domain custom menu, scope change, dark zoom hover (#343a37 with #e5e5da foreground), map 甘孜州 hover (#849776), reset click and navigation thumb 260ms / translate 117.5px verified. Dual-theme kit menus operated; mobile 390×844 scrollWidth=390. No production console errors observed. Evidence: /tmp/travel-polish-production-menu.png, /tmp/travel-polish-production-hover.png, /tmp/travel-polish-production-kit-dark.png, /tmp/travel-polish-production-kit-light.png, /tmp/travel-polish-production-mobile.png. Final result: passed for requested web UI, physical held-state and assistive-device acceptance remain unclaimed.
