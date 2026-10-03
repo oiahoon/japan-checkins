@@ -9,6 +9,10 @@ export function dragMapOffset(start:MapOffset,dx:number,dy:number,width:number,h
  return boundMapOffset({x:start.x+dx/width,y:start.y+dy/height});
 }
 export function posterMapFrame(width:number,height:number,scope:string,style:string){
- const landscape=width>height;
- return {x:width*(landscape?.39:.065),y:height*(landscape?.07:style==='memories'?.055:.245),width:width*(landscape?.57:.87),height:height*(landscape?.80:style==='memories'?.73:scope==='sichuan'?.59:.65)};
+ const landscape=width>height,phone=height/width>1.65,memory=style==='memories';
+ if(landscape)return {x:width*.365,y:height*.065,width:width*.595,height:height*.84};
+ if(phone)return {x:width*.06,y:height*(memory?.19:.28),width:width*.88,height:height*(memory?.58:.55)};
+ if(memory)return {x:width*.045,y:height*.065,width:width*.91,height:height*.70};
+ if(scope==='japan')return {x:width*.055,y:height*.08,width:width*.89,height:height*.82};
+ return {x:width*.24,y:height*.155,width:width*.70,height:height*.65};
 }

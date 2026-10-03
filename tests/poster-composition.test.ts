@@ -16,8 +16,8 @@ test('exported position matches the preview frame in all styles and formats with
   const {width,height}=posterFormats[format],frame=posterMapFrame(width,height,'sichuan',style),opts={scope:'sichuan' as const,features,visits:[],title:'合成地图',style,format,mapScale:1.3};
   const original=buildPoster(opts),moved=buildPoster({...opts,mapOffset:{x:.2,y:-.1}});
   assert.ok(moved.includes(`id="poster-map-pan" transform="translate(${frame.width*.2},${frame.height*-.1})"`));
-  const copy=/<text x="[^"]+" y="[^"]+" font-family="Songti[^>]+>合成地图<\/text>/;
-  assert.equal(moved.match(copy)?.[0],original.match(copy)?.[0]);assert.ok(moved.includes('clip-path="url(#poster-map-frame)"'));
+  const copy=/<text[^>]+font-family="Songti[^>]+>合成地图<\/text>/;
+  assert.ok(moved.match(copy));assert.equal(moved.match(copy)?.[0],original.match(copy)?.[0]);assert.ok(moved.includes('clip-path="url(#poster-map-frame)"'));
   assert.ok(!moved.includes('rotate('));assert.ok(!moved.includes('NaN'));
  }
 });

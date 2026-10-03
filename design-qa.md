@@ -150,3 +150,31 @@ Flow under test: isolated PhotoEditor → type 福冈 / 博多站 / 鹿儿岛城
 Evidence outside Git: /tmp/place-editor-mobile-light.png and /tmp/place-editor-mobile-dark.png. Physical phone keyboards, assistive technology, original Apple/GR/Q3 files and live user save are separate open gates.
 
 Additional interaction: confirm synthetic photo → save → reopen marked state → change to 熊本 → consent clears and save is disabled until re-confirmed. No real map or user record written.
+
+## 全站布局与三种自定义作品 · 2026-10-03 最终本机验收
+
+final result: passed
+
+本节是最新验收；上文测试数量、存储未配置等描述属于历史轮次。用户批准全部三个海报方案，要求允许用户自定义。主流程健康度、修正和运行截图见 `docs/design/layout-audit-2026-10-03.md`。
+
+### 视觉依据、规范化与比较
+
+来源：`docs/design/footprint-export-v2/01-paper-japan.png`（1024×1536）、`02-night-japan.png`（1536×1024）、`03-photo-sichuan.png`（1024×1536）。运行图：`docs/design/layout-audit-2026-10-03/paper-japan.png`、`night-japan.png`、`photo-sichuan.png`，三张为1280×900 CSS/像素、1×密度；作品适配真实A4或16:9预览，旁边为可操作设置。源和运行截图在同一工具输入中逐对查看；纸/夜图修订后再次逐对比较。比较范围是作品构图、文字层级与配色，不是界面旁栏或像素重合。四川图为隔离合成记录和生成示意照片，绝非生产私人照片。
+
+有意差异：真实地图数据优先于生成海岸线；日本保留数据中的远岛，因此默认主体占比比概念稿小，用户可缩放/拖拽，未擅自删除远岛。四川照片只填合成到访关联的三个市州，不照抄概念中的虚构覆盖。打印A4、桌面16:9与概念2:3/3:2分别重排，不拉伸来源。作品采用平面矢量底色，不复制生成图的织物/颗粒纹理。来源署名、动态内容与可选统计保留；标题不添加未经用户写入的旅行故事。
+
+比较历史：首轮夜图底色地图偏暗、英文题签过小；调亮暖石地图，英文题签放大，纸版补微小朱红印。最终实际纸/夜图再次比较通过。三种布局分别为纵排、桌面左文字、底部题签，而非仅换色。手机自定义运行截图`custom-mobile.png`确认长标题、无衬线、深墨预设、题记、统计与日期；不遮地图拖动和生成动作。
+
+### 必查表面
+
+- 字体：宋体标题与系统无衬线控件；用户可选无衬线作品标题；无外部字体请求。标题24字、题记35字，长纵排分列，桌面分行，手机适配字号。
+- 间距/布局：统一44px操作、16–32px页面边距；地图工具不进入时间线；详情固定主动作、管理折叠。真实浏览器检查320/390/430/801/1100/1280/1440px；亮暗抽查和只读/未配置状态，不声称全部组合穷举。
+- 色彩/令牌：UI材质沿用neo.css；作品背景/地图/强调色严格HEX输入、三种预设可选，深背景自动使用浅字；常态无UI边框，地理分界线是地图信息。
+- 图像/资产：GeoJSON矢量和授权边界，照片按对应地区clip，不扩大未知日本城市到都道府县；不加载真实照片为审阅素材。图片图槽保持尺寸，加载和失败可见。
+- 文案：短标题、可留空题记，统计日期默认关闭；明确未标记与缺项，管理/公开/精确位置后果保留。自定义只在当前导出会话生效，不声称永久模板、任意字体或自动地理推断。
+
+### 实际交互与发布边界
+
+导航/下拉Escape/记录聚焦、合成照片保存摘要、未确认不上地图、上传当前批次、查看器分页/缩放、共享弹窗、导出比例/拖动/方向键/居中、配色和字体/内容开关已实际操作。只读与主人导航滑块按实际数量测量；组件实验室和登录320px无横向溢出。新版导出运行控制台没有错误。PNG canvas生成与回退链接可见，但IAB下载事件超时，未声称本轮新文件落盘尺寸。物理Safari/iPhone、原生分享和实体打印仍待设备验收。
+
+88项测试、typecheck、build通过；构建路由清单不含临时QA路由。生产发布验收以对应源码SHA的CI/Vercel状态和正式域名实际检查为准，本节不将本机通过代替生产验证。

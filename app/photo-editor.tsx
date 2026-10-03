@@ -4,6 +4,8 @@ import {X,ChevronDown,MapPin,Check,ZoomIn,FileImage} from 'lucide-react';
 import {NeoInput,NeoTextarea,NeoCheckbox,NeoButton} from './ui/neo';
 import NeoNotification from './ui/notification';
 import SelectField from './select-field';
+import SheetHeader from './ui/sheet-header';
+import PhotoImage from './ui/photo-image';
 import type {LibraryPhoto} from './photo-library';
 import type {PhotoDetails} from '../lib/travel-data';
 import {prefectureAt,validCoordinate,type PhotoMetadata} from '../lib/photo-metadata';
@@ -30,9 +32,9 @@ export default function PhotoEditor({photo,geos,onSave,onClose,onView}:{photo:Li
  async function readSource(file?:File){if(!file)return;setReading(true);setError('');try{const metadata=await inspectPhoto(file);setRecovered(metadata);if(metadata.date){patch({date:metadata.date})}else setError(metadata.dateStatus==='error'?'原图元数据读取失败':metadata.dateStatus==='invalid'?'原图日期无效，请手动填写':'原图未提供 EXIF 日期，请手动填写')}catch(e){setError((e as Error).message)}finally{setReading(false);if(sourceInput.current)sourceInput.current.value=''}}
  async function submit(){setBusy(true);setError('');try{await onSave(photo.id,d,confirmed);onClose()}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
  return <dialog ref={dialog} className="photo-editor" aria-labelledby="photo-editor-title" onCancel={e=>busy||reading?e.preventDefault():onClose()} onClose={onClose}>
-  <header className="photo-editor-header"><div><h2 id="photo-editor-title">这一张的记忆</h2><p>{photo.marked?'已保存 · 已标记地图':Object.values(photo.details).some(v=>typeof v==='string'&&v.trim())?'信息已保存 · 尚未标记地图':'已存入照片记录 · 可以稍后补充'}</p></div><button className="icon-button" aria-label="关闭照片编辑" disabled={busy||reading} onClick={onClose}><X size={20}/></button></header>
+  <SheetHeader className="photo-editor-header" id="photo-editor-title" title="这一张的记忆" description={photo.marked?'已保存 · 已标记地图':Object.values(photo.details).some(v=>typeof v==='string'&&v.trim())?'信息已保存 · 尚未标记地图':'已存入照片记录 · 可以稍后补充'} onClose={onClose} closeLabel="关闭照片编辑" disabled={busy||reading}/>
   <form onSubmit={e=>{e.preventDefault();void submit()}}><div className="photo-editor-scroll">
-   <button type="button" className="photo-editor-preview" onClick={onView} aria-label="放大查看照片"><img src={photo.url} alt="正在整理的照片"/><span><ZoomIn size={15}/>查看照片</span></button>
+   <button type="button" className="photo-editor-preview" onClick={onView} aria-label="放大查看照片"><PhotoImage src={photo.url} alt="正在整理的照片" fit="contain" loading="eager"/><span><ZoomIn size={15}/>查看照片</span></button>
    <fieldset disabled={busy||reading}><section className="photo-editor-primary"><h3><MapPin size={17}/>在哪里，哪一天？</h3>
     <div className="photo-place-search" onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node))setQueryFocused(false)}}><label>地点<NeoInput ref={placeInput} value={d.place} autoComplete="off" maxLength={150} placeholder="福冈、博多站，或具体地点" onFocus={()=>setQueryFocused(true)} onChange={e=>changePlace(e.target.value)} aria-describedby="photo-place-region"/></label>
      {queryFocused&&!matches.automatic&&matches.candidates.length>0&&<div className="photo-place-candidates" aria-label="地点建议">{matches.candidates.map(m=><button type="button" key={m.country+m.prefecture+m.name} onMouseDown={e=>e.preventDefault()} onClick={()=>chooseMatch(m)}><MapPin size={15}/><span>{m.name}<small>{m.country==='JP'?'日本':m.country==='CN'?'中国':m.country} · {m.prefecture}{m.city&&m.city!==m.name?' · '+m.city:''}</small></span></button>)}</div>}
