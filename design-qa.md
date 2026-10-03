@@ -8,7 +8,7 @@ final result: passed
 
 实际浏览器截图：`/tmp/neo-map-final.png`（1280×720 CSS / pixels），`/tmp/neo-kit-wide-final.png`（1280 CSS 宽，完整滚动页），`/tmp/neo-kit-mobile-final.png`（390×3200，390×844 CSS viewport），`/tmp/neo-map-mobile.png`（390×844），`/tmp/neo-timeline-mobile.png`（390×844），`/tmp/neo-login-mobile.png`（390×844）。均为 1× 密度，无设备边框。临时图像不进入公开 Git。
 
-已打开源图与实际图，并在同一比较图中检查：`/tmp/neo-qa-map-comparison.png` 与 `/tmp/neo-qa-kit-comparison.png`。概念板的地图局部裁切为 746×504，与实际桌面页分别等比例适配 900×608 画布；这是材质、结构对照，不能宣称像素级等同。组件板为小尺寸概念摘要，实验室为可操作的完整滚动页面；其更疏朗的空间、增加说明、原生只读输入和保留既有地理比例属有意应用调整。图形地理与用户后续无描边要求优先于生成稿。
+已打开源图与实际图，并在同一比较图中检查：`/tmp/neo-qa-map-comparison.jpg` 与 `/tmp/neo-qa-kit-comparison.jpg`。概念板的地图局部裁切为 746×504，与实际桌面页分别等比例适配 900×608 画布；这是材质、结构对照，不能宣称像素级等同。组件板为小尺寸概念摘要，实验室为可操作的完整滚动页面；其更疏朗的空间、增加说明、原生只读输入和保留既有地理比例属有意应用调整。图形地理与用户后续无描边要求优先于生成稿。
 
 ## Findings and comparison history
 
@@ -66,7 +66,7 @@ final result: passed
 - P2 fixed: dropdown now uses existing Base UI Select, raised popup and recessed highlight / check; no new dependency. Keyboard End → Enter selected 沖縄県 and returned focus; changing scope rendered 21 Sichuan areas. Hidden native change dispatch retained controlled state. Explicit labels preserve accessible names. Popup inside poster dialog is visible and choosing desktop format updates preview. First runtime found unselected labels in first grid column; explicit ItemText class fixed it before release.
 - P2 fixed: moving shared thumb (260ms) in desktop navigation, inspector and phone navigation; actual switched transform differs by one cell. Reduced-motion rule disables it.
 - Other controls operated: switch, checkbox, radio, stepper, Enter accordion, text input; no console errors observed.
-- Mobile 390×844: custom menu, scope switch and navigation operated; document scrollWidth=390. Evidence /tmp/travel-polish-mobile-dark.png and /tmp/travel-polish-mobile-light.png. Desktop 1280×720 also inspected; no private writes performed.
+- Mobile 390×844: custom menu, scope switch and navigation operated; document scrollWidth=390. Evidence /tmp/travel-polish-mobile-dark.png and /tmp/travel-polish-mobile-light.jpg. Desktop 1280×720 also inspected; no private writes performed.
 
 Local outcome: passed for named UI behavior. OS forced-colors / Safari / physical-device and real private storage acceptance remain separate gates. Production verification completed for implementation df69553 on travel.miaowu.org.
 
@@ -139,7 +139,7 @@ Environment: CUA IAB, local UI Kit / login and a temporary development-only Trav
 
 Checks: correct title/routes, nonblank settled content, no framework overlay; UI Kit console has no warnings/errors. Forced missing image produces expected synthetic 404; forced unconfigured local store produces expected private API 503 and a persistent error with retry. No production writes or genuine photos used. Flow: map controls → home action → success toast disappears after 5s; manager opens; 1100px and 390px menu fold/unfold; puzzle has no redundant sentence. Notification demo error persists beyond 5s → retry produces success → keyboard focus pauses timer beyond 5s → Enter dismisses. PNG generation leaves preview, controls and fallback file link visible. Login error has no old vertical border; viewer load error and editor failure use inline notices with accessible retry/save. Reduced-motion/high-contrast styles implemented, physical OS settings and assistive tech remain untested.
 
-Screenshots outside Git: /tmp/neo-map-buttons-desktop.png, /tmp/neo-map-buttons-mobile.png, /tmp/neo-notifications-mobile-dark.png, /tmp/neo-notifications-mobile-light.png. Temporary route removed before final build.
+Screenshots outside Git: /tmp/neo-map-buttons-desktop.png, /tmp/neo-map-buttons-mobile.png, /tmp/neo-notifications-mobile-dark.png, /tmp/neo-notifications-mobile-light.jpg. Temporary route removed before final build.
 
 ### Place-first editor and metadata dates — 2026-10-03
 
@@ -147,7 +147,7 @@ Finding: importer picked only DateTimeOriginal, and editor required country / re
 
 Flow under test: isolated PhotoEditor → type 福冈 / 博多站 / 鹿儿岛城山展望台 → correct JP parent/city shown without confirmation → 府中 shows Tokyo/Hiroshima candidates → Tab / Enter chooses Hiroshima → clear date → chooser reads synthetic JPEG EXIF → date restores → save unconfirmed → reopen retains information and no map consent. CUA IAB available, no browser fallback. Actual widths 320/390/1366, light/dark, horizontal overflow absent. Correct route/title, meaningful render, no framework overlay, console clean, screenshots passed. Unit/server suite: 84 tests including date-only JPEG/TIFF, privacy, owner, consent, failed save/upload retries and coordinate boundaries. Original reread uses local file parsing only, no storage writes. Browser file chooser was observed to return slowly; future chooser setFiles calls must include explicit bounded timeout. Temporary QA routes and original fixture files remain outside delivery.
 
-Evidence outside Git: /tmp/place-editor-mobile-light.png and /tmp/place-editor-mobile-dark.png. Physical phone keyboards, assistive technology, original Apple/GR/Q3 files and live user save are separate open gates.
+Evidence outside Git: /tmp/place-editor-mobile-light.jpg and /tmp/place-editor-mobile-dark.png. Physical phone keyboards, assistive technology, original Apple/GR/Q3 files and live user save are separate open gates.
 
 Additional interaction: confirm synthetic photo → save → reopen marked state → change to 熊本 → consent clears and save is disabled until re-confirmed. No real map or user record written.
 
@@ -185,11 +185,11 @@ final result: passed
 
 final result: passed
 
-源视觉依据：现有认可的暖纸 / 深墨 UI Kit 与原时间线，以当前源码旧版渲染器配合同样合成记录捕获 `docs/design/timeline-2026-10-03/before-desktop.png`（1440×1000）。实现 `desktop-light.png` 同尺寸同记录同筛选；`comparison.png` 将两个 1× 源截图等比例并排，保持原始截图可查。重排为年月 / 日期日志属于用户要求的功能改进，不以旧卡片结构作为像素复制目标。移动图 390×844，筛选图 320×740，平板图 768×1024，全部 CSS px = 图像 px，无设备边框。
+源视觉依据：现有认可的暖纸 / 深墨 UI Kit 与原时间线，以当前源码旧版渲染器配合同样合成记录捕获 `docs/design/timeline-2026-10-03/before-desktop.jpg`（1280×720）。实现 `desktop-matched.jpg` 同尺寸同记录同筛选；`desktop-light.jpg` 为额外 1440×1000 宽屏验收；`comparison.jpg` 将两个 1× 源截图等比例并排，保持原始截图可查。重排为年月 / 日期日志属于用户要求的功能改进，不以旧卡片结构作为像素复制目标。移动图 390×844，筛选图 320×740，平板图 768×1024，全部 CSS px = 图像 px，无设备边框。
 
 五项检查：宋体标题 / 日期与无衬线操作层次延续；日期、正文、44px 主动作的间距和对齐明确；明暗色与光影共用令牌；生成概念图用固定照片画幅，缩略图对应查看器，未替换实际地图资产；文案只保留数据与动作，缺少笔记不增加解释。原图中标题 / 日期 / 地图动作均可读取，结合 320px 过滤和无照片记录的近屏检查判断细节。
 
-比较历史：发现 P2 平板封面过大（768px 封面 490px，正文掉出首屏），改成 640–800px 图文并排；重新捕获 `tablet-dark.png`，封面 240px，正文与动作同屏。手机仍纵向，桌面保留日期栏。已重新检查，不存在未解决 P0 / P1 / P2。
+比较历史：发现 P2 平板封面过大（768px 封面 490px，正文掉出首屏），改成 640–800px 图文并排；重新捕获 `tablet-dark.jpg`，封面 240px，正文与动作同屏。手机仍纵向，桌面保留日期栏。已重新检查，不存在未解决 P0 / P1 / P2。
 
 浏览器交互：主人 / 只读、亮暗、月份锚点、地区筛选、笔记折叠、照片第 2 张打开查看器、标题聚焦地图并收起列表、详情独立入口。320 / 390 / 768 / 801 / 1440px 均无横向溢出，控制台无 error / warn。临时隔离夹具已移除。90 项测试、typecheck、build 通过；生产部署与域名验证另行记录。真实设备和大规模数据仍是独立验收项。
 
