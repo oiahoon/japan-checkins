@@ -37,4 +37,6 @@
 
 ## 发布
 
-功能提交 `b8e984295907174ed9ea41c35a1a1a8829f4e7d7` 已推送；[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37144640363) 和 [Verify clone-and-deploy build](https://github.com/oiahoon/japan-checkins/actions/runs/37144640368) 均 success。Vercel Production `dpl_58o3Ny2EkJKxx9oVsgprJ1MFrK7z` Ready，travel.miaowu.org 与默认域名均指向该部署。正式页实际出现“我的样式”控件与无已确认足迹的整理入口，控制台无 error / warn，没有调用真实保存或修改私人数据。收尾的加载守卫会再跑 typecheck / build，并以其提交对应 CI / Vercel 复核为最终版本。
+首轮功能提交 `b8e984295907174ed9ea41c35a1a1a8829f4e7d7` 的两项 GitHub 检查与 Vercel Production 已通过。最终功能提交 `ad16101d8adb70593a01adf6169958a36b435db5` 补齐加载守卫，再次通过 typecheck / build；[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37144984664) 和 [Verify clone-and-deploy build](https://github.com/oiahoon/japan-checkins/actions/runs/37144984690) 均 success。Vercel Production `dpl_GcKMgNXcNeyhUZJA4sQaMMvVv63J` Ready，travel.miaowu.org 与默认域名均指向该部署。
+
+正式页实际验证地图加载前导出禁用、地图与日志读取完成后启用；打开导出与“我的样式”正常，无已确认足迹时保留整理入口。390px 页面宽与滚动宽均390，四个导出按钮高46px，整理动作高44px，控制台无 error / warn。最终1280px截图仅本机 `/tmp/travel-completion-audit/14-production-final-collector.png`。没有调用真实保存或修改私人数据；后续文档提交不改变功能。

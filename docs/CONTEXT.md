@@ -7,6 +7,8 @@
 
 当前总验收以 [ACCEPTANCE.md](ACCEPTANCE.md) 为准。以下较早轮次是历史交接，不代表所有长期计划已完成。
 
+最终功能提交 `ad16101d8adb70593a01adf6169958a36b435db5` 已推送，GitHub 两项构建检查成功，Vercel Production `dpl_GcKMgNXcNeyhUZJA4sQaMMvVv63J` Ready，正式域名已更新。实际验证加载前禁用导出、读取完成启用，“我的样式”展开正常；390px 无横向溢出，控制台无 error / warn。仅只读复核，未修改私人数据；后续文档提交不改变功能。130项测试、typecheck、build 通过，设备 / 相机文件 / 系统分享打印与长期地理能力仍按 ACCEPTANCE 保留独立验收。
+
 
 ## 生产验收 · 双角色整理体验（2026-10-04）
 

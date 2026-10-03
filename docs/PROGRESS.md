@@ -1,6 +1,6 @@
 # Current handoff / 当前交接
 
-本轮本机验收：130项测试、typecheck、build、diff检查通过；正式构建路由不含临时completion-qa。亮暗 / 320–1280px 合成交互截图与限制见 [总回顾验收](design/completion-review-2026-10-04/README.md)。功能提交 b8e9842：Checks（37144640363）/ clone-and-deploy（37144640368）success，Vercel Production dpl_58o3Ny2EkJKxx9oVsgprJ1MFrK7z Ready，正式 / 默认域名指向该部署，实际收藏控件已复核。收尾增加数据加载前的导出禁用，最终版本以随后提交的 CI / Vercel 状态为准。
+本轮本机验收：130项测试、typecheck、build、diff检查通过；正式构建路由不含临时completion-qa。亮暗 / 320–1280px 合成交互截图与限制见 [总回顾验收](design/completion-review-2026-10-04/README.md)。最终功能提交 `ad16101d8adb70593a01adf6169958a36b435db5`：Checks（37144984664）/ clone-and-deploy（37144984690）success，Vercel Production `dpl_GcKMgNXcNeyhUZJA4sQaMMvVv63J` Ready，正式 / 默认域名指向该部署。正式页实际验证加载前导出禁用、读取完成后启用，打开“我的样式”正常，控制台无 error / warn；390px 无横向溢出，导出按钮高46px。未写入私人记录。随后文档提交不改变功能。
 
 ## 总回顾与补齐 · 2026-10-04
 
