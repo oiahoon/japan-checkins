@@ -1,5 +1,6 @@
 import type {ComponentProps,ReactNode} from 'react';
 import {Check,LoaderCircle,Minus,Plus} from 'lucide-react';
+import {segmentTarget} from '../../lib/segment-navigation';
 const cx=(...values:(string|undefined|false)[])=>values.filter(Boolean).join(' ');
 export function NeoButton({variant='neutral',loading=false,children,className,disabled,type='button',...props}:ComponentProps<'button'>&{variant?:'neutral'|'primary'|'quiet';loading?:boolean}){return <button {...props} type={type} disabled={disabled||loading} aria-busy={loading||undefined} className={cx('neo-button',`neo-button--${variant}`,className)}>{loading&&<LoaderCircle className="spinner" size={18} aria-hidden="true"/>}{children}</button>;}
 export function NeoSurface({children,className,inset=false,...props}:ComponentProps<'section'>&{inset?:boolean}){return <section {...props} className={cx('neo-surface',inset&&'neo-surface--inset',className)}>{children}</section>;}
@@ -9,7 +10,15 @@ export function NeoRange({label,value,min,max,step=1,unit='',onChange}:{label:st
 export function NeoBadge({children,tone='neutral'}:{children:ReactNode;tone?:'neutral'|'accent'|'success'}){return <span className={`neo-badge neo-badge--${tone}`}>{children}</span>;}
 export function NeoInput({className,...props}:ComponentProps<'input'>){return <input {...props} className={cx('neo-input',className)}/>;}
 export function NeoTextarea({className,...props}:ComponentProps<'textarea'>){return <textarea {...props} className={cx('neo-input',className)}/>;}
-export function NeoSegmented({label,value,onChange,options}:{label:string;value:string;onChange:(value:string)=>void;options:{value:string;label:string;icon?:ReactNode}[]}){return <div className="neo-segment" role="group" aria-label={label} style={{'--segment-count':options.length,'--segment-index':Math.max(0,options.findIndex(option=>option.value===value))} as React.CSSProperties}><span className="segment-thumb" aria-hidden="true"/>{options.map(option=><button type="button" key={option.value} aria-pressed={value===option.value} onClick={()=>onChange(option.value)}>{option.icon}{option.label}</button>)}</div>;}
+export function NeoSegmented({label,value,onChange,options}:{label:string;value:string;onChange:(value:string)=>void;options:{value:string;label:string;icon?:ReactNode}[]}){
+ const index=Math.max(0,options.findIndex(option=>option.value===value));
+ return <div className="neo-segment" role="group" aria-label={label} style={{'--segment-count':options.length,'--segment-index':index} as React.CSSProperties} onKeyDown={e=>{
+  const buttons=Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>(':scope > button'));
+  const focused=buttons.indexOf(e.target as HTMLButtonElement);if(focused<0)return;
+  const next=segmentTarget(e.key,focused,options.length);if(next===null)return;
+  e.preventDefault();onChange(options[next].value);buttons[next]?.focus();
+ }}><span className="segment-thumb" aria-hidden="true"/>{options.map((option,i)=><button type="button" key={option.value} tabIndex={i===index?0:-1} aria-pressed={value===option.value} onClick={()=>onChange(option.value)}>{option.icon}{option.label}</button>)}</div>;
+}
 export function NeoNotice({children,tone='success',className,...props}:ComponentProps<'div'>&{tone?:'success'|'error'}){return <div {...props} className={cx('neo-notice',tone==='error'&&'neo-notice--error',className)}>{children}</div>;}
 export function NeoProgress(props:ComponentProps<'progress'>){return <progress {...props} className={cx('neo-progress',props.className)}/>;}
 export function NeoDialog({className,...props}:ComponentProps<'dialog'>){return <dialog {...props} className={cx('neo-demo-dialog',className)}/>;}

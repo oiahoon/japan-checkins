@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState,useMemo} from 'react';
 import {Download,Printer,Share2,Bookmark,Trash2,ChevronDown} from 'lucide-react';
 import NeoNotification from './ui/notification';
+import {loadPublicJson} from '../lib/public-json';
 import PosterPreview from './poster-preview';
 import SheetHeader from './ui/sheet-header';
 import {posterMapFrame,type MapOffset} from '../lib/poster-composition';
@@ -23,7 +24,7 @@ export default function TravelPoster({scope,name,features,visits,onClose,onOrgan
  const [colors,setColors]=useState<PosterColors>({}),[colorPreset,setColorPreset]=useState<PosterColorPreset>('default'),[showSummary,setShowSummary]=useState(false),[showDates,setShowDates]=useState(false),[titleFont,setTitleFont]=useState<'serif'|'sans'>('serif');
  const palette=posterPalette(style,colors);
  const [puzzle,setPuzzle]=useState(initialPuzzle),[cityFeatures,setCityFeatures]=useState(japanCities),[embedded,setEmbedded]=useState<PuzzlePhoto[]>([]),[photoLoading,setPhotoLoading]=useState(false),[photoError,setPhotoError]=useState('');
- useEffect(()=>{if(!puzzle||scope!=='japan'){setCityError('');return}if(cityFeatures.length)return;const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),15000);let cancelled=false;setCityError('');fetch('/japan-cities.json',{signal:abort.signal}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(d=>{if(!cancelled)setCityFeatures((d as {features:PuzzleRegion[]}).features)}).catch(()=>{if(!cancelled)setCityError('城市边界读取失败，请重试')}).finally(()=>clearTimeout(timer));return()=>{cancelled=true;clearTimeout(timer);abort.abort()};},[puzzle,scope,cityAttempt,cityFeatures.length]);
+ useEffect(()=>{if(!puzzle||scope!=='japan'){setCityError('');return}if(cityFeatures.length)return;let cancelled=false;setCityError('');loadPublicJson<{features:PuzzleRegion[]}>('/japan-cities.json').then(d=>{if(!cancelled)setCityFeatures((d as {features:PuzzleRegion[]}).features)}).catch(()=>{if(!cancelled)setCityError('城市边界读取失败，请重试')});return()=>{cancelled=true};},[puzzle,scope,cityAttempt,cityFeatures.length]);
  const dialog=useRef<HTMLDialogElement>(null),[title,setTitle]=useState(name),[format,setFormat]=useState<PosterFormat>('print'),[year,setYear]=useState('all'),[precise,setPrecise]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[exportError,setExportError]=useState(''),[downloadLink,setDownloadLink]=useState<{url:string;name:string}|null>(null);
  const collectionSubset=useMemo(()=>collectionVisits(visits,collections,collection),[visits,collections,collection]);
  const subset=useMemo(()=>collectionSubset.filter(v=>year==='all'||v.date.startsWith(year+'-')),[collectionSubset,year]);

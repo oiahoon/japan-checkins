@@ -12,6 +12,7 @@ import {prefectureAt,type PhotoMetadata} from '../lib/photo-metadata';
 import {inspectPhoto} from '../lib/photo-import';
 import {editPlaceQuery,applyPlaceMatch,lookupPlace,type PlaceMatch} from '../lib/place-lookup';
 import PlaceSearch from './place-search';
+import {loadPublicJson} from '../lib/public-json';
 import {applySearchPlace} from '../lib/place-search';
 import {photoDetailsChanged} from '../lib/photo-discovery';
 import {photoSaveIntent} from '../lib/photo-save-intent';
@@ -25,7 +26,7 @@ export default function PhotoEditor({photo,geos,onSave,onClose,onView,onNext,pos
  function requestClose(){if(busy||reading)return;if(userEdited.current&&photoDetailsChanged(initialDetails.current,d))setDiscardPrompt(true);else onClose()}
  const [localLoading,setLocalLoading]=useState(true),[localError,setLocalError]=useState(false);
  const [places,setPlaces]=useState<PlaceMatch[]>([]),[recovered,setRecovered]=useState<PhotoMetadata>(),[reading,setReading]=useState(false);
- useEffect(()=>{dialog.current?.showModal();let active=true;fetch('/place-index.json',{signal:AbortSignal.timeout(12000)}).then(r=>{if(!r.ok)throw Error();return r.json() as Promise<PlaceMatch[]>}).then(entries=>{if(!active)return;if(!Array.isArray(entries))throw Error();setPlaces(entries);if(placeEdited.current)setD(v=>editPlaceQuery(v,v.place,entries))}).catch(()=>{if(active)setLocalError(true)}).finally(()=>{if(active)setLocalLoading(false)});return()=>{active=false}},[]);
+ useEffect(()=>{dialog.current?.showModal();let active=true;loadPublicJson<PlaceMatch[]>('/place-index.json').then(entries=>{if(!active)return;if(!Array.isArray(entries))throw Error();setPlaces(entries);if(placeEdited.current)setD(v=>editPlaceQuery(v,v.place,entries))}).catch(()=>{if(active)setLocalError(true)}).finally(()=>{if(active)setLocalLoading(false)});return()=>{active=false}},[]);
  const patch=(value:Partial<PhotoDetails>)=>{userEdited.current=true;
   const parentEdit=!('place' in value)&&['country','prefecture','city','district'].some(k=>k in value);if(parentEdit)placeEdited.current=false;
   setD(v=>{const next={...v,...value,...(!('placeSource' in value)&&Object.keys(value).some(k=>['country','prefecture','city','district','latitude','longitude'].includes(k))?{placeSource:undefined}:{})};
@@ -36,7 +37,7 @@ export default function PhotoEditor({photo,geos,onSave,onClose,onView,onNext,pos
  };
  const gps=recovered?.gps||photo.proposal?.gps;
  const gpsValue=useMemo(()=>{if(!gps)return;const jp=prefectureAt(gps.latitude,gps.longitude,geos.japan),cn=prefectureAt(gps.latitude,gps.longitude,geos.china),area=!jp&&!cn?geos.world.find(f=>prefectureAt(gps.latitude,gps.longitude,[f])):undefined;return {district:'',latitude:gps.latitude,longitude:gps.longitude,country:jp?'JP':cn?'CN':area?.properties.code||'',prefecture:jp||cn||area?.properties.name||'',city:jp?prefectureAt(gps.latitude,gps.longitude,(geos.japanCities||[]).filter(f=>(f.properties as {prefecture?:string}).prefecture===jp))||'':cn==='四川省'?prefectureAt(gps.latitude,gps.longitude,geos.sichuan)||'':''};},[gps,geos.japan,geos.china,geos.world,geos.sichuan,geos.japanCities]);
- useEffect(()=>{if(gpsApplied.current||!gpsValue||!geos.japan.length||!geos.world.length)return;gpsApplied.current=true;if(!photo.marked&&gpsValue.country&&!placeEdited.current)setD(v=>v.country?v:{...v,...gpsValue})},[gpsValue,geos.japan.length,geos.world.length,photo.marked]);
+ useEffect(()=>{if(gpsApplied.current||!gpsValue||!geos.japan.length||!geos.world.length||(gpsValue.country==='JP'&&!geos.japanCities?.length)||userEdited.current)return;gpsApplied.current=true;if(!photo.marked&&gpsValue.country&&!placeEdited.current)setD(v=>v.country?v:{...v,...gpsValue})},[gpsValue,geos.japan.length,geos.world.length,geos.japanCities?.length,photo.marked]);
  const regionOptions=d.country==='JP'?geos.japan:d.country==='CN'?geos.china:[];
  const countryName=({JP:'日本',CN:'中国'} as Record<string,string>)[d.country]||geos.world.find(f=>f.properties.code===d.country)?.properties.name||d.country;
  const cityOptions=d.country==='CN'?regionCities(geos.chinaAdmin,d.prefecture):[];

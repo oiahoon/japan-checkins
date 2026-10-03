@@ -45,7 +45,7 @@ export default function SelectField({children, value, defaultValue, onChange, di
           <Select.Popup className={'select-popup'+(leadingIcon&&matchTriggerWidth?' select-popup--location':'')}>
             <Select.List className="select-list">
               {items.map(item => <Select.Item className="select-option" key={item.value} value={item.value} disabled={item.disabled}>
-                <Select.ItemIndicator className="select-check"><Check size={15}/></Select.ItemIndicator>
+                <Select.ItemIndicator className="select-check"><Check size={15} aria-hidden="true"/></Select.ItemIndicator>
                 <Select.ItemText className="select-option-label">{item.label}</Select.ItemText>
               </Select.Item>)}
             </Select.List>

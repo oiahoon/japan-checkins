@@ -3,9 +3,10 @@
 .timeline-filter-toggle { display: none; }
 .journal-chronicle { min-width: 0; }
 .chronicle-months { display: flex; gap: 8px; overflow-x: auto; padding: 8px 4px 16px; margin: 0 -4px 24px; scrollbar-width: thin; }
-.chronicle-months a { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; min-height: 44px; padding: 10px 14px; font-size: 12px; color: var(--muted); border-radius: 12px; background: var(--bg); box-shadow: var(--control-raised); }
-.chronicle-months a:hover { color: var(--amber); text-decoration: none; box-shadow: var(--control-inset); }
-.chronicle-months a>span { font-variant-numeric: tabular-nums; }
+.chronicle-months button { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; min-height: 44px; padding: 10px 14px; font-size: 12px; color: var(--muted); border-radius: 12px; background: var(--bg); box-shadow: var(--control-raised); }
+.chronicle-months button:hover,.chronicle-months button[aria-pressed=true] { color: var(--amber); box-shadow: var(--control-inset); }
+.chronicle-months button>span { font-variant-numeric: tabular-nums; }
+.chronicle-more-photos { color:var(--amber);font-size:13px;background:var(--bg);box-shadow:var(--control-inset); }
 .chronicle-month { margin-bottom: 48px; }
 .chronicle-month-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; padding-left: 104px; }
 .chronicle-month-heading h3 { margin: 0; font: 500 23px/1.4 'Songti SC',SimSun,serif; scroll-margin-top: 24px; }
@@ -49,7 +50,7 @@
  .timeline-workspace .journal-timeline-filters { display: none; padding: 16px; border-radius: 16px; background: var(--bg); box-shadow: var(--control-inset); }
  .timeline-workspace .journal-timeline-filters.is-open { display: flex; animation: chronicle-arrive .2s ease-out; }
  .chronicle-months { margin-bottom: 16px; }
- .chronicle-months a { font-size: 12px; }
+ .chronicle-months button { font-size: 12px; }
  .chronicle-month-heading { padding-left: 0; margin-bottom: 16px; }
  .chronicle-month-heading h3 { font-size: 22px; }
  .chronicle-month { margin-bottom: 36px; }
@@ -68,7 +69,7 @@
 }
 @media (max-width:360px) { .chronicle-entry-body { padding: 16px; } .chronicle-entry h4 { font-size: 22px; } }
 @media (prefers-reduced-motion:reduce) { .chronicle-entry,.timeline-workspace .journal-timeline-filters.is-open { animation: none; } .chronicle-cover .journal-photo img,.chronicle-note-toggle svg { transition: none; } }
-@media (prefers-contrast:more),(forced-colors:active) { .chronicle-entry,.chronicle-date time,.chronicle-months a { border: 1px solid currentColor; box-shadow: none; } }
+@media (prefers-contrast:more),(forced-colors:active) { .chronicle-entry,.chronicle-date time,.chronicle-months button { border: 1px solid currentColor; box-shadow: none; } }
 /* Tablets keep photo and prose together without a screen-height cover. */
 @media (min-width:640px) and (max-width:800px) {
  .chronicle-entry { grid-template-columns: minmax(0,.95fr) minmax(0,1.05fr); }

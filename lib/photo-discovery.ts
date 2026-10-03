@@ -4,8 +4,9 @@ export type PhotoSort='added'|'date-desc'|'date-asc';
 const normalize=(value:string)=>value.normalize('NFKC').replace(/[冈东儿岛广长县臺]/g,c=>({冈:'岡',东:'東',儿:'児',岛:'島',广:'廣',长:'長',县:'県',臺:'台'}[c]!)).replace(/[/.]/g,'-').toLocaleLowerCase().trim();
 export function discoverPhotos<T extends DiscoverablePhoto>(items:T[],{query='',sort='added',unmarked=false,noNotes=false,entry='all',records=[]}:{query?:string;sort?:PhotoSort;unmarked?:boolean;noNotes?:boolean;entry?:string;records?:{id:string;title:string}[]}={}){
  const words=normalize(query).split(/\s+/).filter(Boolean);
+ const recordTitles=new Map(records.map(r=>[r.id,r.title]));
  const found=[...items].reverse().filter(p=>{
-  const text=normalize([p.details.country,p.details.country==='JP'?'日本':p.details.country==='CN'?'中国':'',p.details.prefecture,p.details.city,p.details.district,p.details.place,p.details.date||p.proposal?.date,p.details.note,records.find(r=>r.id===p.entry)?.title].filter(Boolean).join(' '));
+  const text=normalize([p.details.country,p.details.country==='JP'?'日本':p.details.country==='CN'?'中国':'',p.details.prefecture,p.details.city,p.details.district,p.details.place,p.details.date||p.proposal?.date,p.details.note,p.entry?recordTitles.get(p.entry):undefined].filter(Boolean).join(' '));
   return (!unmarked||!p.marked)&&(!noNotes||!p.details.note.trim())&&(entry==='all'||(entry==='free'?!p.entry:p.entry===entry))&&words.every(w=>text.includes(w));
  });
  if(sort!=='added')found.sort((a,b)=>{
