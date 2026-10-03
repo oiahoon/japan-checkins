@@ -222,3 +222,14 @@ body:has(dialog[open]) { overflow: hidden; }
 .poster-custom label { display: grid; gap: 8px; margin: 0; font-size: 13px; color: var(--muted); }
 .poster-colors { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
 .poster-colors input[type=color] { width: 100%; min-width: 44px; height: 44px; border: 0; background: transparent; padding: 4px; border-radius: 12px; cursor: pointer; box-shadow: var(--control-inset); }
+
+/* Saved designs reuse the same quiet disclosure and raised actions. */
+.poster-saved-styles summary { display: flex; align-items: center; gap: 8px; }
+.poster-saved-styles summary svg { display: inline-block; flex-shrink: 0; }
+.poster-saved-styles .poster-style-chevron { margin-left: auto; transition: transform 180ms; }
+.poster-saved-styles[open] .poster-style-chevron { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .poster-saved-styles .poster-style-chevron { transition: none; } }
+.poster-saved-actions { display: flex; align-items: center; gap: 12px; }
+.poster-saved-actions>.neo-button:first-child { flex: 1; }
+.poster-saved-actions>.neo-button { min-height: 44px; }
+.poster-saved-styles .neo-notification { margin: 0; }

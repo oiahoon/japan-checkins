@@ -1,5 +1,14 @@
 # Current handoff / 当前交接
 
+本轮本机验收：130项测试、typecheck、build、diff检查通过；正式构建路由不含临时completion-qa。亮暗 / 320–1280px 合成交互截图与限制见 [总回顾验收](design/completion-review-2026-10-04/README.md)。发布状态待精确提交 CI 与生产域名核对。
+
+## 总回顾与补齐 · 2026-10-04
+
+本节与 ACCEPTANCE 优先于旧轮次。核心流已实现、多轮发布，但真实相机 / 手机 / 打印、性能与完整现行地理覆盖不等于已验收。本輪新增最多6套本机导出样式；只保存设计参数，载入不恢复照片 / GPS开关或旅行信息。导出可选择当前地域中有已确认足迹的旅行相册，再按年筛选；不把草稿或其他相册的照片作为到访。读取照片最多两路并发、15秒单次 / 45秒总预算、100张 / 24MiB总量；出错提供重试，取消中止读取。文字记录编辑在关闭 / Escape / 切换记录 / 进入照片编辑 / 回收前保护输入，成功保存才重置基线。共享材质、预览优先和固定动作不改变。
+
+未新增数据库、权限、API、迁移、行政数据源、道路、自动旅程合并或跨设备同步；生产私人数据未改写。地区浏览仍可递进，但导出仍为日本 / 四川 / 中国 / 成都 / 世界五种地域作品，旅行记录筛选不是任意市县投影。线上发布与检查结果见 PROGRESS / 本轮报告。
+
+
 ## 生产验收 · 双角色整理体验（2026-10-04）
 
 功能提交 `a4c2864a02274856293ca6a9dffb67e928f455f1` 已推送 main。[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37142530439) 与 [Verify clone-and-deploy build](https://github.com/oiahoon/japan-checkins/actions/runs/37142530479) 通过。Vercel Production `dpl_C13xawWAq64cw7k7FVrE8XRFmWtZ` Ready，travel.miaowu.org 和 japan-checkins.vercel.app 指向该部署。

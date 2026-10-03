@@ -1,4 +1,10 @@
 # Architecture
+## 总回顾与补齐 · 2026-10-04
+
+本节与 ACCEPTANCE 优先于旧轮次。核心流已实现、多轮发布，但真实相机 / 手机 / 打印、性能与完整现行地理覆盖不等于已验收。本輪新增最多6套本机导出样式；只保存设计参数，载入不恢复照片 / GPS开关或旅行信息。导出可选择当前地域中有已确认足迹的旅行相册，再按年筛选；不把草稿或其他相册的照片作为到访。读取照片最多两路并发、15秒单次 / 45秒总预算、100张 / 24MiB总量；出错提供重试，取消中止读取。文字记录编辑在关闭 / Escape / 切换记录 / 进入照片编辑 / 回收前保护输入，成功保存才重置基线。共享材质、预览优先和固定动作不改变。
+
+未新增数据库、权限、API、迁移、行政数据源、道路、自动旅程合并或跨设备同步；生产私人数据未改写。地区浏览仍可递进，但导出仍为日本 / 四川 / 中国 / 成都 / 世界五种地域作品，旅行记录筛选不是任意市县投影。线上发布与检查结果见 PROGRESS / 本轮报告。
+
 
 ## 照片发现与整理（2026-10-04）
 
@@ -180,3 +186,11 @@ MapExplorer 为全国目录建立省 / 市 / 区县节点，保持四川 / 成�
 `detailNodeAt` uses the camera center and actual polygon containment, including holes. A confirmed sibling containment exits the old node even inside overlapping bounding boxes; offshore movement has an 8%-of-span margin, while zoom entry/exit remain 0.88 / 1.6 of the node fit. It only returns context and never changes the camera or saved visit. `nodeBounds` caches immutable tree-node bounds in a WeakMap. Geometry arrival reconciles context at `cam.current`; `pendingFit` remains reserved for an explicit navigation request and is cancelled by manual pan/zoom.
 
 `featureNode` resolves countries by country code only in world/Asia layers, Chinese administrative geometry by admin code or unique parent-scoped name, and Japanese municipalities by name plus retained source ID. Dedicated Chengdu district geometries take priority over national county shards, keeping rendered paths and focus geometry aligned. Ancestor-layer siblings remain interactive behind the active layer; ancestor targets and duplicate world/Asia geometry are excluded. SVG paths outside the viewport are culled, including from keyboard navigation. Existing world/private storage, photo clipping, owner endpoints and export projections are unchanged.
+
+## Export design preferences and collection lens (2026-10-04)
+
+`poster-preferences.ts` reads a versioned, 20KB-bounded localStorage document, at most6 unique styles; it whitelists enum / six-digit colors / booleans / bounded composition. Titles, notes, year, geography, photo references and privacy switches are never serialized. Users explicitly save / update / load / remove; full capacity requires replacing or removing, no silent eviction. This is device-only design state, not journal data.
+
+`poster-collections.ts` projects explicit album membership onto the already authorized current-lens checkins. Drafts do not contribute visits; photoIds additionally prevent unrelated photographs sharing a legacy checkin from entering a trip export. Empty albums / text do not appear as geographic export choices. Existing five projections, public-photo gating, attribution and puzzle clipping remain unchanged.
+
+`poster-photos.ts` deduplicates reads by ID, preserves output order and checkin associations, bounds requests at two concurrent reads, 15s request / 45s total, 100 unique photos / 24MiB combined / 3MiB JPEG each. Fetch and FileReader honor cancellation; failure aborts remaining reads and rejects the entire export, preserving a visible retry. Empty / cancelled loads are cleaned up; city geometry also has a 15s timeout and retry. No persistent image cache or extra storage endpoint is introduced.
