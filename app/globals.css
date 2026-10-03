@@ -159,3 +159,5 @@ dialog{background:#fffdf7;box-shadow:0 20px 70px #33452d25;border-radius:8px}dia
 @media(prefers-contrast:more),(forced-colors:active){.pref-selector,.zoom-controls>div,.zoom-controls>button,.icon-button,.picker,.region-title,.map-legend,.inspector-tabs,.inspector-tabs button,.region-toolbar>button,.poster-actions>button,.timeline-toolbar button,.poster-preview,.primary,.save,.mobile-navigation>button[aria-pressed=true]{box-shadow:none!important;border:1px solid currentColor;background:Canvas;color:CanvasText}.city-map-label{stroke:none;fill:CanvasText}.prefecture.selected{stroke:Highlight;stroke-width:3}}
 @media print{.poster-preview{box-shadow:none!important}.poster-dialog{border-radius:0!important}}
 @media(max-width:800px){.xisha-inset{transform:translate(665px,310px) scale(1.5)}}
+/* Clip transformed geography without creating a focus-scroll container. */
+.regional-atlas{overflow:clip}
