@@ -217,7 +217,8 @@ body:has(dialog[open]) { overflow: hidden; }
 /* Artwork customization stays in the settings layer, away from the preview. */
 .poster-custom { margin: 0 0 24px; }
 .poster-custom summary { min-height: 44px; cursor: pointer; padding: 12px 0; color: var(--muted); font-size: 13px; }
-.poster-custom[open] { display: grid; gap: 16px; }
+.poster-custom-body { display: grid; gap: 16px; padding-top: 8px; }
+.poster-custom-body>.neo-choice { margin: 0; }
 .poster-custom label { display: grid; gap: 8px; margin: 0; font-size: 13px; color: var(--muted); }
 .poster-colors { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
 .poster-colors input[type=color] { width: 100%; min-width: 44px; height: 44px; border: 0; background: transparent; padding: 4px; border-radius: 12px; cursor: pointer; box-shadow: var(--control-inset); }
