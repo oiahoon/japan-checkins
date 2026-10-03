@@ -44,3 +44,7 @@ China/Sichuan outlines use geoBoundaries gbOpen CHN ADM1; world uses Natural Ear
 ## 日本城市照片拼图
 
 市区町村行政边界：国土交通省「国土数値情報（行政区域）」2021 年，由 SmartNews japan-topography 处理并将政令指定都市合并。本项目投影并将坐标保留 4 位小数，供旅行概览，非现行行政边界测绘。源文件： https://github.com/smartnews-smri/japan-topography/blob/main/data/municipality/geojson/s0010/N03-21_210101_designated_city.json 。
+
+## Chengdu districts
+
+chengdu-districts.json: geoBoundaries gbOpen CHN ADM3 (boundaryID CHN-ADM3-62558664, represented year 2017), Lee Beryman / OpenStreetMap, ODbL 1.0 https://opendatacommons.org/licenses/odbl/1-0/ . Source API https://www.geoboundaries.org/api/current/gbOpen/CHN/ADM3/ ; source commit 9469f09 simplified dataset. Selected 20 Chengdu districts, translated display names, retained sourceName and rounded coordinates. Derived data is distributed under ODbL, separately from application code/private journal. © OpenStreetMap contributors https://www.openstreetmap.org/copyright . Historic reference polygons, not current official administrative/planning boundaries.
