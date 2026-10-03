@@ -84,3 +84,5 @@ focusedVisit 独立于 expandedVisit：首次点击聚焦地图（无坐标时�
 PhotoViewer 使用原有认证图片 URL，不创建公开链接。支持 keyboard / touch 切换、1–3 倍缩放、加载失败重试及原生 dialog 焦点约束。时间线、记录内联和上传预览都使用同一查看器。照片重新上传复用逐张确认流程，新增记录而非静默改写旧历史。
 
 GitHub 照片增加可选 removed 布尔字段；旧照片默认可见。PATCH /api/photos/:id 经过主人身份、同源、owner 与 mutation 冲突重试验证，只修改 removed，不删照片文件或到访。普通 / 公开列表和图片读取排除已移除照片；主人列表返回 removedPhotos 标识用于恢复。读取公开快照不暴露回收站。原 DELETE 仅处理未保存草稿，行为保持。历史 Sites 路径未新增回收站，不修改部署迁移。
+
+移动端视图层：Travel 保存聚焦记录、详情 ID 与地图选项展开状态；VisitDetail 使用 native dialog，Photos viewer 可在详情上方打开，重新上传与再记到访关闭详情后进入原确认流程。数据端点及授权不变。TravelPoster 将配置与导出操作区拆开，手机默认预览优先，桌面仍使用两栏。CSS 动态视口和安全区适配，不添加设备定位或推断行为。
