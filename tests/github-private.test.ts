@@ -214,3 +214,19 @@ test('draft EXIF proposals are private, bounded and distinct from confirmed map 
  const shared=await (await journalAPI({...ctx,sharedOnly:true,readOnly:true},undefined,'list')).json() as {drafts:unknown[];photos:unknown[]};assert.equal(shared.drafts.length,0);assert.equal(shared.photos.length,0);
  const bad=uploadRequest();bad.headers.set('X-Photo-Proposal',encodeURIComponent(JSON.stringify({gps:{latitude:NaN,longitude:0}})));assert.equal((await journalAPI(ctx,bad,'upload')).status,400);
 });
+
+test('partial and complete photo information survives Git commit, list projection and a fresh read',async()=>{
+ const initial=emptyJournal(owner);initial.photos.push({id:'synthetic-photo-01',owner,sha:'a'.repeat(40),digest:'synthetic',checkin:null,created:''});
+ const git=fakeGit({initial}),ctx={userId:owner,origin:'https://journal.test',store:git.store};
+ const partial={country:'JP',prefecture:'架空県',city:'',place:'',date:'',note:'仅有笔记',latitude:null,longitude:null};
+ const save=async(details:typeof partial,confirmed=false)=>journalAPI(ctx,new Request(ctx.origin+'/api/photos/synthetic-photo-01',{method:'PATCH',headers:{origin:ctx.origin},body:JSON.stringify({details,confirmed})}),'edit-photo','synthetic-photo-01');
+ assert.equal((await save(partial)).status,200);
+ type Listing={drafts:Journal['photos'];photos:Journal['photos'];checkins:Journal['checkins']};
+ const list=async()=> (await journalAPI({...ctx,store:fakeGit({initial:git.data()}).store},undefined,'list')).json() as Promise<Listing>;
+ let data=await list();assert.deepEqual(data.drafts[0].details,partial);assert.equal(data.checkins.length,0);
+ const complete={...partial,city:'合成市',place:'合成地点',date:'2026-01-02',note:'新笔记'};
+ assert.equal((await save(complete)).status,200);data=await list();assert.deepEqual(data.drafts[0].details,complete);assert.equal(data.checkins.length,0);
+ assert.equal((await save(complete,true)).status,200);data=await list();assert.equal(data.drafts.length,0);assert.deepEqual(data.photos[0].details,complete);assert.equal(data.checkins.length,1);
+ assert.equal((await save({...complete,note:''},true)).status,200);data=await list();assert.equal(data.photos[0].details!.note,'');assert.equal(data.checkins[0].note,'');assert.equal(data.checkins.length,1);
+ const shared=await (await journalAPI({...ctx,readOnly:true,sharedOnly:true},undefined,'list')).json() as Listing;assert.equal(shared.photos.length,0);assert.equal(shared.drafts.length,0);
+});

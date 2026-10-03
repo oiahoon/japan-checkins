@@ -122,3 +122,11 @@ Used CUA IAB actual components with temporary isolated synthetic fixtures. Deskt
 Mismatch ledger: mobile generation text / save link initially covered the center control (P1). Put export footer in normal flex layout and reserve its actual height, so preview tools stay above it. Changing composition clears stale generation feedback and save links. No horizontal overflow at 320 or 390px.
 
 72 tests pass, including normalized drag across viewport sizes, bounds and invalid dimensions, output position across all nine template/format combinations, fixed copy and nested geographic photo clipping. Local typecheck and production build pass; temporary QA route and synthetic fixture endpoint removed before delivery. Screens outside Git: /tmp/travel-export-drag-desktop.png, /tmp/travel-export-drag-mobile.png, /tmp/travel-export-drag-sichuan.png. Final rendered result: passed; physical-device acceptance remains separate.
+
+### Photo information summary regression — 2026-10-03
+
+Finding: saved country/region/city was hidden whenever place was blank. No field-loss reproduction in the save/read flow; private production index was inspected for field presence only, without modifying user data. Cards now render available location levels and separate missing specific-place information from map-confirmation status. Editor distinguishes saved information from a confirmed map visit.
+
+Environment: local 127.0.0.1:3000 temporary isolated QA, actual PhotoLibrary / PhotoEditor and journalAPI over a serialized synthetic store; CUA IAB browser available (no external Playwright fallback). 390×844 and 1366×900; light and dark material checked. Page title/route, nonblank content, no framework overlay, zero relevant console errors and screenshots passed. Flow: partial region → edit city/place/date/note → save unconfirmed → reload → reopen retained all fields and no visit → confirm → one visit → no-note filter excludes it. Temporary QA removed before delivery.
+
+Automated: GitHubStore fake Git transport plus actual journalAPI roundtrip checks partial and complete details after a fresh read, empty-note clearing, consent and private exclusion. 76 tests total. Evidence stored outside Git: /tmp/photo-info-partial-mobile.png and /tmp/photo-info-desktop.png. Real user save/edit, physical iPhone and file upload were not exercised in this regression.
