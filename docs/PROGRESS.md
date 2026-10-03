@@ -1,5 +1,18 @@
 # Current handoff / 当前交接
 
+## 最新实现 · 地点搜索与直接保存（2026-10-03）
+
+照片编辑将地点搜索和所属地区并成同一个区块。地点输入提供带地址摘要的建议，所属国家 / 地区 / 城市变为无边框、无第二层输入凹槽的轻量折叠摘要；修改才展开手动字段。保留博多站等输入的具体名称，未收录地点可直接手填；同名 / 新地区不继承旧归属，所有地点编辑清除旧精确坐标。建议选择不会自行创建到访。
+
+移除“我已确认地点和日期”勾选。位置与日期完整时主按钮为“保存并标记地图”，点击承担明确确认；缺项时为“保存照片信息”，只保留私人草稿。已标记记录不能删空必要字段后覆盖，位置 / 日期变更仍需通过明确保存确认；服务端 owner、来源检查、GPS 边界验证、幂等和撤销公开规则不变。EXIF 日期仍是本机读取的可编辑建议，不使用上传时间或文件修改时间代替。
+
+可选 `GEOAPIFY_API_KEY` 接入管理员、同源 POST `/api/places`，仅查询本次键入关键词，不发送照片 / GPS / 已存记录。未配置时不向供应商发请求；本地建议是行政区 / 已维护别名，不是完整 POI 数据库。请求 / 响应有界、取消过期请求、IME、防抖、键盘、无结果 / 失败回退和来源署名。城市 / 行政区中心点不保存为精确落点。供应商数据来源随照片、到访和导出保留，兼容旧索引。
+
+用户选择先用本地建议，在线稍后启用。随后要求协助申请 Geoapify，但官方账户入口同样 ERR_CONNECTION_CLOSED，未能进入注册 / 创建账号；不修改用户代理或网络设置、不读取 / 填写新账号凭证。本次发布不声称线上 Geoapify 已启用。
+
+104 项合成测试、typecheck / build 和 320 / 390 / 768 / 1280px 明暗界面验收范围见 [地点编辑验收](design/place-search-2026-10-03/README.md)。真实供应商搜索 / iPhone 键盘与账户注册仍为未完成的独立验收；没有写入真实私人数据。
+
+
 ## 生产验收 · 连续地理探索（2026-10-03）
 
 功能提交 `9f3f1cdde229b4a851fd8476d52866258b2f197d` 已推送 main；[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37125202761) 与 [Verify clone-and-deploy build](https://github.com/oiahoon/japan-checkins/actions/runs/37125202755) 均 success。Vercel Production `dpl_45gDm8qFAqCY49EJbfiNHQTBQnke` Ready，travel.miaowu.org 与 japan-checkins.vercel.app 指向同一部署。后续文档提交不改变功能代码，最终提交状态可从 GitHub / Vercel 检查确认。

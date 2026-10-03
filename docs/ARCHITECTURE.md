@@ -138,3 +138,11 @@ posterStyles 保留 paper/night/memories 内部 ID，更新为独立作品构图
 Memoized boundary paths and regional visits keep camera frames from rebuilding geometry / photo markup. Municipal focus fits the largest connected polygon to avoid remote islands displacing the main city; all original polygons remain rendered and can be explored by panning / zooming out. Source feature IDs disambiguate municipal targets and puzzle clicks. Same-name municipal records without confirmed coordinates stay in the parent and do not count in either child. UI filters records by node country / province / city / district, without changing saved data or EXIF consent. Device home-region preference adds optional nodeId with legacy scope / area fallback; no new service endpoint or migration.
 
 Exports retain five existing lenses and all three configurable compositions. Browsing a Japanese municipality still exports the Japan lens, Asia exports the world lens, and no new municipality / continent export is implied. See GEOGRAPHY.md and the map-explorer design acceptance report.
+
+### 地点搜索与按钮确认（2026-10-03）
+
+`app/place-search.tsx` 共用拟物输入 / 建议列表，支持 IME、450ms 防抖、Arrow / Enter / Esc、过期请求取消、内存会话缓存、失败回退。默认本地 `place-index.json`，可选服务端 Geoapify 地址自动完成。`GET /api/places` 只提供启用标志；`POST` 在主人管理员会话与同源检查后接受唯一 query 字段。没有查询数据仓库或客户端指定 owner；供应商只接收本次关键词，key 不进入客户端 / 日志 / Git。服务限制在 `lib/place-search-service.ts`，独立合成测试覆盖认证、来源、输入流边界、供应商异常、速率预算和凭证隔离。实例内限流不等于平台全局限制。
+
+`lib/place-search.ts` 投影合法地址字段、有限 WGS84 坐标，并与既有行政区轮廓同源归一化。行政区中心只用于归属推导，不作为精确落点。可选 `details.placeSource` / `checkins.place_source` 保留 Geoapify 署名；旧索引无字段继续读取，共享副本只保留公开到访的来源。来源通过图库、地图和海报显示，不新增公开照片接口。
+
+`lib/photo-save-intent.ts` 将明确的“保存并标记地图”动作映射到既有 `{details,confirmed:true}`；缺项保存仍为 false，不改变服务端确认约束。没有独立确认勾选。改变地点清除旧坐标，识别到其他 / 同名地区时清除旧归属；手动填入未收录具体地点保留已审阅的父地区。修改已标记照片仍由服务端核对完整信息、坐标与地区、所有权，并撤销发布。

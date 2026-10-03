@@ -30,7 +30,7 @@ import {inspectPhoto,readablePhoto} from '../lib/photo-import';
 import {prefectureAt,validCoordinate,type PhotoMetadata} from '../lib/photo-metadata';
 type Restaurant={id:string,name:string,prefecture:string,city:string,dish:string,episode:string,status:string,source:string,statusNote?:string,dishSource?:string,dishVerification?:string,locationSource?:string,statusSource?:string,addressSource?:string,addressNote?:string,displayAddress?:string,addressLabel?:string,note?:string,officialRestaurant?:string};
 type Feature={properties:{id:number,name:string},geometry:{type:string,coordinates:number[][][][]}};
-type Checkin={country?:string;published?:boolean;id:string,prefecture:string,city:string,district?:string,place:string,place_key:string,kind:string,date:string,note:string,depth:number,eaten:number;latitude?:number|null;longitude?:number|null;location_source?:string|null};
+type Checkin={place_source?:'geoapify';country?:string;published?:boolean;id:string,prefecture:string,city:string,district?:string,place:string,place_key:string,kind:string,date:string,note:string,depth:number,eaten:number;latitude?:number|null;longitude?:number|null;location_source?:string|null};
 type Status={scope:string,label:string,depth:number,eaten:number};
 type Photo={id:string,checkin:string;details?:PhotoDetails;proposal?:PhotoProposal;metadata?:Record<string,string|number>};
 type Pending={key:string,file:File,url:string,id?:string,error?:string,progress:number;metadata?:PhotoMetadata;details?:PhotoDetails;proposal?:PhotoProposal};

@@ -111,19 +111,30 @@ html[data-theme=dark] .neo-notification{--notification-tone:#afc7a7}html[data-th
 .viewer-stage>.neo-notification.viewer-error{inset:auto;top:50%;left:50%;transform:translate(-50%,-50%);flex-direction:row;width:min(420px,calc(100% - 32px));animation:none}.viewer-error .neo-notification-action{background:var(--neo-paper);box-shadow:var(--neo-raised)}
 
 /* Place comes first. Administrative fields stay available in a quiet disclosure. */
+.photo-place-block{display:grid;gap:0;min-width:0}
 .photo-place-search{position:relative;min-width:0}
-.photo-place-candidates{display:grid;gap:4px;padding:8px;margin-top:8px;border-radius:14px;background:var(--neo-paper);box-shadow:var(--neo-raised);max-height:230px;overflow:auto}
-.photo-place-candidates button{border:0;background:transparent;color:var(--neo-ink);display:flex;align-items:center;gap:12px;padding:12px;text-align:left;border-radius:10px;min-height:48px;cursor:pointer}
-.photo-place-candidates button:hover,.photo-place-candidates button:focus-visible{background:var(--neo-paper);box-shadow:var(--neo-inset)}
-.photo-place-candidates button>span{display:grid;gap:4px;min-width:0;font-size:13px}
-.photo-place-candidates small{font-size:11px;color:var(--neo-muted)}
-.photo-region-adjust{border-radius:14px;background:var(--neo-paper);box-shadow:var(--neo-inset);padding:0 14px}
-.photo-region-adjust summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;min-height:48px;padding:12px 0;color:var(--neo-ink);font-size:12px}
+.photo-place-input{position:relative;margin-top:8px;display:flex;align-items:center}
+.photo-place-input>svg:first-child{position:absolute;left:14px;color:var(--neo-muted);pointer-events:none}
+.photo-editor .photo-place-input>.neo-input{padding-left:42px;padding-right:40px;margin:0;min-width:0;font-size:16px}
+.photo-place-input>.spinner{position:absolute;right:14px;color:var(--neo-muted);pointer-events:none}
+.photo-place-candidates{padding:8px;margin-top:8px;border-radius:14px;background:var(--neo-paper);box-shadow:var(--neo-raised);max-height:260px;overflow:auto;overscroll-behavior:contain;scroll-padding:8px}
+.photo-place-candidates [role=listbox]{display:grid;gap:4px}
+.photo-place-candidates button{border:0;background:transparent;color:var(--neo-ink);display:flex;align-items:center;gap:10px;padding:10px 12px;text-align:left;border-radius:10px;width:100%;min-height:48px;cursor:pointer}
+.photo-place-candidates button:hover,.photo-place-candidates button:focus-visible,.photo-place-candidates button[aria-selected=true]{background:var(--neo-paper);box-shadow:var(--neo-inset)}
+.photo-place-candidates button>svg{flex-shrink:0;color:var(--neo-muted)}
+.photo-place-candidates button>span{display:grid;gap:4px;min-width:0;font-size:13px;overflow-wrap:anywhere}
+.photo-place-candidates small{font-size:11px;color:var(--neo-muted);line-height:1.5}
+.photo-place-candidates p{margin:8px;font-size:12px;color:var(--neo-muted);line-height:1.6}
+.place-attribution{display:block;padding:8px 12px 4px;font-size:10px!important}
+.place-attribution a{color:inherit}
+.photo-region-adjust{padding:0 2px;margin-top:6px;background:transparent;box-shadow:none;min-width:0}
+.photo-region-adjust summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;min-height:44px;padding:10px 2px;color:var(--neo-muted);font-size:12px}
 .photo-region-adjust summary::-webkit-details-marker{display:none}
-.photo-region-adjust summary>span{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0}
-.photo-region-adjust summary small{font-size:11px;color:var(--neo-accent)}
+.photo-region-adjust summary>span{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;overflow-wrap:anywhere}
+.photo-region-adjust summary small{font-size:11px;color:var(--neo-accent);white-space:nowrap}
 .photo-region-adjust summary>svg{flex-shrink:0;transition:transform .2s}
 .photo-region-adjust[open] summary>svg{transform:rotate(180deg)}
-.photo-region-fields{display:grid;gap:16px;padding:4px 0 16px}
-.photo-date-hint{display:block;margin-top:8px;color:var(--neo-muted);font-size:11px;line-height:1.5}
+.photo-region-fields{display:grid;gap:16px;padding:12px 14px 16px;margin-bottom:8px;border-radius:14px;box-shadow:var(--neo-inset);background:var(--neo-paper)}
+.photo-place-block>.photo-proposal{background:transparent;box-shadow:none;padding:0 4px;min-height:44px;justify-content:flex-start;color:var(--neo-accent)}
+@media(max-width:640px){.photo-editor .neo-input,.photo-editor .neo-textarea,.photo-editor .select-trigger{font-size:16px}.photo-region-fields{padding:12px}.photo-editor-two{gap:12px}}
 @media(prefers-reduced-motion:reduce){.photo-region-adjust summary>svg{transition:none}}

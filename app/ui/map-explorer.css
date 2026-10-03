@@ -75,3 +75,5 @@
 }
 @media (prefers-reduced-motion:reduce) { .explorer-boundaries,.explorer-search { animation:none; } }
 @media (prefers-contrast:more),(forced-colors:active) { .explorer-back,.explorer-search-button,.explorer-path,.explorer-zoom>div,.explorer-zoom>button,.explorer-search,.explorer-search-field { box-shadow:none; border:1px solid currentColor; } }
+
+.explorer-geocoding-source{font-size:10px;color:var(--muted);margin-left:auto}.explorer-geocoding-source a{color:inherit;pointer-events:auto}.explorer-footer:has(.explorer-geocoding-source){gap:8px;flex-wrap:wrap}

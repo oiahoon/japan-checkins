@@ -8,7 +8,7 @@ export function savePhotoDetails(j:Journal,owner:string,id:string,input:z.infer<
  const before=JSON.stringify(j),old=j.checkins.find(c=>c.id===p.checkin),d=input.details;
  if(!input.confirmed){
   if(old&&[old.country,old.prefecture,old.city,old.place,old.date,old.latitude,old.longitude].some((v,i)=>v!==[d.country,d.prefecture,d.city,d.place,d.date,d.latitude,d.longitude][i]))throw new InputError('修改已标记地点或日期后，请重新确认再保存');
-  p.details=d;if(old){if(j.photos.filter(photo=>photo.checkin===old.id).length===1)old.note=d.note;old.published=false}return JSON.stringify(j)!==before;
+  p.details=d;if(old){if(j.photos.filter(photo=>photo.checkin===old.id).length===1)old.note=d.note;old.published=false;if(d.placeSource)old.place_source=d.placeSource;else delete old.place_source}return JSON.stringify(j)!==before;
  }
  if(!d.country||!d.prefecture||!d.place||!d.date)throw new InputError('标记地图前请补充国家、地区、地点和日期');
  if((d.latitude===null)!==(d.longitude===null))throw new InputError('请同时填写经纬度，或清除坐标');
@@ -19,5 +19,6 @@ export function savePhotoDetails(j:Journal,owner:string,id:string,input:z.infer<
   // An old multi-photo visit remains intact; this photo becomes its own explicit visit.
   if(j.checkins.some(c=>c.id===id&&c.id!==old?.id))throw new InputError('照片记录标识冲突，请刷新后重试');const next={...visit,id,photos:[id]},statuses=structuredClone(j.statuses);if(old)p.checkin=null;appendVisit(j,owner,next);j.statuses=statuses;
  }
+ const saved=j.checkins.find(c=>c.id===p.checkin);if(saved){if(d.placeSource)saved.place_source=d.placeSource;else delete saved.place_source}
  p.details=d;return JSON.stringify(j)!==before;
 }

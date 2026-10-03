@@ -200,3 +200,7 @@ final result: passed
 本轮沿用已批准的美术语言，替换的是主地图的地理导航。桌面同尺寸生产基线、合成运行图和手机双主题对照，以及尺寸 / 交互 / 来源修正 / 遗留设备验收，见 [地图探索 QA](docs/design/map-explorer-2026-10-03/README.md)。新暖纸 / 深墨 / 朱红控件不新增常态描边，44px 操作和紧凑手机导航检查通过；源资料仍是真实 GeoJSON，概念照片仅出现在已移除的隔离 QA 中。生产状态以最终 GitHub / Vercel 检查和正式域名验收为准。
 
 生产复验补充：功能提交 9f3f1cd 已 Ready，两项 CI 成功。新增 1280×720 暗调主人空日志的前后同尺寸比较与 390px 正式域名截图；字体 / 配色 / 光影一致，顶部选择器被地图内路径替换属于有意结构调整。生产地理导航、菜单、私人读取和控制台检查通过；物理双指设备仍单独验收。详见本轮设计目录 README 的生产验收补充。
+
+## 2026-10-03 地点搜索与按钮确认
+
+Scoped photo-editor refinement: place combobox / local suggestions / light parent summary, explicit Save-and-map replacing the checkbox, draft saves and conflict clearing. Existing UI Kit tokens and footer layout retained. Synthetic browser checks cover 320/390/768/1280px, light/dark, manual disclosure, Arrow/Enter/Esc, absent results, preserved landmark names, partial save and failure recovery. Optional online component uses isolated mock responses for pending/stale/error/recovery; provider integration tests deny anonymous/viewer/foreign Origin and never leak keys. No production user data written; actual Geoapify registration/live queries and physical iPhone remain open. Screenshots and detailed contract: docs/design/place-search-2026-10-03/README.md. Temporary QA routes are removed before build / deployment.

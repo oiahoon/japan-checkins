@@ -21,3 +21,8 @@ export function applyPlaceMatch(details:PhotoDetails,match:PlaceMatch):PhotoDeta
  const changed=details.country!==match.country||details.prefecture!==match.prefecture||details.city!==match.city;
  return {...details,country:match.country,prefecture:match.prefecture,city:match.city,...(changed?{latitude:null,longitude:null}:{})};
 }
+export function editPlaceQuery(details:PhotoDetails,place:string,entries:PlaceMatch[]):PhotoDetails{
+ const candidates=lookupPlace(place,entries).candidates;
+ const conflict=candidates.some(m=>m.country!==details.country||m.prefecture!==details.prefecture||m.city!==details.city);
+ return {...details,place,latitude:null,longitude:null,placeSource:undefined,...(conflict?{country:'',prefecture:'',city:''}:{})};
+}

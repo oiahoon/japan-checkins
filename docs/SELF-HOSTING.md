@@ -56,6 +56,7 @@ npm run password:hash
 | `GITHUB_DATA_REPOSITORY` | 自己的 `owner/private-repository` |
 | `GITHUB_DATA_BRANCH` | 已存在简单分支名，默认 `main` |
 | `GITHUB_DATA_TOKEN` | 只访问数据仓库的受限令牌 |
+| `GEOAPIFY_API_KEY` | 可选，在线地点关键词提示；留空只使用项目内的行政区 / 已维护地点别名 |
 
 所有配置均为服务端变量，不使用 `NEXT_PUBLIC_`。更换任一密码哈希或会话密钥会使旧密码会话失效；会话最长 24 小时。退出清除当前浏览器 Cookie。
 
@@ -99,3 +100,15 @@ OAuth 只核实登录身份，不请求全部私人仓库的 `repo` scope。数�
 - [Vercel 登录限流](https://vercel.com/kb/guide/limit-abuse-with-rate-limiting)
 - [GitHub OAuth 与 PKCE](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps)
 - [Git 分支非强制更新](https://docs.github.com/en/rest/git/refs)
+
+## 可选：在线地点关键词搜索
+
+默认不访问外部地理编码服务。照片编辑的地点输入使用 `public/place-index.json`，提供日本 / 中国行政区以及已维护别名（如博多站）；这不是完整景点 / 店铺数据库。结果需要主动选择，同名结果显示所属地区，选中后填写国家、地区、城市。地点编辑会清除旧精确坐标，已识别为另一地区的输入同时清除旧归属。未找到建议时可手动填写和修改所属地区。
+
+如需在线城市 / 车站 / 店铺提示，在 [Geoapify MyProjects](https://myprojects.geoapify.com/) 创建自己的项目，将 `GEOAPIFY_API_KEY` 设为本机 `.env.local` 或 Vercel 服务端环境变量，并重新部署。不要使用 `NEXT_PUBLIC_` 或把 key 发到聊天 / 提交到 Git。仅管理员能调用 `/api/places`；公开访问和只读密码不会调用搜索。
+
+输入至少两个字后防抖搜索，只发送用户本次键入的关键词，不自动发送已保存地点、照片、EXIF、精确 GPS、笔记或 owner ID。关键词由服务端转发到 Geoapify；已有数据打开编辑框不会启动在线查询。请求有 4 秒服务端超时、响应 / 输入边界和实例内每 owner 每分钟 30 次预算；这不是跨实例的全局配额保护，规模扩大时需提供平台 WAF / 分布式限流并核对供应商配额。失败保留本地建议和手动填写，不影响草稿保存。
+
+[Geoapify 官方 Autocomplete 文档](https://apidocs.geoapify.com/docs/geocoding/address-autocomplete/) 定义地址和坐标字段；[数据存储条款说明](https://www.geoapify.com/geocoding-api/) 允许保存结果但要求保留署名。选中结果私有保存 `placeSource`，确认后的记录保留 `place_source`；照片库、地图和导出按需显示 Geoapify / OpenStreetMap 来源。行政区中心点不作为精确到访坐标；具体地点只提出坐标建议，最终仍须点击“保存并标记地图”。公开 OSM Nominatim 禁止自动完成，不作为无 key 的替代服务。
+
+当前生产先启用本地建议；尚无 Geoapify key / 真实供应商查询验收，不能把合成 API 响应验收描述为生产联网搜索。
