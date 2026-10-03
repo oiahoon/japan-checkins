@@ -2,6 +2,10 @@
 
 ## 发布核对 · 2026-10-04
 
+最终功能版本 b8cf7156e4c662db05b55326295eec605e3ece81：Checks（37139020917）与 Verify clone-and-deploy build（37139020909）均 success；正式域名实际指向 Production dpl_J85hKFk4xyt5X5pteKTMT1Exuvab，READY。390px 正式页只读验证短文字编辑器底部 footer 764–844px、正文 flex 1、无横向溢出；照片受保护读取完成，六个图片状态 ready，控制台无 error / warn。批量选两张进入新建记录预览后关闭，没有保存 / 重分组 / 删除私人数据。最终生产短表单截图保存在本机 /tmp/travel-production-text-editor-390-final.png，真实照片截图不进入 Git。以下文档更新不再改动功能代码。
+
+
+
 功能提交 d4abf79895999ef01a4e200432ba971af29b4f6d 已推送 main。[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37138661360) 与 [Verify clone-and-deploy build](https://github.com/oiahoon/japan-checkins/actions/runs/37138661363) 均 success。Vercel Production dpl_DJqXAChKXQ8vDnuRVdRNvsL81vkH Ready，正式域名与默认域名指向该部署。正式站主人会话只读复核混合时间线、照片库新入口与单张地点 / 日期 / 笔记读取、390px 文字编辑器，未保存或改动私人数据。收尾修正手机短表单的底部主动作位置；此修正再次通过 typecheck / build，最终版本以其提交对应 CI / Vercel 状态为准。
 
 ## 最新实现 · 记录与照片双向管理（2026-10-04）
