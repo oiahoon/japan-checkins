@@ -1,0 +1,77 @@
+/* Chronology belongs to the journal; surfaces share the UI kit's light and shadow. */
+.timeline-workspace.journal-page { max-width: 1040px; }
+.timeline-filter-toggle { display: none; }
+.journal-chronicle { min-width: 0; }
+.chronicle-months { display: flex; gap: 8px; overflow-x: auto; padding: 8px 4px 16px; margin: 0 -4px 24px; scrollbar-width: thin; }
+.chronicle-months a { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; min-height: 44px; padding: 10px 14px; font-size: 12px; color: var(--muted); border-radius: 12px; background: var(--bg); box-shadow: var(--control-raised); }
+.chronicle-months a:hover { color: var(--amber); text-decoration: none; box-shadow: var(--control-inset); }
+.chronicle-months a>span { font-variant-numeric: tabular-nums; }
+.chronicle-month { margin-bottom: 48px; }
+.chronicle-month-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; padding-left: 104px; }
+.chronicle-month-heading h3 { margin: 0; font: 500 23px/1.4 'Songti SC',SimSun,serif; scroll-margin-top: 24px; }
+.chronicle-month-heading>span { font-size: 12px; color: var(--muted); }
+.chronicle-days { list-style: none; margin: 0; padding: 0; display: grid; gap: 32px; }
+.chronicle-day { display: grid; grid-template-columns: 72px minmax(0,1fr); gap: 32px; align-items: start; }
+.chronicle-date { color: var(--muted); font-size: 12px; }
+.chronicle-date time { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px; border-radius: 16px; box-shadow: var(--control-inset); font-variant-numeric: tabular-nums; }
+.chronicle-date strong { font: 400 30px/1.1 'Songti SC',SimSun,serif; color: var(--amber); }
+.chronicle-day-entries { min-width: 0; display: grid; gap: 20px; }
+.chronicle-entry { display: grid; grid-template-columns: minmax(0,.95fr) minmax(0,1.05fr); gap: 0; min-width: 0; border-radius: 20px; background: var(--panel); box-shadow: var(--neo-panel); overflow: hidden; animation: chronicle-arrive .35s ease-out both; }
+.chronicle-entry--text { grid-template-columns: minmax(0,1fr); }
+.chronicle-album { min-width: 0; display: flex; flex-direction: column; background: var(--bg); }
+.chronicle-cover { position: relative; display: block; width: 100%; flex: 1; min-height: 240px; border-radius: 0; padding: 0; overflow: hidden; }
+.chronicle-cover .journal-photo { height: 100%; position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; box-shadow: none; }
+.chronicle-cover .journal-photo img { transition: transform .35s,opacity .2s; }
+@media (hover:hover) { .chronicle-cover:hover .journal-photo img { transform: scale(1.025); } }
+.chronicle-photo-count { position: absolute; right: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 10px; background: #202722e6; color: #fffaf2; font-size: 12px; }
+.chronicle-thumbnails { display: flex; gap: 8px; padding: 12px; overflow-x: auto; scrollbar-width: thin; }
+.chronicle-thumbnails>button { flex: 0 0 56px; width: 56px; height: 56px; padding: 0; border-radius: 10px; }
+.chronicle-thumbnails .journal-photo { border-radius: 10px; height: 100%; }
+.chronicle-entry-body { min-width: 0; padding: 24px; display: flex; flex-direction: column; align-items: flex-start; }
+.chronicle-kind { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); line-height: 1.6; }
+.chronicle-kind svg { flex-shrink: 0; }
+.chronicle-entry h4 { font: 500 25px/1.45 'Songti SC',SimSun,serif; margin: 12px 0 8px; overflow-wrap: anywhere; }
+.chronicle-entry h4>button { display: block; text-align: left; color: var(--text); padding: 0; font: inherit; }
+.chronicle-entry h4>button:hover { color: var(--amber); }
+.chronicle-location { font-size: 12px; color: var(--muted); line-height: 1.7; margin: 0; overflow-wrap: anywhere; }
+.chronicle-note { width: 100%; margin-top: 16px; }
+.chronicle-note p { font-size: 14px; line-height: 1.85; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chronicle-note p.is-clamped { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.chronicle-note-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 12px; color: var(--amber); padding: 8px 0; }
+.chronicle-note-toggle svg { transition: transform .18s; }
+.chronicle-note-toggle[aria-expanded=true] svg { transform: rotate(180deg); }
+.chronicle-entry-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; padding-top: 20px; margin-top: auto; }
+.chronicle-entry-actions .neo-button { min-height: 44px; padding: 10px 12px; font-size: 12px; }
+.chronicle-entry-actions .neo-button--quiet { color: var(--muted); }
+@keyframes chronicle-arrive { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (max-width:800px) {
+ .timeline-filter-toggle { display: inline-flex; }
+ .timeline-workspace .journal-timeline-filters { display: none; padding: 16px; border-radius: 16px; background: var(--bg); box-shadow: var(--control-inset); }
+ .timeline-workspace .journal-timeline-filters.is-open { display: flex; animation: chronicle-arrive .2s ease-out; }
+ .chronicle-months { margin-bottom: 16px; }
+ .chronicle-months a { font-size: 12px; }
+ .chronicle-month-heading { padding-left: 0; margin-bottom: 16px; }
+ .chronicle-month-heading h3 { font-size: 22px; }
+ .chronicle-month { margin-bottom: 36px; }
+ .chronicle-day { grid-template-columns: minmax(0,1fr); gap: 12px; }
+ .chronicle-days { gap: 24px; }
+ .chronicle-date time { display: inline-flex; flex-direction: row; gap: 8px; padding: 8px 12px; min-height: 40px; border-radius: 12px; }
+ .chronicle-date strong { font-size: 22px; }
+ .chronicle-date time>span { font-size: 12px; }
+ .chronicle-day-entries { gap: 20px; }
+ .chronicle-entry { grid-template-columns: minmax(0,1fr); border-radius: 16px; }
+ .chronicle-cover { min-height: 0; flex: none; aspect-ratio: 3/2; }
+ .chronicle-entry-body { padding: 20px; }
+ .chronicle-entry h4 { font-size: 23px; }
+ .chronicle-thumbnails { padding: 10px 12px; }
+ .chronicle-entry-actions { padding-top: 16px; }
+}
+@media (max-width:360px) { .chronicle-entry-body { padding: 16px; } .chronicle-entry h4 { font-size: 22px; } }
+@media (prefers-reduced-motion:reduce) { .chronicle-entry,.timeline-workspace .journal-timeline-filters.is-open { animation: none; } .chronicle-cover .journal-photo img,.chronicle-note-toggle svg { transition: none; } }
+@media (prefers-contrast:more),(forced-colors:active) { .chronicle-entry,.chronicle-date time,.chronicle-months a { border: 1px solid currentColor; box-shadow: none; } }
+/* Tablets keep photo and prose together without a screen-height cover. */
+@media (min-width:640px) and (max-width:800px) {
+ .chronicle-entry { grid-template-columns: minmax(0,.95fr) minmax(0,1.05fr); }
+ .chronicle-entry--text { grid-template-columns: minmax(0,1fr); }
+ .chronicle-cover { min-height: 240px; aspect-ratio: auto; flex: 1; }
+}

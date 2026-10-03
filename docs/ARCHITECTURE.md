@@ -124,3 +124,7 @@ Date extraction precedes image re-encoding. The exifr importer and bounded JPEG 
 JournalHeader/JournalMobileNav 从 Travel 中提取，按权限动态生成导航与滑块索引；PageHeader、SheetHeader、PhotoImage 统一排版、44px 目标、加载/失败图槽。布局规则在 journal-layout.css，材质主题在 neo.css。uploadBatchKeys 仅控制当前上传批次显示，历史草稿、认证端点和幂等数据保存不变。
 
 posterStyles 保留 paper/night/memories 内部 ID，更新为独立作品构图。poster-style.ts 校验用户颜色（完整六位 HEX），配置背景、地理底色、强调色，并适配前景；图像 XML 转义不变。TravelPoster 显式传入统计/日期开关，UI 默认关闭；buildPoster 的省略参数默认保留旧统计/日期兼容。所有导出共享最终 SVG。自定义不持久化到私有记录或部署配置。详见布局审阅文档。
+
+## 时间线展示层
+
+`app/journal-timeline.tsx` 负责月 / 日分组、照片封面与缩略图、笔记折叠，以及地图 / 查看器 / 详情回调；复用 PhotoImage 和 NeoButton。`lib/timeline.ts` 按 YYYY-MM-DD 日历日期倒序排序，UTC 仅用于星期计算，不转换用户日期，不修改原始数组。缺失 / 非法日期置于末尾；同一天多条记录各自保留 ID。`app/ui/journal-timeline.css` 管理专属布局与动效，沿用 neo.css 的材质与主题令牌。Travel 保留地区过滤与数据读取，详情内容独立于新的时间线布局。未引入旅程合并、推断坐标或草稿自动标记。

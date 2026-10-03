@@ -90,3 +90,7 @@ API：children 为正文；tone 默认为 success；placement 默认为 inline�
 ### 统一布局组件（2026-10-03）
 
 页面标题 PageHeader：主标题/可选上标/摘要/操作区域，窄屏自然换行。SheetHeader：统一 h2、辅助文字和44px关闭控件，可在保存中禁用。PhotoImage：稳定正方形图槽，可选择 contain，加载/失败独立状态，认证 URL 不变。JournalHeader/MobileNav 根据角色生成项目，底部动画按实际数量和间距计算。间距、页面宽度、弹窗和图槽在 journal-layout.css；材质令牌仍在 neo.css。审阅证据见 design/layout-audit-2026-10-03.md。
+
+## 旅行时间线组合
+
+JournalTimeline 复用 NeoButton / PhotoImage；凹陷日期标签、浮起记录表面共享明暗令牌，不为常态加边框。月份链接为原生锚点，标题可聚焦；笔记展开有 aria-expanded / aria-controls。手机地图 / 详情 / 月份目标至少 44px，照片缩略图 56px。减少动态效果关闭入场和照片 / 展开图标过渡，高对比可加信息边界。图片状态保留固定画幅。320–639px 纵向；640–800px 图文并排但筛选折叠；801px 以上日期栏与桌面过滤。
