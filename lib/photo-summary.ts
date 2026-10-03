@@ -4,7 +4,7 @@ import type {PhotoDetails,PhotoProposal} from './travel-data.ts';
 // on the card even when no visit has been confirmed.
 export function photoSummary(details:PhotoDetails,marked:boolean,proposal?:PhotoProposal){
  const country=({JP:'日本',CN:'中国'} as Record<string,string>)[details.country]||details.country;
- const parts=[country,details.prefecture,details.city,details.place].map(v=>v.trim()).filter(Boolean);
+ const parts=[country,details.prefecture,details.city,details.district||'',details.place].map(v=>v.trim()).filter(Boolean);
  const location=[...new Set(parts)].join(' · ');
  return {
   location:location||(proposal?.gps?'定位待确认':'地点待补充'),

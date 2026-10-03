@@ -51,8 +51,16 @@ chengdu-districts.json: geoBoundaries gbOpen CHN ADM3 (boundaryID CHN-ADM3-62558
 
 ## 地点名称索引（2026-10-03）
 
-`place-index.json` 由 `node scripts/build-place-index.mjs` 从上述日本市区町村、中国省份、四川市州、成都区县和世界国家名称生成，保留各来源的使用条件（成都衍生条目为 ODbL）。附常见简体写法；仅辅助填写所属地区，不是地址定位服务，不生成坐标。博多 / 博多区 / 博多駅（站）归属福岡市的辅助别名，参考福岡市官网与官方路线： https://www.city.fukuoka.lg.jp/ 、 https://bunkazai.city.fukuoka.lg.jp/files/NewsBlocks/48063ea5-ecc2-4b83-8122-6a2d61cc0ff8/value01/6d7a89687c0f6e47f2990ce2dc53011d.pdf 。日本政令指定都市已合并，区级名称并不完整；中央区等常见重名需要用户选择。无全球街道 / 商家 / 景点大全。
+`place-index.json` 由 `node scripts/build-place-index.mjs` 从上述日本市区町村、完整国内行政地名目录和世界国家名称生成，保留各来源的使用条件（国内名称和边界独立来源见文末）。附常见简体写法；仅辅助填写所属地区，不是地址定位服务，不生成坐标。博多 / 博多区 / 博多駅（站）归属福岡市的辅助别名，参考福岡市官网与官方路线： https://www.city.fukuoka.lg.jp/ 、 https://bunkazai.city.fukuoka.lg.jp/files/NewsBlocks/48063ea5-ecc2-4b83-8122-6a2d61cc0ff8/value01/6d7a89687c0f6e47f2990ce2dc53011d.pdf 。日本政令指定都市已合并，区级名称并不完整；中央区等常见重名需要用户选择。无全球街道 / 商家 / 景点大全。
 
 ## 连续探索与日本町村标签
 
 主地图使用经度 / Mercator 纬度连续相机；亚洲为视窗。西沙物理岛屿在主地图按原位显示，导出保留局部放大框。日本 2021 数据的町村标签已改为 N03_004 优先，郡名保存为辅助字段；1751 个 feature 的 ID / 几何不变，非边界年份更新。固定源与校验脚本见 docs/GEOGRAPHY.md。同名地点无确认坐标不自动归属。
+
+## 国内市县扩展与独立许可（2026-10-03）
+
+`china-admin.json`：内地国家统计局2023-06-30目录，经 modood 固定提交6fb5380（仓库WTFPL v2）；台湾内政部2021资料经 taiwan-atlas 2021.9.20镜像，政府资料开放授权条款第1版，镜像程序MIT；香港民政事务总署18区和澳门公开地理分区仅转录名称事实。名称目录含统计区域，不是正式县级行政单位总数；地点索引不推断坐标。
+
+`china-cities.json`：市级主体来自 geoBoundaries gbHumanitarian / HDX，2020，CC BY 3.0 IGO https://creativecommons.org/licenses/by/3.0/igo/ 。市级文件中省直辖单位若采用2017县级来源，其对应衍生部分仍为ODbL；直辖市 / 港澳上级沿用Public Domain省级轮廓；台湾部分依下述政府资料开放条件。各feature保留source / year。`china-districts/{code}.json` 内地区县：© OpenStreetMap contributors / Lee Beryman / geoBoundaries，2017，ODbL 1.0 https://opendatacommons.org/licenses/odbl/1-0/ ，独立衍生数据库继续按ODbL分发。台湾22县市 / 368乡镇：内政部国土测绘中心资料，2021，政府资料开放授权 https://data.gov.tw/license 。已修复拓扑、统一MultiPolygon、四位小数；名称和空间验证失败的来源不猜配。
+
+34省级完整名称不代表全部2026现行区县边界；新资产382市级等 / 2663下级轮廓、未匹配编码与来源清单公开于 china-coverage.json。全部固定URL、原始SHA-256、逐省覆盖和复现命令：https://github.com/oiahoon/japan-checkins/blob/main/docs/CHINA-COVERAGE.md 。应用代码与私人日志不因独立公开地理数据库改变许可；导出仍按原五种地域作品，不自动导出当前任意市县视图。

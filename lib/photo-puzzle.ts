@@ -7,6 +7,7 @@ export function photoAreas(scope:Scope,features:PuzzleRegion[],visits:PuzzleVisi
  const grouped=new Map<string,{feature:PuzzleRegion;photos:(PuzzlePhoto&{note:string})[]}>();
  for(const visit of visits){let feature:PuzzleRegion|undefined;
  if(scope==='japan'){const matches=features.filter(f=>f.properties.prefecture===visit.prefecture&&f.properties.name===visit.city);feature=matches.length===1?matches[0]:undefined;if(!feature&&visit.latitude!=null&&visit.longitude!=null){const candidates=features.filter(f=>f.properties.prefecture===visit.prefecture);feature=candidates.find(f=>Boolean(prefectureAt(visit.latitude!,visit.longitude!,[f])));}}
+ else if(features.some(f=>f.properties.adminCode)){feature=features.find(f=>f.properties.prefecture===visit.prefecture&&f.properties.city===visit.city&&(f.properties.district?f.properties.district===visit.district:true));if(!feature&&visit.latitude!=null&&visit.longitude!=null)feature=features.filter(f=>f.properties.prefecture===visit.prefecture&&f.properties.city===visit.city).find(f=>Boolean(prefectureAt(visit.latitude!,visit.longitude!,[f])));}
  else feature=features.find(f=>f.properties.name===visitArea(visit,scope,features));
  if(!feature)continue;const matching=photos.filter(p=>p.checkin===visit.id);if(!matching.length)continue;const key=String(feature.properties.id),group=grouped.get(key)||{feature,photos:[]};for(const p of matching)if(!group.photos.some(old=>old.id===p.id))group.photos.push({...p,note:(p.details?.note??visit.note)?.trim()||''});grouped.set(key,group);
  }return [...grouped.values()];

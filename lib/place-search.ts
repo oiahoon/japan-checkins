@@ -29,5 +29,5 @@ export function applySearchPlace(details:PhotoDetails,match:PlaceSuggestion,geos
  const cities=country==='JP'?(geos.japanCities||[]).filter(f=>(f.properties as {prefecture?:string}).prefecture===prefecture):country==='CN'&&prefecture==='四川省'?geos.sichuan:[];
  const city=prefectureAt(latitude,longitude,cities)||match.city;
  // Administrative centroids are approximate. Only specific POIs receive precise map coordinates.
- return {...details,place:match.name,country,prefecture,city,latitude:match.precision==='place'?latitude:null,longitude:match.precision==='place'?longitude:null,placeSource:'geoapify'};
+ return {...details,place:match.name,country,prefecture,city,district:'',latitude:match.precision==='place'?latitude:null,longitude:match.precision==='place'?longitude:null,placeSource:'geoapify'};
 }
