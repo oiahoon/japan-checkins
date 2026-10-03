@@ -25,7 +25,7 @@
 | 无框架覆盖与控制台 | 最终新会话复核；开发中的语法 / fixture 类型错误已修复 |
 | 测试 / 类型 / 正式构建 | npm test（122），npm run typecheck，npm run build |
 
-生产在 commit + push 后另核对 GitHub 两项检查、Vercel Ready 与正式域名实际交互。真机双指 / Safari、道路底图、非已有细节国家和全部现行行政几何没有在本轮验收。
+生产功能提交 5ccc24f：GitHub 两项检查 success，Vercel dpl_9FpodzTpNoDS8mAVPVQUrwpQxVsk Ready；正式域名 390px 点击锦江区后实际拖入龙泉驿区，相机 span 保持 0.130862，路径与侧栏更新，控制台无 error / warn。未写入私人记录。真机双指 / Safari、道路底图、非已有细节国家和全部现行行政几何没有在本轮验收。
 
 截图使用公开几何、空日志；不包含私人照片、EXIF 示例或真实访问位置。
 
