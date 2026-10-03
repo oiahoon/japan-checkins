@@ -52,3 +52,7 @@ final result: passed
 - 弹窗在双主题下采用浮起外表面 + 凹陷内容区；取消 / 确认清晰，原生 Escape 和焦点返回保留。开启开关通过滑块位置、朱红及中心亮点表示，轨道同色凹陷；输入焦点使用凹陷、光标与淡轮廓。
 - 暗调选择在同源新页面保持；桌面与 390 手机地图 / 导出界面已渲染，无横向溢出与控制台错误。导出的图片保持暖纸，不随屏幕主题改变。
 - 新控件未连接旅行记录接口，生产实际私人保存验收仍等待存储配置。
+
+## Production receipt
+
+实现提交 `f863256`：两项 GitHub CI success、Vercel success。正式域名实际截图 `/tmp/neo-production-dialog-light.png` / `/tmp/neo-production-dialog-dark.png`（1280×720）、`/tmp/neo-production-map-dark.png`（1280×720）。线上操作双主题弹窗 / 开关与地图乐山键盘选择，导出按钮为 0px border + #ac4b37 / white。控制台无错误。认证和真实数据存储的边界仍保持；无私人写入。final result: passed。
