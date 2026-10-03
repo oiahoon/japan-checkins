@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {createExplorerTree,explorerPath,fitCamera,projectEarth,unprojectEarth,zoomCamera,clampCamera,detailNodeAt,nodeForArea,nodeForVisit,visitInExplorerNode,hasExplorerHistory,searchExplorer} from '../lib/map-explorer.ts';
+import {createExplorerTree,explorerPath,fitCamera,projectEarth,unprojectEarth,zoomCamera,clampCamera,detailNodeAt,featureNode,nodeForArea,nodeForVisit,visitInExplorerNode,hasExplorerHistory,searchExplorer,type ExplorerNode} from '../lib/map-explorer.ts';
 const load=(file:string)=>JSON.parse(readFileSync(new URL('../public/'+file+'.json',import.meta.url),'utf8')).features;
 const tree=createExplorerTree({japan:load('japan-simple'),japanCities:load('japan-cities'),china:load('china-simple'),sichuan:load('sichuan-cities'),chengdu:load('chengdu-districts'),world:load('world-simple')});
 test('hierarchy uses source boundaries with Japanese municipal and Chinese district paths',()=>{
@@ -49,4 +49,39 @@ test('municipal focus centers the main polygon while preserving remote-island ge
  const city=searchExplorer(tree,'福岡市')[0],camera=fitCamera(city,1.8),[lon,lat]=unprojectEarth([camera.x,camera.y]);
  assert.ok(lon>130.2&&lon<130.6&&lat>33.3&&lat<33.8);assert.ok(city.features[0].geometry.coordinates.length>1);
  assert.deepEqual(explorerPath(tree,city.id).map(n=>n.name),['世界','亚洲','日本','福岡県','福岡市']);
+});
+
+test('panning follows real sibling geometry inside overlapping boxes; sea does not guess a child',()=>{
+ const rectangle=(id:string,l:number,b:number,r:number,t:number)=>({properties:{id:id==='a'?1:2,name:id},geometry:{coordinates:[[[[l,b],[r,b],[r,t],[l,t],[l,b]]]]}});
+ const a=rectangle('a',0,0,4,4),b=rectangle('b',1,1,3,3);
+ // A has a hole occupied by B, so both bounding boxes include the viewport center.
+ a.geometry.coordinates[0].push([[1,1],[1,3],[3,3],[3,1],[1,1]]);
+ const root:ExplorerNode={id:'world',name:'世界',parent:null,scope:'world' as const,area:'',features:[a,b],children:['a','b'],frame:[-20,-20,20,20] as [number,number,number,number]};
+ const synthetic=new Map<string,ExplorerNode>([['world',root],...['a','b'].map((id,i)=>[id,{...root,id,name:id,parent:'world',features:[i?b:a],children:[],frame:undefined} ] as [string,ExplorerNode])]);
+ const [x,y]=projectEarth([2,2]),camera={x,y,span:.8},before={...camera};
+ assert.equal(detailNodeAt(synthetic,'a',camera,1).id,'b');
+ assert.equal(detailNodeAt(synthetic,'world',{...camera,x:8},1).id,'world');
+ assert.deepEqual(camera,before);
+ const sea=new Map<string,ExplorerNode>([['world',{...root,children:['a']}],['a',{...synthetic.get('a')!,features:[{...a,geometry:{coordinates:[[[[0,0],[4,0],[4,4],[0,4],[0,0]],[[1.8,1.8],[1.8,2.2],[2.2,2.2],[2.2,1.8],[1.8,1.8]]]]}}]}]]);
+ assert.equal(detailNodeAt(sea,'world',{...camera,span:2},1).id,'world');
+ assert.equal(featureNode(synthetic,root,b).id,'b');
+});
+test('newly loaded boundary detail is reconciled at the existing camera without refitting',()=>{
+ const city=searchExplorer(tree,'福岡市')[0],camera=fitCamera(city,.7);
+ const before=new Map(tree),pref=before.get(city.parent!)!;
+ before.set(pref.id,{...pref,children:[],features:tree.get('japan')!.features.filter(f=>f.properties.name===pref.name)});
+ assert.equal(detailNodeAt(before,pref.id,{...camera,span:camera.span*.8},.7).id,pref.id);
+ assert.equal(detailNodeAt(tree,pref.id,{...camera,span:camera.span*.8},.7).id,city.id);
+});
+
+test('country code shared by provincial/city features does not collapse their navigation targets',()=>{
+ for(const id of ['china','sichuan']){const layer=tree.get(id)!;for(const f of layer.features)assert.equal(featureNode(tree,layer,f).name,f.properties.name);}
+ assert.equal(featureNode(tree,tree.get('world')!,tree.get('world')!.features.find(f=>f.properties.code==='JP')!).id,'japan');
+});
+
+test('Chengdu keeps its dedicated district geometry and navigable identity after nationwide shards arrive',()=>{
+ const read=(file:string)=>JSON.parse(readFileSync(new URL('../public/'+file+'.json',import.meta.url),'utf8'));
+ const directory=read('china-admin'),full=createExplorerTree({japan:load('japan-simple'),japanCities:load('japan-cities'),china:load('china-simple'),sichuan:load('sichuan-cities'),chengdu:load('chengdu-districts'),world:load('world-simple'),chinaAdmin:directory,chinaCities:load('china-cities/51'),chinaDistricts:load('china-districts/51')});
+ const city=full.get('chengdu')!;
+ for(const f of city.features){const n=featureNode(full,city,f);assert.equal(n.name,f.properties.name);assert.equal(n.parent,'chengdu');assert.deepEqual(n.features,[f]);}
 });

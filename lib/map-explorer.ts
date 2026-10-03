@@ -57,7 +57,7 @@ export function createExplorerTree(g:ExplorerGeographies):ExplorerTree{
     children.push(city);
     for(const d of c.districts){
      const old=c.name==='成都市'?[...tree.values()].find(n=>n.parent==='chengdu'&&n.name===d.name):undefined;
-     const f=countyFeatures.find(f=>f.properties.adminCode===d.code)||old?.features[0];
+     const f=old?.features[0]||countyFeatures.find(f=>f.properties.adminCode===d.code);
      const node=add({id:old?.id||'cn-district:'+d.code,name:d.name,parent:id,scope:old?.scope||cs,area:old?.area??(cs==='sichuan'?c.name:r.name),country:'CN',province:r.name,provinceCode:r.code,adminCode:d.code,aliases:d.aliases,city:c.name,district:d.name,features:f?[f]:[],children:[],hasBoundary:!!f,frame:f?bounds([f]):city.frame});city.children.push(node.id);
     }
    }
@@ -69,8 +69,11 @@ export function createExplorerTree(g:ExplorerGeographies):ExplorerTree{
  return tree;
 }
 
+const boundsCache=new WeakMap<ExplorerNode,[number,number,number,number]>();
 export function nodeBounds(node:ExplorerNode):[number,number,number,number]{
- const [l,b,r,t]=node.frame||bounds(node.features),[x,y]=projectEarth([l,t]),[right,bottom]=projectEarth([r,b]);return [x,y,right,bottom];
+ const cached=boundsCache.get(node);if(cached)return cached;
+ const [l,b,r,t]=node.frame||bounds(node.features),[x,y]=projectEarth([l,t]),[right,bottom]=projectEarth([r,b]);
+ const result:[number,number,number,number]=[x,y,right,bottom];boundsCache.set(node,result);return result;
 }
 export function fitCamera(node:ExplorerNode,aspect:number,padding=1.18):MapCamera{
  const [l,t,r,b]=nodeBounds(node.focusFrame?{...node,frame:node.focusFrame}:node);return {x:(l+r)/2,y:(t+b)/2,span:Math.max(.018,Math.max(r-l,(b-t)/Math.max(.3,aspect))*padding)};
@@ -127,23 +130,42 @@ export function visitInExplorerNode(v:GeographicVisit,node:ExplorerNode):boolean
  if(node.district&&v.district!==node.district)return Boolean(v.latitude!=null&&v.longitude!=null&&prefectureAt(v.latitude,v.longitude,node.features));
  return true;
 }
+// Bounding boxes are only a fast rejection: holes, coastlines and enclaves use real geometry.
+function containsCamera(node:ExplorerNode,camera:MapCamera):boolean{
+ if(node.hasBoundary===false||!node.features.length)return false;
+ const [l,t,r,b]=nodeBounds(node);
+ if(camera.x<l||camera.x>r||camera.y<t||camera.y>b)return false;
+ const [lon,lat]=unprojectEarth([camera.x,camera.y]);
+ return Boolean(prefectureAt(lat,lon,node.features));
+}
+export function featureNode(tree:ExplorerTree,layer:ExplorerNode,f:MapFeature):ExplorerNode{
+ return layer.children.map(id=>tree.get(id)!).filter(Boolean).find(n=>
+  (layer.id==='world'||layer.id==='asia')&&f.properties.code?n.country===f.properties.code:
+  f.properties.adminCode?n.adminCode===f.properties.adminCode:
+  n.name===f.properties.name&&(n.country!=='JP'||n.features.length!==1||n.features[0].properties.id===f.properties.id)
+ )||layer;
+}
 export function detailNodeAt(tree:ExplorerTree,currentId:string,camera:MapCamera,aspect:number):ExplorerNode{
  let node=tree.get(currentId)||tree.get('world')!;
- // Exit and entry bands differ. Changing a layer never changes the camera.
+ // Different entry/exit bands avoid layer flicker; a pan into a real sibling crosses the path
+ // even when overlapping bounding boxes would otherwise keep the previous city selected.
  for(let i=0;i<8;i++){
-  const fitted=fitCamera(node,aspect),[l,t,r,b]=nodeBounds(node),off=camera.x<l||camera.x>r||camera.y<t||camera.y>b;
-  if(node.parent&&(camera.span>fitted.span*1.6||(off&&camera.span<fitted.span*.8))){node=tree.get(node.parent)!;continue;}break;
+  if(!node.parent)break;
+  const parent=tree.get(node.parent)!,fitted=fitCamera(node,aspect),[l,t,r,b]=nodeBounds(node);
+  const margin=camera.span*.08,off=camera.x<l-margin||camera.x>r+margin||camera.y<t-margin||camera.y>b+margin;
+  const sibling=!containsCamera(node,camera)&&parent.children.some(id=>id!==node.id&&containsCamera(tree.get(id)!,camera));
+  if(camera.span>fitted.span*1.6||sibling||(off&&camera.span<fitted.span*.8)){node=parent;continue;}break;
  }
  if(node.id==='world'&&camera.x>=35&&camera.x<=155&&camera.y>=projectEarth([0,65])[1]&&camera.y<=projectEarth([0,-12])[1]&&camera.span<fitCamera(tree.get('asia')!,aspect).span*.78)node=tree.get('asia')!;
- for(let i=0;i<5;i++){
-  const probes=[[camera.x,camera.y],[camera.x-camera.span*.2,camera.y],[camera.x+camera.span*.2,camera.y],[camera.x,camera.y-camera.span*aspect*.2],[camera.x,camera.y+camera.span*aspect*.2]].map(unprojectEarth);
-  const next=node.children.map(id=>tree.get(id)!).filter(Boolean).filter(n=>n.hasBoundary!==false&&n.features.length).filter(n=>{
-   const [l,t,r,b]=nodeBounds(n);return camera.x>=l&&camera.x<=r&&camera.y>=t&&camera.y<=b&&camera.span<fitCamera(n,aspect).span*.88;
-  }).find(n=>probes.some(([lon,lat])=>Boolean(prefectureAt(lat,lon,n.features))));
+ for(let i=0;i<6;i++){
+  const next=node.children.map(id=>tree.get(id)!).filter(Boolean).find(n=>
+   containsCamera(n,camera)&&camera.span<fitCamera(n,aspect).span*.88
+  );
   if(!next)break;node=next;
  }
  return node;
 }
+
 const normalize=(s:string)=>s.normalize('NFKC').replace(/臺/g,'台').toLowerCase().replace(/區/g,'区').replace(/縣/g,'県').replace(/冈/g,'岡').replace(/县/g,'県').replace(/儿/g,'児').replace(/\s/g,'');
 export function searchExplorer(tree:ExplorerTree,query:string):ExplorerNode[]{
  const q=normalize(query.trim());if(!q)return ['japan','china','sichuan','chengdu','asia','world'].map(id=>tree.get(id)!).filter(Boolean);

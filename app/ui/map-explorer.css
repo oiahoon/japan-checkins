@@ -31,11 +31,13 @@
 .explorer-search-results p { font-size:13px; color:var(--muted); padding:12px; margin:0; }
 .explorer-zoom { position:absolute; left:20px; top:84px; z-index:6; display:grid; gap:12px; }
 .explorer-zoom>div { display:grid; gap:4px; border-radius:16px; padding:4px; background:var(--panel); box-shadow:var(--control-raised); }
-.explorer-zoom>div>button { box-shadow:none; background:transparent; width:40px; min-width:40px; height:44px; border-radius:12px; }
+.explorer-zoom>div>button { box-shadow:none; background:transparent; width:44px; min-width:44px; height:44px; border-radius:12px; }
 .explorer-zoom>div>button:hover:not(:disabled),.explorer-zoom>div>button:active { box-shadow:var(--control-inset); }
 .explorer-zoom>button { margin-left:2px; }
-.explorer-background path { fill:#d3d9ce; stroke:none; }
+.explorer-background path { fill:#d3d9ce; stroke:var(--bg); stroke-width:1; vector-effect:non-scaling-stroke; cursor:pointer; transition:fill .18s; }
+.explorer-background path:hover,.explorer-background path:focus-visible { fill:var(--amber); outline:none; }
 [data-theme=dark] .explorer-background path { fill:#424c3d; }
+[data-theme=dark] .explorer-background path:hover,[data-theme=dark] .explorer-background path:focus-visible { fill:var(--amber); }
 .explorer-boundaries { animation:explorer-boundaries .22s ease-out; }
 .explorer-labels { pointer-events:none; }
 .explorer-labels text { fill:var(--text); font-family:inherit; font-weight:500; paint-order:stroke; stroke:var(--bg); stroke-width:.025; stroke-opacity:.6; }

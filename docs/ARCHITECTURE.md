@@ -168,3 +168,9 @@ MapExplorer 为全国目录建立省 / 市 / 区县节点，保持四川 / 成�
 公开数据及许可不属于私人日志；不增存储供应商、迁移或第三方坐标传输。来源 / 快照 / 覆盖审计见 CHINA-COVERAGE.md。
 
 市级与县级边界均按省拆分加载并缓存；全国市级汇总文件仅用于生成与审计，主地图不下载该文件。生产验收发现慢网络下全国汇总文件超时，已改为省级市县分片，保留15秒超时与重试。
+
+## Continuous context across neighboring regions (2026-10-04)
+
+`detailNodeAt` uses the camera center and actual polygon containment, including holes. A confirmed sibling containment exits the old node even inside overlapping bounding boxes; offshore movement has an 8%-of-span margin, while zoom entry/exit remain 0.88 / 1.6 of the node fit. It only returns context and never changes the camera or saved visit. `nodeBounds` caches immutable tree-node bounds in a WeakMap. Geometry arrival reconciles context at `cam.current`; `pendingFit` remains reserved for an explicit navigation request and is cancelled by manual pan/zoom.
+
+`featureNode` resolves countries by country code only in world/Asia layers, Chinese administrative geometry by admin code or unique parent-scoped name, and Japanese municipalities by name plus retained source ID. Dedicated Chengdu district geometries take priority over national county shards, keeping rendered paths and focus geometry aligned. Ancestor-layer siblings remain interactive behind the active layer; ancestor targets and duplicate world/Asia geometry are excluded. SVG paths outside the viewport are culled, including from keyboard navigation. Existing world/private storage, photo clipping, owner endpoints and export projections are unchanged.
