@@ -1,5 +1,9 @@
 # Current handoff / 当前交接
 
+## 发布核对 · 2026-10-04
+
+功能提交 d4abf79895999ef01a4e200432ba971af29b4f6d 已推送 main。[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37138661360) 与 [Verify clone-and-deploy build](https://github.com/oiahoon/japan-checkins/actions/runs/37138661363) 均 success。Vercel Production dpl_DJqXAChKXQ8vDnuRVdRNvsL81vkH Ready，正式域名与默认域名指向该部署。正式站主人会话只读复核混合时间线、照片库新入口与单张地点 / 日期 / 笔记读取、390px 文字编辑器，未保存或改动私人数据。收尾修正手机短表单的底部主动作位置；此修正再次通过 typecheck / build，最终版本以其提交对应 CI / Vercel 状态为准。
+
 ## 最新实现 · 记录与照片双向管理（2026-10-04）
 
 本节优先于历史描述。照片库支持单张 / 批量新建或加入旅行记录、按记录与未归属照片筛选，并把筛选传给批量管理。旅行记录内可选择未加入其他记录的照片，批量移出关联；移出保留照片、单张信息与已确认地图落点。相册笔记与照片笔记分别保存；每条相册 / 每次操作最多 100 张。查看照片或补充单张信息后返回已保存的父记录。相册先展示日期 / 笔记 / 照片，编辑和回收操作折叠；手机全屏、固定动作、沿用暖纸 / 深墨 / 朱红光影语言。
