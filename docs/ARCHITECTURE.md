@@ -36,3 +36,7 @@ Do not replay onto an initialized schema. `start:sites` binds loopback and uses 
 `app/region-map.tsx` renders real-source Sichuan/China/world geometries with dynamic projection and confirmed visit markers; the original Japan renderer retains its inset. `app/travel-poster.tsx` filters saved visits by year and invokes deterministic SVG generation in `lib/travel-poster.ts`, then renders PNG in browser Canvas. Downloads and optional file sharing run client-side. The default projection omits precise markers, places, photos and notes; users can opt into exact saved points. Public visitors export only their already-authorized public projection. No new data/photo endpoint or publishing permission is introduced. Browser printing uses a dedicated print layout; native share and actual paper/device results require deployer acceptance.
 
 `public/sichuan-cities.json` provides 21 city/prefecture geometries. `chinaMapParts` separates Xisha physical polygons from the mainland overview into an inset, shared by interactive map and poster generation. The canonical Hainan geometry retains those islands for local location proposals. Geographic additions do not change consent, authentication or storage.
+
+## 暖纸组件体系（2026-10-03）
+
+`app/ui/neo.tsx` / `neo.css` 提供原生语义与统一光影，`lib/neo-theme.ts` 提供有界配置和 CSS 生成。`/ui-kit` 由服务器验证主人访问，只提供材质和交互演示，不请求私人记录写入接口，也不修改生产安全 / 主题设置。主导航、登录、照片确认输入 / 复选框和导出使用这些组件。视觉与状态契约见 [UI-KIT.md](UI-KIT.md)。

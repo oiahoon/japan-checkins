@@ -58,3 +58,11 @@ Durable handoff: CONTEXT.md, PROGRESS.md and GEOGRAPHY.md. No Supabase integrati
 ## Delivered: stronger paper relief and geographic detail (2026-10-03)
 
 Controls now share upper-left lighting, raised / pressed states and recessed inputs / segmented selectors. Contrast overrides keep outlines without shadows. Sichuan displays all 21 city/prefecture polygons, click / keyboard selection and zoom labels; exports color only explicitly recorded cities. China preserves 34 province entries and supplements Hainan with 18 Natural Earth Xisha physical-island polygons; the map and exported SVG show a non-proportional inset without shrinking the mainland overview. This is not complete marine / reef coverage or an official administrative map.
+
+### 暖纸 UI Kit v1（已实现）
+
+- 常态用光影形成边界的按钮、输入、选择器、开关、确认、分段、卡片、状态、进度与原生弹窗。
+- 主人组件实验室：颜色 / 大小 / 圆角 / 距离 / 强度 / 模糊 / 形状预览与样式复制。
+- 地图 / 时间线 / 登录 / 到访确认 / 导出统一材质；保留焦点和高对比模式。
+- 后续：Safari / iPhone 原生控件和辅助设备验收；极端自选参数的全站主题持久化未实现。
+- 暗调主题与本机偏好、单选 / 搜索 / 步进 / 折叠已实现；导出作品维持独立暖纸构图。

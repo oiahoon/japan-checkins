@@ -50,3 +50,7 @@ npm run start
 公共模板不包含照片、旅行历史、令牌或个人 Site ID。旅行与照片会留在数据仓库的 Git 历史中；移除草稿不会清除历史副本。地图和餐厅来源见 [数据说明](public/data-notes.md)。
 
 项目上下文与方向见 [CONTEXT](docs/CONTEXT.md)，地理数据版本、许可、复现和导出规范见 [GEOGRAPHY](docs/GEOGRAPHY.md)。
+
+### 暖纸 UI Kit
+
+主人登录后可从地图侧栏进入 [组件实验室](/ui-kit)：调节光影并查看原生控件的交互状态。界面常态以阴影而非描边构成边界，中文移动端流程保留。组件与配置 API、参考来源及验收范围见 [docs/UI-KIT.md](docs/UI-KIT.md)。
