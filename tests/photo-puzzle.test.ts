@@ -13,15 +13,15 @@ test('per-photo notes override legacy album notes and an explicitly empty note s
 
 test('poster transforms keep photos in geographic clips, copy outside the map frame, and bound invalid inputs',()=>{
  for(const style of ['paper','night','memories'] as const)for(const format of ['print','desktop','phone'] as const){
-  const svg=buildPoster({scope:'japan',features:[{...feature,properties:{...feature.properties,name:'合成県'}}],puzzleFeatures:[feature],visits:[visit],photos,title:'合成地图',format,style,puzzle:true,mapScale:1.3,mapAngle:36});
+  const svg=buildPoster({scope:'japan',features:[{...feature,properties:{...feature.properties,name:'合成県'}}],puzzleFeatures:[feature],visits:[visit],photos,title:'合成地图',format,style,puzzle:true,mapScale:1.3,mapOffset:{x:.2,y:-.1}});
   const mapStart=svg.indexOf('<g clip-path="url(#poster-map-frame)">'), mapEnd=svg.indexOf('</g></g>',mapStart), copy=svg.indexOf('>合成地图</text>');
   assert.ok(mapStart>0&&mapEnd>mapStart&&copy>mapEnd);
   assert.ok(svg.indexOf('<image ',mapStart)<mapEnd);
   assert.ok(svg.includes('clip-path="url(#poster-photo-0)"'));
-  assert.ok(svg.includes('rotate(36,'));assert.ok(svg.includes('rotate(-36,'));
+  assert.ok(svg.includes('id="poster-map-pan"'));assert.ok(!svg.includes('rotate('));
   assert.ok(!svg.includes('手动笔记'));
  }
- for(const [scale,angle,expected] of [[Infinity,NaN,'Map scale: 1; angle: 0'],[4,500,'Map scale: 1.6; angle: 180'],[-1,-500,'Map scale: 0.5; angle: -180']] as const){
-  const svg=buildPoster({scope:'japan',features:[feature],visits:[],title:'合成地图',format:'print',mapScale:scale,mapAngle:angle});assert.ok(svg.includes(expected));assert.ok(!svg.includes('NaN'));assert.ok(!svg.includes('Infinity'));
+ for(const [scale,expected] of [[Infinity,'Map scale: 1;'],[4,'Map scale: 1.6;'],[-1,'Map scale: 0.5;']] as const){
+  const svg=buildPoster({scope:'japan',features:[feature],visits:[],title:'合成地图',format:'print',mapScale:scale});assert.ok(svg.includes(expected));assert.ok(!svg.includes('NaN'));assert.ok(!svg.includes('Infinity'));
  }
 });

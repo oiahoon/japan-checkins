@@ -120,5 +120,7 @@ HEIC 原生解码失败时动态加载 heic2any 本机转换；RAW 不做显影�
 
 Earlier paragraphs describing EXIF proposals as exclusively ephemeral refer to the former upload flow. GitHub mode now stores a bounded normalized private proposal separately from confirmed location; original EXIF and RAW files still never enter the store. Sites remains on its previous flow.
 
-- 已实现：三种导出风格的大小 / 角度构图、即时预览与恢复默认；地图画幅裁切和独立文案排版。
+- 已实现：三种导出风格的大小 / 拖拽位置构图、即时预览与恢复默认；地图画幅裁切和独立文案排版。
 - 已实现：窄桌面工具栏折叠、按钮宽度与开关对齐修复、照片库初始读取提示。物理手机下载 / 系统分享 / 打印验收仍待完成。
+
+- 最新取舍：移除导出旋转，仅保留大小与拖拽位置；支持地图居中、完整复位和键盘微调。位置随预览进入 PNG / SVG / 打印。

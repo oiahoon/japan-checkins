@@ -97,4 +97,6 @@ GitHub 照片增加可选 removed 布尔字段；旧照片默认可见。PATCH /
 
 `lib/travel-poster.ts` deterministically renders three style families over the same authorized visits and real geometries. It treats the generated concept maps as layout references only. `app/travel-poster.tsx` controls style, title, caption, scale, format and explicit photo/precise-point inclusion. No raster mockup or generated example travel data is shipped. Browser-native PNG/SVG/share/print share one SVG data source, preserving private-photo read gating and geographic clipping.
 
-导出构图由 `buildPoster` 的有界 mapScale / mapAngle 参数实现。地图投影、照片区域 clipPath 和已确认落点置于同一旋转组，外层固定画幅 clipPath 阻止侵入文案区；已到访地区标签反向旋转保持水平。非有限数回到默认值。三种风格与三种画幅共用逻辑，未确认 proposal、笔记、相机字段不进入导出。
+导出构图由 `buildPoster` 的有界 mapScale / mapOffset 参数实现，旋转已按最新需求移除。位置用固定地图画幅宽高的比例保存，三种风格和三种画幅共享 `posterMapFrame`。地图投影、照片区域 clipPath 与已确认落点置于同一平移组，外层固定画幅裁切避免侵入文案区。非有限数回到默认值；位移限制为画幅宽高的 ±50%。
+
+`app/poster-preview.tsx` 展示由应用生成、XML 转义的 SVG，照片只使用认证读取的已清理 JPEG data URI。预览地图区域捕获 pointer，移动时通过 requestAnimationFrame 更新平移组，松手才提交构图状态并生成最终 SVG；取消手势还原起点。键盘方向键 1% / Shift 5% 微调，Home 居中。ResizeObserver 适配实际预览尺寸。打印隐藏交互图层，使用同一最终 SVG 图片；未确认 proposal、笔记、相机字段不进入导出。手机操作栏参与正常布局，生成提示和保存链接不会遮住居中按钮。
