@@ -73,7 +73,7 @@ python3 scripts/prepare-map-details.py --prefectures /tmp/chn-prefectures.json -
 
 - 固定源版本：[SmartNews ebabf6a](https://raw.githubusercontent.com/smartnews-smri/japan-topography/ebabf6a0f1b26eacce279566ac1e29a4da474ee5/data/municipality/geojson/s0010/N03-21_210101_designated_city.json)
 - 原始 SHA-256：`8e38c250108fbf40a2307bd8a6ba905c0995e1511fcf83fdfab3318acbcbd4e8`
-- MLIT 国土数值信息，[GSI 内容利用规则](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)；SmartNews 为处理来源，几何数据许可与应用代码分开。现有来源署名保留。
+- MLIT 国土数值信息；[SmartNews 上游复用 / 署名说明](https://github.com/smartnews-smri/japan-topography#クレジット)明确要求保留国土交通省来源署名。几何数据与应用代码许可分开，现有 MLIT 2021 / SmartNews 署名保留。
 - 名称修正复现：`python3 scripts/prepare-japan-municipal-names.py /tmp/japan-municipal-source.json`，之后 `node scripts/build-place-index.mjs`。
 
 此轮不增加私人地理数据，不重新识别或改写用户记录。地图层级和照片裁切仅使用明确地区 / 确认坐标。导出仍是五种既有地域作品，不新增亚洲或日本单个市的海报投影。

@@ -32,6 +32,8 @@
 | 依据 / 实现 | 画面 |
 | --- | --- |
 | 改动前生产空日志，1280×720 暗调 | [before-empty-production.jpg](before-empty-production.jpg) |
+| 新版生产空日志，1280×720 暗调 | [after-empty-production.jpg](after-empty-production.jpg) |
+| 新版生产手机，390×844 暗调 | [mobile-empty-production.jpg](mobile-empty-production.jpg) |
 | 新版桌面暗调，福冈市、合成记录 / 合成照片 | [desktop-dark-synthetic.jpg](desktop-dark-synthetic.jpg) |
 | 新版手机暗调，390×844 | [mobile-dark-synthetic.jpg](mobile-dark-synthetic.jpg) |
 | 新版手机浅色，390×844 | [mobile-light-synthetic.jpg](mobile-light-synthetic.jpg) |
@@ -41,3 +43,9 @@
 ## 保留的验收边界
 
 真实 iPhone Safari 动态地址栏、双指连续手势、辅助设备、原生分享、实体打印未新增验收。主地图坐标统一，导出投影仍按画幅构图；亚洲和日本单市尚无独立导出海报。日本数据 2021，成都 2017 参考轮廓，不称为现行行政 / 街道规划。其他洲 / 中国其他省市县 / 日本政令都市内部区 / 道路 / 地铁后续需核对来源后扩展。生产验收不写入、修复或删除私人记录。
+
+## 生产验收补充
+
+功能提交 `9f3f1cd`：两个 GitHub Actions success、Vercel Production `dpl_45gDm8qFAqCY49EJbfiNHQTBQnke` Ready、正式 / 默认域名别名一致。实际正式域名主人会话验收福冈市搜索、连续缩小到世界、四川 / 成都 / 锦江区与 390px 折叠菜单；地理路径和源标签正常，读取 API 200，无 error / warn。无私人写入操作。
+
+生产同尺寸对照：改动前和改动后均 1280×720、暗调、主人会话、空日志。检查字体、色彩、控件光影与间距，结构改变为已批准的地理导航；改动后日本全境在原位连续坐标显示，视角与旧版插图排版有意不同。手机来源署名、当前地区和底部导航没有互相遮挡；物理设备并未纳入这组截图证据。

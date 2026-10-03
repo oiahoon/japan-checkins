@@ -1,5 +1,11 @@
 # Current handoff / 当前交接
 
+## 生产验收 · 连续地理探索（2026-10-03）
+
+功能提交 `9f3f1cdde229b4a851fd8476d52866258b2f197d` 已推送 main；[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37125202761) 与 [Verify clone-and-deploy build](https://github.com/oiahoon/japan-checkins/actions/runs/37125202755) 均 success。Vercel Production `dpl_45gDm8qFAqCY49EJbfiNHQTBQnke` Ready，travel.miaowu.org 与 japan-checkins.vercel.app 指向同一部署。后续文档提交不改变功能代码，最终提交状态可从 GitHub / Vercel 检查确认。
+
+正式域名主人会话实际检查：日本 / 福冈市搜索与聚焦、连续缩小返回世界、四川 → 成都 → 锦江区、390px 菜单折叠和 44px 操作、无横向溢出。私人读取请求 `/api/checkins` 返回 200，现有空日志和回收站数量正常恢复；没有上传、编辑、删除或重新归属私人数据。控制台无 error / warn。生产同尺寸对照和手机截图保存在 map-explorer 设计目录。真实设备双指和实体打印仍为独立验收。
+
 ## 最新实现 · 连续地理探索（2026-10-03）
 
 本节优先于下方历史轮次。主地图移除顶部旅行地图下拉框，以地图内路径、返回和搜索导航。点击行政区平滑聚焦，滚轮 / 按钮缩放到不同尺度自动切换层级；跨层保留同一地理坐标和相机，不重置拖拽位置。路径支持世界 → 亚洲 → 日本 → 47 都道府县 → 1751 市区町村，以及世界 → 亚洲 → 中国 → 四川 21 市州 → 成都 20 区县；其他国家 / 中国省份只能进入目前已有边界。
