@@ -140,3 +140,22 @@ dialog{background:#fffdf7;box-shadow:0 20px 70px #33452d25;border-radius:8px}dia
 @media(max-width:800px){.poster-dialog{margin:auto 0 0}.travel-app .atlas-workspace{min-height:440px}}
 @media print{.travel-app{min-height:0!important}.travel-app>:not(.poster-dialog){display:none!important}.poster-dialog{display:block!important}}
 .download-fallback{display:inline-flex;align-items:center;min-height:44px;color:var(--amber);font-size:14px;text-decoration:underline}
+
+/* Warm paper relief: consistent light from the upper left. */
+:root{--control-paper:#f5f3ed;--control-raised:5px 5px 12px #d9d7d1,-5px -5px 12px #ffffff;--control-inset:inset 3px 3px 7px #dcd9d2,inset -3px -3px 7px #ffffff}
+.pref-selector,.zoom-controls>div,.zoom-controls>button,.icon-button,.picker{background:linear-gradient(145deg,#faf9f3,#eeece5);border:1px solid #e0ded5;box-shadow:var(--control-raised);border-radius:12px}
+.pref-selector{padding-inline:16px}.pref-selector .select-chevron{inset-inline-end:2px}
+.region-toolbar .select-field select,.poster-settings .select-field select{border-color:#ddd9cf;border-radius:10px;min-height:48px}
+.region-toolbar>button,.poster-actions>button:not(.primary),.timeline-toolbar button{background:linear-gradient(145deg,#faf9f3,#eeece5);border:1px solid #dedbd2;box-shadow:var(--control-raised);border-radius:10px;transition:box-shadow .18s,background .18s}
+.region-toolbar>button{padding:12px 18px;min-height:44px}
+.region-toolbar>button:active,.poster-actions>button:not(.primary):active,.timeline-toolbar button:active,.zoom-controls button:active:not(:disabled),.icon-button:active:not(:disabled),.picker:active{box-shadow:var(--control-inset);background:#efede6;transform:none}
+.region-title{background:linear-gradient(145deg,#faf9f3e8,#eeece5e8);border-radius:12px;border-left:2px solid var(--amber);box-shadow:4px 4px 12px #d7d9cd88,-4px -4px 12px #fffdf7aa}
+.map-legend{border-radius:10px;box-shadow:inset 2px 2px 5px #dce0d3,inset -2px -2px 5px #ffffff;background:#eef0e6}
+.inspector-tabs{margin:0 0 16px;padding:5px;border:1px solid #e0ded5;border-radius:12px;background:#f2f0e9;box-shadow:var(--control-inset);gap:5px}.inspector-tabs button{border-radius:8px;padding-block:12px}.inspector-tabs button[aria-pressed=true]{background:linear-gradient(145deg,#faf9f3,#eeece5);box-shadow:2px 2px 6px #d8d5ce,-2px -2px 6px #ffffff}.inspector-tabs button[aria-pressed=true]:after{height:2px;bottom:4px;left:25%;right:25%}
+.poster-preview{border-radius:14px;box-shadow:inset 5px 5px 13px #d4d7cb,inset -5px -5px 13px #f9faf3}.poster-dialog,.checkin-dialog{border-radius:18px}.primary,.save{border-radius:9px;background:linear-gradient(145deg,#c14b3a,#ac382a);box-shadow:3px 3px 8px #cdbdb3,-3px -3px 8px #fffdf7}.primary:active:not(:disabled),.save:active:not(:disabled){box-shadow:inset 3px 3px 6px #8d3025,inset -2px -2px 5px #d85a46;transform:none}
+.city-map-label{font-size:12px;fill:#5d6b56;paint-order:stroke;stroke:#f8f7f1;stroke-width:3px;pointer-events:none}.city-map-label.active{fill:#fffaf2;stroke:#a43d2d;stroke-width:3px;font-weight:600}
+.xisha-inset{cursor:pointer;outline:none}.xisha-inset>rect{fill:#f5f4ecee;stroke:#b7c2ae;stroke-width:1}.xisha-inset:focus-visible>rect{stroke:var(--amber);stroke-width:3}.inset-heading{font-size:14px;fill:#596a51}.inset-caption{font-size:10px;fill:#6e7966}.island-shape{fill:#869b7d;stroke:#657968;stroke-width:1.5}.island-shape.active{fill:#bd4635;stroke:#a9392b}
+@media(max-width:800px){.region-toolbar>button{padding:10px 12px}.region-title{border-radius:10px}.poster-dialog,.checkin-dialog{border-radius:18px 18px 0 0}.mobile-navigation>button[aria-pressed=true]{box-shadow:var(--control-inset);background:#f0eee7}}
+@media(prefers-contrast:more),(forced-colors:active){.pref-selector,.zoom-controls>div,.zoom-controls>button,.icon-button,.picker,.region-title,.map-legend,.inspector-tabs,.inspector-tabs button,.region-toolbar>button,.poster-actions>button,.timeline-toolbar button,.poster-preview,.primary,.save,.mobile-navigation>button[aria-pressed=true]{box-shadow:none!important;border:1px solid currentColor;background:Canvas;color:CanvasText}.city-map-label{stroke:none;fill:CanvasText}.prefecture.selected{stroke:Highlight;stroke-width:3}}
+@media print{.poster-preview{box-shadow:none!important}.poster-dialog{border-radius:0!important}}
+@media(max-width:800px){.xisha-inset{transform:translate(665px,310px) scale(1.5)}}

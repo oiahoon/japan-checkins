@@ -48,9 +48,13 @@ Export saved visits as a map: custom title, all-time/year, A4/desktop/phone, PNG
 
 Next iterations:
 - Real private GitHub write acceptance after the deferred repository token is configured.
-- 四川市州 outlines; fuller country selector / small countries and islands, using verified reusable sources.
+- Fuller country selector / small countries and islands, using verified reusable sources.
 - A chosen trip/date interval, optional explicitly-selected photos, and additional map compositions after visual review.
 - Saved-record editing/deletion, user-chosen exports/retention; never erase Git history implicitly.
 - Physical iPhone/Safari camera, HEIC, native file sharing, wallpaper and actual paper-print checks.
 
 Durable handoff: CONTEXT.md, PROGRESS.md and GEOGRAPHY.md. No Supabase integration or background recurring task was added.
+
+## Delivered: stronger paper relief and geographic detail (2026-10-03)
+
+Controls now share upper-left lighting, raised / pressed states and recessed inputs / segmented selectors. Contrast overrides keep outlines without shadows. Sichuan displays all 21 city/prefecture polygons, click / keyboard selection and zoom labels; exports color only explicitly recorded cities. China preserves 34 province entries and supplements Hainan with 18 Natural Earth Xisha physical-island polygons; the map and exported SVG show a non-proportional inset without shrinking the mainland overview. This is not complete marine / reef coverage or an official administrative map.

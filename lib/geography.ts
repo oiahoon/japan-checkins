@@ -8,7 +8,13 @@ export function countryOf(v:{country?:string;prefecture:string}){return v.countr
 export function statusPrefix(country:string,area:string){return country==='JP'?area:country+' / '+area;}
 export function inScope(v:GeographicVisit,scope:Scope){const c=countryOf(v);return scope==='world'||(scope==='japan'?c==='JP':c==='CN'&&(scope==='china'||v.prefecture==='四川省'));}
 export function visitArea(v:GeographicVisit,scope:Scope,world:MapFeature[]=[]){return scope==='sichuan'?v.city:scope==='world'?(world.find(f=>f.properties.code===countryOf(v))?.properties.name||countryOf(v)):v.prefecture;}
-export function mapFeatures(scope:Scope,geos:Record<'japan'|'china'|'world',MapFeature[]>){return scope==='sichuan'?geos.china.filter(f=>f.properties.name==='四川省'):geos[scope];}
+export type Geographies=Record<'japan'|'china'|'world',MapFeature[]>&{sichuan?:MapFeature[]};
+export function mapFeatures(scope:Scope,geos:Geographies){return scope==='sichuan'?(geos.sichuan||geos.china.filter(f=>f.properties.name==='四川省')):geos[scope];}
+export function isXishaPoint(lat:number,lon:number){return lat>15&&lat<18&&lon>110&&lon<114;}
+export function chinaMapParts(features:MapFeature[]){
+ const islands:MapFeature[]=[],main=features.map(f=>{if(f.properties.name!=='海南省')return f;const small=f.geometry.coordinates.filter(poly=>poly.every(r=>r.every(([x,y])=>isXishaPoint(y,x))));if(small.length)islands.push({...f,geometry:{...f.geometry,coordinates:small}});return {...f,geometry:{...f.geometry,coordinates:f.geometry.coordinates.filter(p=>!small.includes(p))}};});
+ return {main,islands};
+}
 export function coordinateInScope(lat:number,lon:number,scope:Scope,geos:Record<'japan'|'china'|'world',MapFeature[]>){if(!validCoordinate(lat,lon))return false;if(scope==='world')return true;return Boolean(prefectureAt(lat,lon,mapFeatures(scope,geos)));}
 export function bounds(features:MapFeature[]):[number,number,number,number]{const points=features.flatMap(f=>f.geometry.coordinates.flatMap(p=>p.flat()));if(!points.length)return [-180,-85,180,85];return [Math.min(...points.map(p=>p[0])),Math.min(...points.map(p=>p[1])),Math.max(...points.map(p=>p[0])),Math.max(...points.map(p=>p[1]))];}
 export function projection(features:MapFeature[],width:number,height:number,padding=20){const [left,bottom,right,top]=bounds(features),cos=Math.cos((bottom+top)/2*Math.PI/180);const sx=Math.max(.05,cos),scale=Math.min((width-padding*2)/Math.max(.01,(right-left)*sx),(height-padding*2)/Math.max(.01,top-bottom));return ([lon,lat]:number[])=>[width/2+(lon-(left+right)/2)*sx*scale,height/2-(lat-(top+bottom)/2)*scale];}
