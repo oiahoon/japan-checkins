@@ -40,3 +40,47 @@
 
 .batch-selection .select-field { flex:1;min-width:0;margin:0; }.batch-selection>button { flex-shrink:0;white-space:nowrap; }
 @media(max-width:600px) { .batch-selection:has(>.select-field) { flex-wrap:wrap;gap:4px 12px; }.batch-selection>.select-field { flex-basis:100%; }.batch-selection>button { margin-right:auto; } }
+
+/* Shared discovery rhythm: a quiet inset search, raised sort control, then filters. */
+.photo-discovery { display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,240px);align-items:center;gap:12px;margin-bottom:16px; }
+.photo-discovery>.select-field { margin:0;min-width:0; }
+.photo-search { display:flex;align-items:center;gap:10px;min-width:0;min-height:46px;padding:0 12px;border-radius:14px;background:var(--bg);box-shadow:var(--control-inset);color:var(--muted); }
+.photo-search>svg { flex-shrink:0; }
+.photo-search .neo-input { width:100%;min-width:0;margin:0;padding:12px 0;background:transparent;box-shadow:none;border:0;font-size:13px; }
+.photo-search .neo-input:focus-visible { outline:0; }
+.photo-search:focus-within { outline:2px solid var(--amber);outline-offset:3px; }
+.photo-search .icon-button { width:44px;min-height:44px;flex-shrink:0;margin-right:-8px;box-shadow:none; }
+.photo-search input::-webkit-search-cancel-button { display:none; }
+.photo-editor-save-actions { display:flex;gap:12px; }
+.photo-editor-save-actions>.neo-button { flex:1;min-width:0;min-height:46px; }
+.photo-editor-footer>.neo-notification { margin-bottom:12px; }
+.entry-album-toolbar { flex-wrap:wrap;gap:10px; }
+.entry-album-toolbar>span { margin-right:auto; }
+.entry-selection-summary { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px; }
+.entry-selection-summary>span { color:var(--muted);font-size:12px; }
+.poster-export>.neo-notification { margin-bottom:12px; }
+.photo-library-empty>.neo-button { margin-top:8px; }
+@media(max-width:600px) {
+ .photo-library:not(.compact) .journal-page-heading { flex-basis:100%; }
+ .photo-library:not(.compact) .journal-page-actions { width:100%;justify-content:flex-end; }
+ .photo-library:not(.compact) .journal-page-actions>.neo-button:first-child { margin-right:auto; }
+ .photo-discovery { grid-template-columns:minmax(0,1fr);gap:10px; }
+ .photo-filters { gap:8px; }
+ .photo-record-filter { flex:1;min-width:160px; }
+ .photo-filters>span { margin-left:0; }
+ .entry-photo-discovery { margin-bottom:20px; }
+ .photo-editor-save-actions { flex-direction:column-reverse;gap:8px; }
+ .photo-editor-save-actions>.neo-button { flex:0 0 auto;font-size:13px; }
+ .photo-editor-save-actions>.neo-button--neutral { box-shadow:none;color:var(--muted);min-height:36px;padding:8px; }
+}
+.photo-sort { display:block;min-width:0; }
+.photo-sort>.select-field { width:100%;margin:0; }
+@media(max-width:600px) {
+ .photo-discovery { grid-template-columns:minmax(0,1fr) 46px; }
+ .photo-sort .select-trigger { width:46px;height:46px;min-height:46px;padding:0;justify-content:center; }
+ .photo-sort .select-value,.photo-sort .select-chevron { display:none; }
+ .photo-sort .select-leading { display:flex;align-items:center;justify-content:center;margin:0; }
+}
+.entry-photo-edit { min-height:44px; }
+@media(max-width:600px) { .photo-editor-save-actions>.neo-button--neutral { min-height:44px; } }
+@media(max-width:800px) { .photo-search .neo-input { font-size:16px; } }

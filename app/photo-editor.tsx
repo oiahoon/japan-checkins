@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useMemo,useRef,useState} from 'react';
-import {ChevronDown,MapPin,Check,ZoomIn,FileImage} from 'lucide-react';
+import {ChevronDown,MapPin,Check,ZoomIn,FileImage,ArrowRight} from 'lucide-react';
 import {NeoInput,NeoTextarea,NeoButton} from './ui/neo';
 import NeoNotification from './ui/notification';
 import SelectField from './select-field';
@@ -13,16 +13,20 @@ import {inspectPhoto} from '../lib/photo-import';
 import {editPlaceQuery,applyPlaceMatch,lookupPlace,type PlaceMatch} from '../lib/place-lookup';
 import PlaceSearch from './place-search';
 import {applySearchPlace} from '../lib/place-search';
+import {photoDetailsChanged} from '../lib/photo-discovery';
 import {photoSaveIntent} from '../lib/photo-save-intent';
 import type {MapFeature} from '../lib/geography';
 import {regionCities,cityDistricts,type ChinaDirectory} from '../lib/china-admin';
-export default function PhotoEditor({photo,geos,onSave,onClose,onView}:{photo:LibraryPhoto;geos:{japan:MapFeature[];china:MapFeature[];sichuan:MapFeature[];world:MapFeature[];japanCities?:MapFeature[];chinaAdmin?:ChinaDirectory};onSave:(id:string,details:PhotoDetails,confirmed:boolean)=>Promise<void>;onClose:()=>void;onView:()=>void}){
- const dialog=useRef<HTMLDialogElement>(null),sourceInput=useRef<HTMLInputElement>(null),gpsApplied=useRef(false),placeEdited=useRef(false);
+export default function PhotoEditor({photo,geos,onSave,onClose,onView,onNext,position}:{onNext?:()=>void;position?:string;photo:LibraryPhoto;geos:{japan:MapFeature[];china:MapFeature[];sichuan:MapFeature[];world:MapFeature[];japanCities?:MapFeature[];chinaAdmin?:ChinaDirectory};onSave:(id:string,details:PhotoDetails,confirmed:boolean)=>Promise<void>;onClose:()=>void;onView:()=>void}){
+ const dialog=useRef<HTMLDialogElement>(null),sourceInput=useRef<HTMLInputElement>(null),gpsApplied=useRef(false),placeEdited=useRef(false),userEdited=useRef(false);
  const [d,setD]=useState<PhotoDetails>(()=>({...photo.details,date:photo.details.date||photo.proposal?.date||''})),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [discardPrompt,setDiscardPrompt]=useState(false);
+ const initialDetails=useRef({...photo.details,date:photo.details.date||photo.proposal?.date||''});
+ function requestClose(){if(busy||reading)return;if(userEdited.current&&photoDetailsChanged(initialDetails.current,d))setDiscardPrompt(true);else onClose()}
  const [localLoading,setLocalLoading]=useState(true),[localError,setLocalError]=useState(false);
  const [places,setPlaces]=useState<PlaceMatch[]>([]),[recovered,setRecovered]=useState<PhotoMetadata>(),[reading,setReading]=useState(false);
  useEffect(()=>{dialog.current?.showModal();let active=true;fetch('/place-index.json',{signal:AbortSignal.timeout(12000)}).then(r=>{if(!r.ok)throw Error();return r.json() as Promise<PlaceMatch[]>}).then(entries=>{if(!active)return;if(!Array.isArray(entries))throw Error();setPlaces(entries);if(placeEdited.current)setD(v=>editPlaceQuery(v,v.place,entries))}).catch(()=>{if(active)setLocalError(true)}).finally(()=>{if(active)setLocalLoading(false)});return()=>{active=false}},[]);
- const patch=(value:Partial<PhotoDetails>)=>{
+ const patch=(value:Partial<PhotoDetails>)=>{userEdited.current=true;
   const parentEdit=!('place' in value)&&['country','prefecture','city','district'].some(k=>k in value);if(parentEdit)placeEdited.current=false;
   setD(v=>{const next={...v,...value,...(!('placeSource' in value)&&Object.keys(value).some(k=>['country','prefecture','city','district','latitude','longitude'].includes(k))?{placeSource:undefined}:{})};
    const match=parentEdit?lookupPlace(v.place,places).automatic:undefined;
@@ -43,9 +47,9 @@ export default function PhotoEditor({photo,geos,onSave,onClose,onView}:{photo:Li
  function chooseMatch(match:PlaceMatch){placeEdited.current=false;patch({...applyPlaceMatch(d,match),place:match.name,latitude:null,longitude:null,placeSource:undefined})}
  function changePlace(place:string){placeEdited.current=true;patch(editPlaceQuery(d,place,places))}
  async function readSource(file?:File){if(!file)return;setReading(true);setError('');try{const metadata=await inspectPhoto(file);setRecovered(metadata);if(metadata.date){patch({date:metadata.date})}else setError(metadata.dateStatus==='error'?'原图元数据读取失败':metadata.dateStatus==='invalid'?'原图日期无效，请手动填写':'原图未提供 EXIF 日期，请手动填写')}catch(e){setError((e as Error).message)}finally{setReading(false);if(sourceInput.current)sourceInput.current.value=''}}
- async function submit(){if(busy||reading||intent.error||(intent.confirmed&&localLoading&&placeEdited.current))return;setBusy(true);setError('');try{await onSave(photo.id,d,intent.confirmed);onClose()}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
- return <dialog ref={dialog} className="photo-editor" aria-labelledby="photo-editor-title" onCancel={e=>busy||reading?e.preventDefault():onClose()} onClose={onClose}>
-  <SheetHeader className="photo-editor-header" id="photo-editor-title" title="这一张的记忆" description={photo.marked?'已保存 · 已标记地图':Object.values(photo.details).some(v=>typeof v==='string'&&v.trim())?'信息已保存 · 尚未标记地图':'已存入照片记录 · 可以稍后补充'} onClose={onClose} closeLabel="关闭照片编辑" disabled={busy||reading}/>
+ async function submit(next=false){if(busy||reading||intent.error||(intent.confirmed&&localLoading&&placeEdited.current))return;setBusy(true);setError('');try{await onSave(photo.id,d,intent.confirmed);if(next&&onNext)onNext();else onClose()}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
+ return <dialog ref={dialog} className="photo-editor" aria-labelledby="photo-editor-title" onCancel={e=>{e.preventDefault();requestClose()}}>
+  <SheetHeader className="photo-editor-header" id="photo-editor-title" title={position?`这一张的记忆 · ${position}`:'这一张的记忆'} description={photo.marked?'已保存 · 已标记地图':Object.values(photo.details).some(v=>typeof v==='string'&&v.trim())?'信息已保存 · 尚未标记地图':'已存入照片记录 · 可以稍后补充'} onClose={requestClose} closeLabel="关闭照片编辑" disabled={busy||reading}/>
   <form onSubmit={e=>{e.preventDefault();void submit()}}><div className="photo-editor-scroll">
    <button type="button" className="photo-editor-preview" onClick={onView} aria-label="放大查看照片"><PhotoImage src={photo.url} alt="正在整理的照片" fit="contain" loading="eager"/><span><ZoomIn size={15}/>查看照片</span></button>
    <fieldset disabled={busy||reading}><section className="photo-editor-primary"><h3><MapPin size={17}/>在哪里，哪一天？</h3>
@@ -63,6 +67,6 @@ export default function PhotoEditor({photo,geos,onSave,onClose,onView}:{photo:Li
     {photo.metadata&&<><h3>相机信息</h3><dl>{Object.entries(photo.metadata).map(([key,value])=><div key={key}><dt>{{make:'品牌',model:'型号',lens:'镜头',aperture:'光圈',exposureSeconds:'曝光秒数',iso:'ISO',focalLength:'焦距'}[key]||key}</dt><dd>{String(value)}</dd></div>)}</dl></>}
    </div></details></fieldset>
    <input ref={sourceInput} hidden type="file" accept="image/*,.heic,.heif,.dng,.tif,.tiff,.raw,.cr2,.cr3,.nef,.arw,.raf,.rw2,.orf,.pef" onChange={e=>void readSource(e.target.files?.[0])}/>
-  </div><footer className="photo-editor-footer">{error&&<NeoNotification tone="error">{error}</NeoNotification>}{intent.error&&<p className="photo-editor-hint" role="status">{intent.error}</p>}<NeoButton variant="primary" type="submit" loading={busy||reading} disabled={busy||reading||!!intent.error||(intent.confirmed&&localLoading&&placeEdited.current)}><Check size={18}/>{reading?'正在读取原图':intent.label}</NeoButton></footer></form>
+  </div><footer className="photo-editor-footer">{discardPrompt&&<NeoNotification tone="warning" action={{label:'放弃修改',onClick:onClose}} onDismiss={()=>setDiscardPrompt(false)}>修改尚未保存</NeoNotification>}{error&&<NeoNotification tone="error">{error}</NeoNotification>}{intent.error&&<p className="photo-editor-hint" role="status">{intent.error}</p>}<div className="photo-editor-save-actions"><NeoButton variant={onNext?'neutral':'primary'} type="submit" loading={busy||reading} disabled={busy||reading||!!intent.error||(intent.confirmed&&localLoading&&placeEdited.current)}><Check size={18}/>{reading?'正在读取原图':intent.label}</NeoButton>{onNext&&<NeoButton variant="primary" disabled={busy||reading||!!intent.error||(intent.confirmed&&localLoading&&placeEdited.current)} onClick={()=>void submit(true)}>{intent.confirmed?'保存并标记，下一张':'保存，下一张'}<ArrowRight size={17}/></NeoButton>}</div></footer></form>
  </dialog>;
 }

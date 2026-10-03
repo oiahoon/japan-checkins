@@ -1,5 +1,11 @@
 # Architecture
 
+## 照片发现与整理（2026-10-04）
+
+`lib/photo-discovery.ts` 提供只作用于已授权客户端列表的搜索、稳定日期排序、就绪状态与下一张查找。照片库和相册使用同一规则；搜索条件不提交到第三方、不把 EXIF 建议写成已确认记录。`Travel` 捕获编辑起点的可用 ID 顺序；`PhotoEditor` 等待原有 PATCH 与列表刷新成功再推进。关闭保护仅关注实际手动修改，保存确认仍由 `photoSaveIntent` 决定。
+
+`EntrySheet` 区分阅读、添加、管理：默认图片打开查看器，元数据补充单独进入编辑；查看器收到当前可见顺序。选择与搜索分离，提交从完整可用集合校验 ID，不丢弃被新搜索隐藏的选择。原子关联 / 100 张上限 / owner 规则仍在服务端；本轮没有 API、索引或迁移变更。`SelectField.matchTriggerWidth=false` 允许图标按钮采用按内容宽度展开的菜单，现有地点菜单默认宽度契约不变。
+
 ## Default: private GitHub journal / Next.js
 
 React 19 / Next.js App Router is the default runtime. `app/page.tsx` verifies a signed session for private viewing, or renders a read-only published view when JOURNAL_VISIBILITY=public. Default AUTH_PROVIDER=password uses salted scrypt hashes (N=131072,r=8,p=1), with separate admin and optional viewer roles. Password changes invalidate old sessions; authentication provider changes do not reuse sessions. Production password login fails closed until Vercel WAF has been configured and PASSWORD_RATE_LIMIT=vercel-waf is acknowledged. Instance-local admission control supplements WAF and is not distributed protection. `app/chatgpt-auth.ts` is the compatibility entry point: self-hosted modes never trust identity headers. `lib/github-auth.ts` verifies HMAC session signature, purpose, numeric owner and expiry. OAuth routes implement GitHub state + PKCE, server token exchange and `/user` identity lookup; only the configured numeric user ID is allowed. OAuth access tokens are discarded after verification, never stored in cookies. Logout is a same-origin POST. HTTPS cookies use the `__Host-` prefix, HttpOnly and SameSite=Lax.
