@@ -15,7 +15,8 @@ export const visitInput = z.object({
 }).transform(b=>({...b,location:confirmedLocation(b.location,b.country)}));
 const storedVisit = z.object({country:z.string().regex(/^[A-Z]{2,3}$/).default('JP'),published:z.boolean().default(false),pref_depth:depth.default(0),city_depth:depth.default(0),id:recordId,owner:z.string(),prefecture:z.string(),city:z.string(),place:z.string(),place_key:z.string(),kind:z.string(),date:z.string(),note:z.string(),depth,eaten:z.number().int().min(0).max(1),created:z.string(),latitude:z.number().nullable(),longitude:z.number().nullable(),location_source:z.string().nullable()});
 const storedStatus = z.object({owner:z.string(),scope:z.enum(['prefecture','city','place']),label:z.string(),depth,eaten:z.number().int().min(0).max(1)});
-const storedPhoto = z.object({id:recordId,owner:z.string(),checkin:recordId.nullable(),sha:z.string().regex(/^[a-f0-9]{40}$/),digest:z.string(),created:z.string()});
+export const cameraMetadataSchema=z.object({make:z.string().max(120).optional(),model:z.string().max(120).optional(),lens:z.string().max(120).optional(),aperture:z.number().positive().finite().optional(),exposureSeconds:z.number().positive().finite().optional(),iso:z.number().positive().finite().optional(),focalLength:z.number().positive().finite().optional()}).strict();
+const storedPhoto = z.object({id:recordId,owner:z.string(),checkin:recordId.nullable(),sha:z.string().regex(/^[a-f0-9]{40}$/),digest:z.string(),metadata:cameraMetadataSchema.optional(),created:z.string()});
 export const journalSchema = z.object({version:z.literal(1),owner:z.string(),checkins:z.array(storedVisit),statuses:z.array(storedStatus),photos:z.array(storedPhoto)});
 export type Journal = z.infer<typeof journalSchema>;
 export function emptyJournal(owner: string):Journal {return {version:1,owner,checkins:[],statuses:[],photos:[]};}

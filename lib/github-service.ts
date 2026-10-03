@@ -1,3 +1,4 @@
+import {cameraMetadataSchema} from './travel-data.ts';
 import {createHash} from 'node:crypto';
 import {GitHubStore} from './github-store.ts';
 import {sanitizeJPEG} from './photo.ts';
@@ -22,7 +23,7 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
     if(action==='list') {
       const original=await store.read(user.userId);
       const data=context.sharedOnly?sharedJournal(original):original;
-      return json({checkins:data.checkins.sort((a,b)=>b.date.localeCompare(a.date)||b.created.localeCompare(a.created)),statuses:data.statuses,photos:data.photos.filter(p=>p.checkin!==null).map(p=>({id:p.id,checkin:p.checkin})),drafts:context.readOnly?[]:data.photos.filter(p=>p.checkin===null).map(p=>({id:p.id}))});
+      return json({checkins:data.checkins.sort((a,b)=>b.date.localeCompare(a.date)||b.created.localeCompare(a.created)),statuses:data.statuses,photos:data.photos.filter(p=>p.checkin!==null).map(p=>({id:p.id,checkin:p.checkin,...(!context.sharedOnly?{metadata:p.metadata}:{})})),drafts:context.readOnly?[]:data.photos.filter(p=>p.checkin===null).map(p=>({id:p.id,metadata:p.metadata}))});
     }
     if(action==='photo'||action==='delete') {
       if(!recordId.safeParse(id).success)return json({error:'照片不存在'},404);
@@ -33,6 +34,7 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
     }
     if(action==='upload') {
       const photoId=request!.headers.get('x-upload-id');
+      let metadata;try{const raw=request!.headers.get('x-photo-metadata');if(raw&&raw.length>4096)throw Error();metadata=raw?cameraMetadataSchema.parse(JSON.parse(decodeURIComponent(raw))):undefined;}catch{return json({error:'相机信息无效'},400);}
       if(!recordId.safeParse(photoId).success)return json({error:'上传标识无效'},400);
       let bytes:Uint8Array;try{bytes=sanitizeJPEG(await boundedBytes(request!,3*1024*1024));}catch{return json({error:'请选择有效的 JPEG 照片，最多 3 MB'},400);}
       const digest=createHash('sha256').update(bytes).digest('hex');
@@ -42,7 +44,7 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
       if(previous){if(previous.digest!==digest)throw new InputError('上传标识已用于另一张照片');return json({id:photoId},201);}
       if(current.photos.filter(p=>p.checkin===null).length>=30)throw new InputError('未完成照片过多，请先保存或移除');
       const sha=await store.blob(bytes);
-      await store.mutate(user.userId,j=>{const existing=j.photos.find(p=>p.id===photoId&&p.owner===user.userId);if(existing){if(existing.digest!==digest)throw new InputError('上传标识已用于另一张照片');return {changed:false};}if(j.photos.filter(p=>p.checkin===null).length>=30)throw new InputError('未完成照片过多');j.photos.push({id:photoId!,owner:user.userId,checkin:null,sha,digest,created:new Date().toISOString()});return {changed:true,files:[{path:`travel/photos/${photoId}.jpg`,mode:'100644',type:'blob',sha}]};});
+      await store.mutate(user.userId,j=>{const existing=j.photos.find(p=>p.id===photoId&&p.owner===user.userId);if(existing){if(existing.digest!==digest)throw new InputError('上传标识已用于另一张照片');return {changed:false};}if(j.photos.filter(p=>p.checkin===null).length>=30)throw new InputError('未完成照片过多');j.photos.push({id:photoId!,owner:user.userId,checkin:null,sha,digest,metadata,created:new Date().toISOString()});return {changed:true,files:[{path:`travel/photos/${photoId}.jpg`,mode:'100644',type:'blob',sha}]};});
       return json({id:photoId},201);
     }
     let body:unknown;try{body=JSON.parse((await boundedBytes(request!,20000)).toString('utf8'));}catch{return json({error:'请求内容无效或过长'},400);}

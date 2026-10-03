@@ -1,5 +1,5 @@
 // Bounded JPEG EXIF reader. Metadata stays in the browser until reviewed.
-export type PhotoMetadata = {gps?: {latitude:number;longitude:number};date?:string;offset?:string;orientation?:number;warning?:string};
+export type PhotoMetadata = {gps?: {latitude:number;longitude:number};date?:string;offset?:string;orientation?:number;warning?:string;camera?:Record<string,string|number>};
 export function readPhotoMetadata(bytes:Uint8Array):PhotoMetadata {
  const out:PhotoMetadata={};
  try {

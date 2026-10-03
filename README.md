@@ -58,3 +58,5 @@ npm run start
 ### 2026-10-03 照片拼图体验上线
 
 主人入口 `/photo-puzzle`：日本四城市随机照片拼图，开关、城市自动聚焦、连续拖拽 / 滚轮 / 按钮缩放、细节层级显示手动笔记。入口由服务端验证主人权限，沙箱 iframe 仅允许脚本；页面内示例不写入真实数据。笔记仅当前页面内存，刷新清空；随机照片不代表到访。此为上线体验原型，真实照片关联、笔记持久化、双指缩放和地图导出尚待接入。源原型在 docs/prototypes/japan-photo-puzzle.html，部署副本在 app/photo-puzzle/demo.ts，修改时同步。
+
+照片导入支持 JPEG、HEIC/HEIF、TIFF 与可解析的 TIFF 类 RAW/DNG 元数据。HEIC 本机转换，RAW 仅提取可用内嵌预览（无预览需导出 JPEG），不做 RAW 显影。相机型号、镜头和曝光参数存入私有照片索引，GPS 和日期仍需确认。机型与移动设备实测状态见 docs/CONTEXT.md。
