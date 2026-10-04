@@ -1,5 +1,12 @@
 # 项目上下文与产品方向
 
+## 发布核对
+
+功能提交 `8ea54aef3309edb4e2e0a2deab905603ab6375b7` 已推送 main；[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37166668833) 和 [clone-and-deploy](https://github.com/oiahoon/japan-checkins/actions/runs/37166668839) 均 success。Vercel Production `dpl_EMiWpS7Kxrw8xDY8uifJneL1zMfz` Ready，travel.miaowu.org 与默认域名均已指向该部署。最终 typecheck / build / 144项测试通过。
+
+正式页刷新后主人会话已过期，显示登录页；未登录 `/api/checkins` 返回401，认证保护保持。未更改密码或创建会话。市县导出交互证据来自本机隔离合成验收，不能称作线上主人会话复核。真实私人照片保存 / 导出、手机 Safari / 系统分享 / 实体打印仍需部署者登录验收。后续文档提交不改变功能代码。
+
+
 ## 当前探索范围导出 · 2026-10-04
 
 导出默认继承点击收藏前的地图地区，不再只支持五种固定作品：世界 / 亚洲 → 国家 → 已有可靠轮廓的省 / 县、市与区县。地区菜单只列当前路径，可回选上级，不改变背后的地图。三种风格、自定义标题与配色、画幅、构图缩放 / 拖拽保留；切换地区重置范围筛选和构图，用户自定义标题保留。

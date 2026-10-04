@@ -46,7 +46,7 @@ test('regional artwork remains deterministic and isolated across every style and
   if(node===city)assert.ok(svg.includes('1 次到访 · 1 个市区町村'));
  }
 });
-test('national China retains Xisha inset, while Hainan export retains actual island coordinates',()=>{
+test('national China retains Xisha inset; local island points are not suppressed',()=>{
  const national=region(tree.get('china')!),hainan=region(searchExplorer(tree,'海南省')[0]);
  const opts={scope:'china' as const,features:national.features,visits:[],title:'合成',format:'print' as const};assert.ok(buildPoster({...opts,region:national}).includes('西沙群岛</text>'));assert.ok(!buildPoster({...opts,region:hainan}).includes('局部放大 · 非同比例'));
  // Synthetic geometry checks the point suppression contract without storing personal EXIF.

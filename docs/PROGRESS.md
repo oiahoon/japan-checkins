@@ -1,5 +1,12 @@
 # Current handoff / 当前交接
 
+## 发布核对
+
+功能提交 `8ea54aef3309edb4e2e0a2deab905603ab6375b7` 已推送 main；[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/37166668833) 和 [clone-and-deploy](https://github.com/oiahoon/japan-checkins/actions/runs/37166668839) 均 success。Vercel Production `dpl_EMiWpS7Kxrw8xDY8uifJneL1zMfz` Ready，travel.miaowu.org 与默认域名均已指向该部署。最终 typecheck / build / 144项测试通过。
+
+正式页刷新后主人会话已过期，显示登录页；未登录 `/api/checkins` 返回401，认证保护保持。未更改密码或创建会话。市县导出交互证据来自本机隔离合成验收，不能称作线上主人会话复核。真实私人照片保存 / 导出、手机 Safari / 系统分享 / 实体打印仍需部署者登录验收。后续文档提交不改变功能代码。
+
+
 ## 当前探索范围导出 · 2026-10-04
 
 已实现地图层级快照传递、当前 / 祖先地区选择及对应轮廓导出。只统计当前范围的已确认足迹；图片依实际边界裁切，同名行政区按源 ID 隔离。日本福冈市、成都锦江区、全国惰性分片深圳福田区实际浏览器继承正常；320 / 390 / 1280px无横向溢出，三种风格、地区切换、键盘构图、PNG生成完成状态已验证。144项合成测试通过；最终 typecheck / build 与生产核对见 [验收报告](design/export-regions-2026-10-04.md)。没有写入私人照片 / 记录。取代旧五种地域导出限制；当前地理覆盖和设备打印验收限制保持。
