@@ -13,8 +13,8 @@ export function photoAreas(scope:Scope,features:PuzzleRegion[],visits:PuzzleVisi
  }return [...grouped.values()];
 }
 const xml=(s:string)=>s.replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]!));
-export function puzzleSVG({scope,features,visits,photos,project,prefix,notes=false}:{scope:Scope;features:PuzzleRegion[];visits:PuzzleVisit[];photos:PuzzlePhoto[];project:(p:number[])=>number[];prefix:string;notes?:boolean}){
- return photoAreas(scope,features,visits,photos).map(({feature,photos:images},index)=>{
+export function puzzleSVG({scope,features,visits,photos,project,prefix,notes=false,groups}:{scope:Scope;features:PuzzleRegion[];visits:PuzzleVisit[];photos:PuzzlePhoto[];project:(p:number[])=>number[];prefix:string;notes?:boolean;groups?:ReturnType<typeof photoAreas>}){
+ return (groups||photoAreas(scope,features,visits,photos)).map(({feature,photos:images},index)=>{
  const pts=feature.geometry.coordinates.flatMap(p=>p.flat()).map(project),xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),x=Math.min(...xs),y=Math.min(...ys),w=Math.max(...xs)-x,h=Math.max(...ys)-y,id=prefix+'-'+index,outline=featurePath(feature,project);
  // Alternating shared cubic tabs; each edge is used in reverse by its neighbor.
  let seed=images.reduce((a,p)=>[...p.id].reduce((n,c)=>(n*31+c.charCodeAt(0))>>>0,a),17);const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};

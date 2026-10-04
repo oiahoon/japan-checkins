@@ -6,7 +6,7 @@ import {featurePath,type MapFeature,type Scope,type GeographicVisit} from '../li
 import {createExplorerTree,projectEarth,fitCamera,clampCamera,zoomCamera,detailNodeAt,featureNode,explorerPath,nodeForArea,nodeForVisit,nodeBounds,visitInExplorerNode,hasExplorerHistory,searchExplorer,type MapCamera,type ExplorerNode,type ExplorerGeographies} from '../lib/map-explorer';
 
 export type ExplorerRequest={scope:Scope;area?:string;nodeId?:string;revision:number};
-type Props=PuzzleLayerProps&{geographies:ExplorerGeographies;request:ExplorerRequest;focusedVisit?:GeographicVisit;visits:GeographicVisit[];historical:Set<string>;historyScope:Scope;onContext:(node:ExplorerNode)=>void;onVisit:(id:string)=>void;onNavigate:()=>void;extended?:boolean;japanDetailsStatus?:'idle'|'loading'|'error'|'ready';onJapanDetails?:()=>void;onRetryJapanDetails?:()=>void};
+type Props=PuzzleLayerProps&{geographies:ExplorerGeographies;request:ExplorerRequest;focusedVisit?:GeographicVisit;visits:GeographicVisit[];historical:Set<string>;historyScope:Scope;onContext:(node:ExplorerNode,path:ExplorerNode[])=>void;onVisit:(id:string)=>void;onNavigate:()=>void;extended?:boolean;japanDetailsStatus?:'idle'|'loading'|'error'|'ready';onJapanDetails?:()=>void;onRetryJapanDetails?:()=>void};
 type Pointer={x:number;y:number;startX:number;startY:number};
 export default function MapExplorer({geographies:g,request,focusedVisit,visits,historical,historyScope,onContext,onVisit,onNavigate,extended=true,japanDetailsStatus,onJapanDetails,onRetryJapanDetails,...puzzle}:Props){
  const [cityShards,setCityShards]=useState<Record<string,MapFeature[]>>({}),[districtShards,setDistrictShards]=useState<Record<string,MapFeature[]>>({}),[dataError,setDataError]=useState(false),[dataLoading,setDataLoading]=useState(false),[retry,setRetry]=useState(0);
@@ -41,7 +41,7 @@ export default function MapExplorer({geographies:g,request,focusedVisit,visits,h
  useEffect(()=>{const el=container.current;if(!el)return;const resize=new ResizeObserver(([entry])=>{if(entry.contentRect.width&&entry.contentRect.height)setSize({width:entry.contentRect.width,height:entry.contentRect.height});});resize.observe(el);return()=>resize.disconnect();},[]);
  useEffect(()=>{if(!initialized.current||requestRevision.current!==request.revision){const n=request.nodeId?tree.get(request.nodeId):nodeForArea(tree,request.scope,request.area);if(n&&(n.features.length||n.frame)){requestRevision.current=request.revision;const first=!initialized.current;initialized.current=true;navigate(n,!first);}}},[tree,request.revision]);
  useEffect(()=>{if(initialized.current&&Math.abs(lastAspect.current-aspect)>.001){const n=tree.get(active.current)!;if(animation.current)navigate(n,false);else update({...cam.current,span:cam.current.span*fitCamera(n,aspect).span/fitCamera(n,lastAspect.current).span},false);}lastAspect.current=aspect;},[aspect]);
- useEffect(()=>{notify.current(node);},[node]);
+ useEffect(()=>{notify.current(node,explorerPath(tree,node.id));},[node]);
  useEffect(()=>{if(pathNav.current)pathNav.current.scrollLeft=pathNav.current.scrollWidth},[nodeId]);
  // Public geometry is loaded only for the country/province being explored.
  const provinceCode=node.country==='CN'?node.provinceCode:undefined;
