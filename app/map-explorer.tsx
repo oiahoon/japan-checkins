@@ -1,6 +1,6 @@
 'use client';
 import {publicAsset} from '../lib/public-asset';
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowLeft,ChevronRight,Globe2,Search,X,Plus,Minus,LocateFixed,MapPin} from 'lucide-react';
 import PuzzleLayer,{type PuzzleLayerProps} from './puzzle-layer';
 import {featurePath,type MapFeature,type Scope,type GeographicVisit} from '../lib/geography';
@@ -23,7 +23,8 @@ export default function MapExplorer({geographies:g,request,focusedVisit,visits,h
  let layer=preferred;while(!layer.features.length&&layer.parent)layer=tree.get(layer.parent)!;
  const fallback=node.hasBoundary===false;
  const children=layer.children.map(id=>tree.get(id)!).filter(Boolean);
- const path=explorerPath(tree,node.id),results=useMemo(()=>searchExplorer(tree,query).filter(n=>extended||n.country==='JP'||n.id==='japan'),[tree,query,extended]);
+ const searchQuery=useDeferredValue(query);
+ const path=explorerPath(tree,node.id),results=useMemo(()=>searchOpen?searchExplorer(tree,searchQuery).filter(n=>extended||n.country==='JP'||n.id==='japan'):[],[tree,searchQuery,extended,searchOpen]);
  const requestJapanDetails=useRef(onJapanDetails);requestJapanDetails.current=onJapanDetails;
  const needsJapanDetails=searchOpen||!!request.nodeId?.startsWith('jp-')&&!g.japanCities.length||node.id.startsWith('jp-pref:')||node.id.startsWith('jp-city:');
  useEffect(()=>{if(needsJapanDetails)requestJapanDetails.current?.()},[needsJapanDetails]);

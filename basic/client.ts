@@ -2,6 +2,7 @@ import {GitHubStore,GitHubError} from '../lib/github-store.ts';
 import {decodeBase64} from '../lib/base64.ts';
 import {journalSchema,assertOwner,recordId,InputError} from '../lib/travel-data.ts';
 import {journalProjection} from '../lib/journal-projection.ts';
+import {taskPool} from '../lib/task-pool.ts';
 import type {JournalTransport} from '../app/journal-transport';
 const json=(data:unknown,status=200)=>Response.json(data,{status});
 export class BrowserJournal implements JournalTransport{
@@ -9,6 +10,7 @@ export class BrowserJournal implements JournalTransport{
  private abort=new AbortController();private closed=false;
  private read:typeof fetch;
  private images=new Map<string,Promise<Blob>>();private urls=new Map<string,Promise<string>>();
+ private readPhoto=taskPool(3);
  constructor(repository:string,branch:string,token:string,read:typeof fetch=fetch){
   if(!/^[A-Za-z0-9-]+\/[A-Za-z0-9_.-]+$/.test(repository)||repository.length>200)throw Error('数据仓库请填写“用户名/仓库名”，不要填写完整网址');
   if(!/^\w[\w-]*$/.test(branch)||branch.length>100)throw Error('请检查数据分支名称；首次使用请保留 main');
@@ -35,7 +37,7 @@ export class BrowserJournal implements JournalTransport{
  photo=(src:string)=>{
   let pending=this.images.get(src);if(pending)return pending;
   const id=src.split('/').at(-1)!.split('?')[0];recordId.parse(id);
-  pending=this.store().photo(id,this.config.ownerId).then(bytes=>{if(!bytes)throw Error('照片不存在');return new Blob([bytes],{type:'image/jpeg'})}).catch(e=>{this.images.delete(src);throw e});this.images.set(src,pending);return pending;
+  pending=this.readPhoto(()=>this.store().photo(id,this.config.ownerId)).then(bytes=>{if(!bytes)throw Error('照片不存在');return new Blob([bytes],{type:'image/jpeg'})}).catch(e=>{this.images.delete(src);throw e});this.images.set(src,pending);return pending;
  };
  photoURL=(src:string)=>{let pending=this.urls.get(src);if(!pending){pending=this.photo(src).then(blob=>{if(this.closed)throw Error('已断开连接');return URL.createObjectURL(blob)}).catch(e=>{this.urls.delete(src);throw e});this.urls.set(src,pending)}return pending};
  request=async(url:string,init?:RequestInit):Promise<Response>=>{

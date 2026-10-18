@@ -6,8 +6,10 @@ export function discoverPhotos<T extends DiscoverablePhoto>(items:T[],{query='',
  const words=normalize(query).split(/\s+/).filter(Boolean);
  const recordTitles=new Map(records.map(r=>[r.id,r.title]));
  const found=[...items].reverse().filter(p=>{
+  if(unmarked&&p.marked||noNotes&&p.details.note.trim()||entry!=='all'&&(entry==='free'?!!p.entry:p.entry!==entry))return false;
+  if(!words.length)return true;
   const text=normalize([p.details.country,p.details.country==='JP'?'日本':p.details.country==='CN'?'中国':'',p.details.prefecture,p.details.city,p.details.district,p.details.place,p.details.date||p.proposal?.date,p.details.note,p.entry?recordTitles.get(p.entry):undefined].filter(Boolean).join(' '));
-  return (!unmarked||!p.marked)&&(!noNotes||!p.details.note.trim())&&(entry==='all'||(entry==='free'?!p.entry:p.entry===entry))&&words.every(w=>text.includes(w));
+  return words.every(w=>text.includes(w));
  });
  if(sort!=='added')found.sort((a,b)=>{
   const ad=a.details.date||a.proposal?.date||'',bd=b.details.date||b.proposal?.date||'';

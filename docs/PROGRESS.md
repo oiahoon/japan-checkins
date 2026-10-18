@@ -1,5 +1,9 @@
 # Current handoff / 当前交接
 
+## UI / UX 与现有资源优化 · 2026-10-18
+
+完成可见范围照片读取、基础版 3 路限流、只读快照减少 GitHub 请求、延迟搜索、空查询捷径、缩放拼图 SVG / 地理投影复用。167 tests、typecheck、Next build、基础版 build 与静态隐私扫描通过。390×844 隔离 48 张图片首屏源读取 48 → 10，滚动再读取后续；320 / 390 / 1280px 无横向溢出，失败原位重试成功，浅色地图 / 暗调时间线 / 照片库无控制台 warn/error。独立合成私仓连接 + 日志 + JPEG 实测 12 个 GET，未改写真实或测试日志。没有 LCP / INP / FPS 或真机弱网结论。main 按既有 GitHub → Pages / Vercel 工作流发布，实际状态需与提交 SHA 一致；完整证据见 [本轮验收](design/uiux-resource-performance-2026-10-18.md)。
+
 ## 独立新手部署验收 · 2026-10-18
 
 全新公开源码快照travel-guide-qa-20261018与private合成数据仓库travel-guide-data-qa-20261018，实际完成Pages发布、空日志初始化、单图EXIF提议、错误JSON失败保护、修复并确认四川成都地点、幂等重跑。1张照片先0到访，明确确认后1到访；错误JSON不修改原index，重复导入不新增提交。修正连接字段 / Contents权限提示与安全JSON文件诊断，新手指南补源码改名变量、权限和地图查找步骤。164项测试、typecheck、两版构建、静态隐私扫描通过。

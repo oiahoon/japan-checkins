@@ -5,3 +5,15 @@ function fake({privateRepo=true,foreignRow=false}={}){const j=emptyJournal('synt
 test('GitHub basic edition reads private photos and rejects every mutation even with a writable credential',async()=>{const f=fake(),c=f.client;await c.connect();const j=await (await c.request('/api/checkins')).json() as {drafts:unknown[]};assert.equal(j.drafts.length,1);assert.ok(!JSON.stringify(j).includes('synthetic-only'));for(const [url,method] of [['/api/photos','POST'],['/api/photos/synthetic-photo-01','PATCH'],['/api/photos/synthetic-photo-01','DELETE'],['/api/entries','POST'],['/api/manage','POST'],['/api/statuses','POST']])assert.equal((await c.request(url,{method})).status,403);assert.equal(f.writes(),0);assert.equal((await c.photo('/api/photos/synthetic-photo-01')).type,'image/jpeg');c.disconnect();assert.equal((await c.request('/api/checkins')).status,401)});
 test('basic private reader rejects public storage, foreign owners and malformed configuration',async()=>{await assert.rejects(fake({privateRepo:false}).client.connect());await assert.rejects(fake({foreignRow:true}).client.connect());assert.throws(()=>new BrowserJournal('bad/repo/extra','main','synthetic'));assert.throws(()=>new BrowserJournal('synthetic/private','main','x\ny'))});
 test('UTF-8 base64 preserves private Chinese notes and binary data',()=>{const bytes=new TextEncoder().encode('福岡 · 合成笔记');assert.deepEqual(decodeBase64(encodeBase64(bytes)),bytes)});
+test('basic reader bounds 48 distinct photo reads, deduplicates each source and drains safely on disconnect',async()=>{
+ const journal=emptyJournal('synthetic-owner');journal.photos=Array.from({length:48},(_,i)=>({id:'synthetic-photo-'+i,owner:journal.owner,sha:'a'.repeat(40),digest:'synthetic',checkin:null,created:'2020-01-02'}));
+ let active=0,peak=0,calls=0,commitReads=0;
+ const read:typeof fetch=async(url)=>{calls++;active++;peak=Math.max(peak,active);await new Promise(r=>setTimeout(r,1));active--;const path=new URL(String(url)).pathname.replace('/repos/synthetic/private','');
+ if(path.startsWith('/git/commits/'))commitReads++;
+ return Response.json(!path?{private:true}:path.startsWith('/git/ref/')?{object:{sha:'head'}}:path.startsWith('/git/commits/')?{tree:{sha:'tree'}}:path.startsWith('/git/blobs/')?{encoding:'base64',size:4,content:encodeBase64(new Uint8Array([255,216,255,217]))}:{encoding:'base64',size:100,content:encodeBase64(new TextEncoder().encode(JSON.stringify(journal)))});
+ };
+ const c=new BrowserJournal('synthetic/private','main','synthetic-only',read);await c.connect();peak=0;
+ const jobs=journal.photos.map(p=>c.photo('/api/photos/'+p.id));assert.equal(c.photo('/api/photos/'+journal.photos[0].id),jobs[0]);await Promise.all(jobs);assert.equal(peak,3);assert.equal(commitReads,0);assert.equal(calls,5+48*4);
+ // Queued operations still pass through the closed-connection guard before remote I/O.
+ c.disconnect();const before=calls;const failed=await Promise.allSettled(journal.photos.map(p=>c.photo('/api/photos/'+p.id+'?retry=1')));assert.equal(failed.filter(r=>r.status==='rejected').length,48);assert.equal(calls,before);
+});

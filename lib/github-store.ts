@@ -15,12 +15,13 @@ export class GitHubStore {
     if(!r.ok)throw new GitHubError(r.status);
     return r.json() as Promise<T>;
   }
-  private async snapshot() {
+  private async snapshot(includeTree=true) {
     // Check visibility each time; a repository made public must fail closed.
     const repo=await this.api<{private:boolean}>('');
     if(repo.private!==true)throw new Error('Data repository must be private');
     const ref=await this.api<{object:{sha:string}}>(`/git/ref/heads/${encodeURIComponent(this.config.branch)}`);
-    const commit=await this.api<{tree:{sha:string}}>(`/git/commits/${ref.object.sha}`);
+    // Only mutations need the base tree. Reads still pin the index to the verified head.
+    const tree=includeTree?(await this.api<{tree:{sha:string}}>(`/git/commits/${ref.object.sha}`)).tree.sha:undefined;
     let journal:Journal;
     try {
       const file=await this.api<{encoding:string;size:number;content:string}>(`/contents/travel/index.json?ref=${ref.object.sha}`);
@@ -30,9 +31,9 @@ export class GitHubStore {
       if(e instanceof GitHubError&&e.status===404)journal=emptyJournal(this.config.ownerId);else throw e;
     }
     assertOwner(journal,this.config.ownerId);
-    return {head:ref.object.sha as string,tree:commit.tree.sha as string,journal};
+    return {head:ref.object.sha as string,tree,journal};
   }
-  async read(owner:string) {if(owner!==this.config.ownerId)throw new Error("Owner denied");return (await this.snapshot()).journal;}
+  async read(owner:string) {if(owner!==this.config.ownerId)throw new Error("Owner denied");return (await this.snapshot(false)).journal;}
   async blob(bytes:Uint8Array) {return (await this.api<{sha:string}>('/git/blobs','POST',{encoding:'base64',content:encodeBase64(bytes)})).sha as string;}
   async photo(id:string,owner:string,publishedOnly=false) {
     if(owner!==this.config.ownerId)throw new Error('Owner denied');
