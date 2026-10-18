@@ -1,0 +1,44 @@
+name: Import private travel photos
+on:
+  workflow_dispatch:
+  push:
+    paths: ['inbox/**', 'travel/import.json', '.github/workflows/import.yml']
+permissions:
+  contents: write
+concurrency:
+  group: private-travel-import
+  cancel-in-progress: false
+jobs:
+  import:
+    if: github.event.repository.private == true && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: journal
+          ref: ${{ github.ref_name }}
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.TRAVEL_APP_REPOSITORY || format('{0}/japan-checkins', github.repository_owner) }}
+          ref: main
+          path: app
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
+      - run: node --experimental-strip-types scripts/import-git-photos.mjs --repository-root "$GITHUB_WORKSPACE/journal" --repository "$GITHUB_REPOSITORY"
+        working-directory: app
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Commit derived private data
+        working-directory: journal
+        run: |
+          git add -- travel
+          if git diff --cached --quiet; then exit 0; fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Import private travel photos'
+          git push origin "HEAD:${GITHUB_REF_NAME}"

@@ -1,66 +1,122 @@
-# GitHub 基础版：不用安装软件的私人旅行日志
+# GitHub 基础版：Git 管理，网页浏览
 
-每位用户都会有自己的源码仓库、Pages 网址和私有数据仓库，不共用作者的网站。
+每位用户拥有自己的源码仓库、Pages网址和私有数据仓库，不共用作者的网站。基础版不需要Vercel或Redis：通过Git上传 / 修改数据，Actions生成记录，Pages负责地图、时间线、照片查看与导出。网页上传 / 编辑 / 删除被隐藏，数据适配器也拒绝写入。
 
-基础版使用 GitHub Pages 托管网页，Actions 只构建应用。**网页上传的照片与记录直接写进你选择的 private 数据仓库**，不会公开在 Pages，也不需要 Vercel 或数据库。
+## 1 · 部署自己的网页
 
-## 第一步：得到自己的网页
+1. Fork本项目（或clone后push到自己的源码仓库），源码可以公开。
+2. 在源码副本的Actions中启用工作流。
+3. Settings → Pages → Source选择GitHub Actions。
+4. Actions → 发布 GitHub 基础版 → Run workflow。
+5. 完成后打开 `https://你的用户名.github.io/源码仓库名/`。
 
-1. 在本项目右上角点 **Fork → Create fork**，创建自己的源码副本。源码可公开，因为它不包含旅行数据。
-2. 打开副本的 **Actions**，若提示工作流未启用，点击启用。
-3. 打开 **Settings → Pages**，在 **Build and deployment → Source** 选择 **GitHub Actions**。
-4. 回到 **Actions → 发布 GitHub 基础版 → Run workflow → Run workflow**。
-5. 工作流完成后点击 `github-pages` 部署链接，通常为 `https://你的用户名.github.io/源码仓库名/`。
+GitHub Free的公开源码仓库可使用Pages；私人源码的Pages取决于账号方案。**公开的是应用代码，不是你的照片。** 不要在数据仓库启用Pages。
 
-后续源码 main 更新会重新构建；上传照片不需要重新构建。GitHub Free可在公开源码仓库使用Pages，私有源码的Pages取决于GitHub账号方案；**这里公开的只是源码，数据仓库始终保持private**。
+## 2 · 准备自己的私有数据仓库
 
-## 第二步：建一个只放自己旅行数据的仓库
+创建 **private** 数据仓库，例如 `my-travel-data`，勾选README。把源码中的 [deploy/github-import.yml](../deploy/github-import.yml) 复制到该数据仓库的 `.github/workflows/import.yml` 并提交。
 
-打开 [创建仓库](https://github.com/new)，名称例如 `my-travel-data`，选 **Private**，勾选 **Add a README file**，点击创建。不要在这个仓库启用Pages，不要把照片放进公开的源码副本。
+工作流默认读取同一账号下的 `japan-checkins` 源码副本的main。如果源码改过名字，在**数据仓库** Settings → Secrets and variables → Actions → Variables添加 `TRAVEL_APP_REPOSITORY=你的用户名/源码仓库名`。这不是密钥。源码副本需要能由该工作流读取；建议保持公开，不给数据工作流添加可访问其他私人仓库的广泛令牌。
 
-## 第三步：给网页一把只访问这个仓库的钥匙
+工作流使用GitHub内置GITHUB_TOKEN，只提交本数据仓库，不需要Vercel或手填写入token。组织策略、分支保护需要允许该工作流提交。它会再次检查仓库private与日志owner；公开仓库不执行导入。自动化不会部署或发布私人数据。
 
-打开 [Fine-grained personal access tokens](https://github.com/settings/personal-access-tokens/new)：
+## 3 · 用Git添加照片
 
-1. 写一个能认出的名称，例如“我的旅行日志”，设置有效期。
-2. Resource owner 选自己；Repository access 选 **Only select repositories**，只勾选刚创建的数据仓库。
-3. Repository permissions 中把 **Contents** 设成 **Read and write**，其他权限保持默认。
-4. 创建并复制令牌。组织仓库可能还需组织批准。
+在本机clone**数据仓库**，把照片放进 `inbox/`，例如：
 
-不要使用能访问全部私人仓库的广泛令牌，不要把令牌发给别人、填进Actions Secrets或提交到源码。网页只向 `https://api.github.com` 的这个仓库发送令牌。
+```sh
+cd my-travel-data
+mkdir -p inbox
+# 将准备上传的照片复制到 inbox/，可按年份/旅行建立子目录
+git add inbox
+git commit -m "Add travel photos"
+git push
+```
 
-## 第四步：连接与上传
+Actions → Import private travel photos完成后：
 
-在自己的旅行网页填写：
+```sh
+git pull --ff-only
+```
 
-- 私有数据仓库：`用户名/my-travel-data`。
-- 连接令牌：刚复制的令牌。
-- 默认分支 `main`；如果你修改过分支，可在“首次连接怎么准备”中调整。
+生成：
 
-点 **连接私人日志**。连接会核实仓库私有、分支存在和日志所有权，之后进入照片库。点添加照片，照片立即独立保存；日期 / GPS有EXIF则提供建议，没有则手填。明确保存地点 / 日期后才会标记地图。照片可单张 / 批量加入旅行记录，时间线、查看器、回收恢复、照片拼图和地图导出沿用同一套设计。
+| 文件 | 用途 |
+| --- | --- |
+| `travel/photos/*.jpg` | 缩放、正确方向、去EXIF的网页照片 |
+| `travel/index.json` | 网站读取的现有日志索引，不建议直接改 |
+| `travel/review.json` | 每张照片的EXIF日期 / GPS提议与相机信息，仅供核对 |
+| `travel/import.json` | 你编辑的地点、日期、笔记、确认状态与旅行记录 |
+| `travel/import-state.json` | 增量状态，不手改；相同输入不会覆盖后来的网页编辑 |
 
-## 为什么刷新还要连接
+没有GPS / 日期就留空，不使用东京或上传日期兜底。新照片默认未标记；EXIF不会自动成为旅行历史。
 
-令牌只留在当前网页内存，不放在地址栏、Cookie、localStorage、源码、Pages或Actions。断开连接会取消请求并撤销临时照片URL；刷新 / 关闭页面后需要重新输入。仓库和已保存旅行记录不会丢失。
+**Git上传的是原文件，`inbox/`原图及EXIF会保留在私有仓库与Git历史里。** 派生JPEG去EXIF不等于删除原始历史。不要把数据仓库改公开，也不要把这些文件复制到源码public目录或Pages产物。
 
-这是由GitHub API验证权限的私人数据访问，不是用前端密码遮住公开照片。网页壳可以公开，未授权访问者看不到你的数据。请只在自己信任的源码副本和HTTPS网页中输入凭据，保持依赖与代码来源可信。
+每次最多30张新照片，单张原图100MiB、一次扫描原图总量500MiB、最多1000个输入。GitHub自身文件限制仍适用。JPEG / PNG / WebP / AVIF / TIFF按Sharp支持情况转换；HEIC或RAW依赖运行环境解码器，不保证可用，失败时先导出保留EXIF的JPEG。任何无效图片 / 配置会阻止本次生成提交，不跳过出错项并假装全部成功。
 
-clone 到本机再 push 到新建源码仓库也可以，随后执行同样的 Actions / Pages 步骤。单纯 clone 或 fork 不能代替 Pages 启用和私人数据授权；不存在零配置的私人网页上传。
+## 4 · 在Git中确认地点与记录
 
-如果想用更简单的密码登录、长会话、独立只读访问密码、公开投影或可选在线地点搜索，可以选择 [Vercel进阶版](SELF-HOSTING.md)。同一份私有数据格式可复用，不需要导出重传；已有owner须保持一致。
+编辑生成的 `travel/import.json`。每张照片已有file和空details。核对review.json后，填写，例如：
+
+```json
+{
+  "file": "inbox/example.jpg",
+  "details": {
+    "country": "JP", "prefecture": "福岡県", "city": "福岡市", "district": "",
+    "place": "自己确认的地点", "date": "2020-01-02", "note": "自己的笔记",
+    "latitude": null, "longitude": null
+  },
+  "confirmed": true
+}
+```
+
+这是替换photos数组中的单项，不是整个文件。`confirmed: true`表示你明确确认该张照片的地点与日期；完整且有效才标记地图。坐标可留null，仅记录地区；填写坐标时必须与地区边界一致。不确定时保留false，仅保存部分信息。
+
+可在同一文件的entries数组中创建旅行记录或文字：
+
+```json
+{
+  "id": "trip-kyushu-2020", "type": "trip", "title": "九州旅行",
+  "date": "2020-01-02", "note": "旅行笔记", "photos": ["inbox/example.jpg"]
+}
+```
+
+文字记录使用 `type: "text"`，photos为空数组且note非空。记录ID保持不变以便更新；一张照片只属于一个旅行记录。从该entries项的photos数组移除路径可解除关联，不删除照片 / 单张信息。跨记录移动先解除原关联，提交成功后再加入新记录。相册上限100张。
+
+给照片项或旅行记录项加 `removed: true`移入回收状态，`removed: false`恢复。删掉inbox原文件或manifest条目不会自动删除已导入照片。替换原文件内容会创建新的独立照片；同一原图内容重复上传不会重复导入。
+
+```sh
+git add travel/import.json
+git commit -m "Update travel memories"
+git push
+```
+
+等待Actions完成后刷新网页并重新连接。自动生成文件需先pull，避免Git冲突；工作流非强推，遇到同时写入会失败，重新运行工作流读取最新分支后重试，不覆盖别人的更新。
+
+也可从源码目录本地运行 `npm run import:git -- --repository-root /绝对路径/my-travel-data --repository 用户名/my-travel-data`。需要GitHub CLI已登录，或当前进程提供受限GH_TOKEN；命令先核验private，再生成工作区文件，不自动commit / push。
+
+## 5 · 私人网页授权
+
+在GitHub创建**仅授权这个数据仓库、Contents只读**的fine-grained token。网页填写仓库名和token，连接后可浏览已确认足迹、待整理照片、时间线 / 相册与导出。分支默认main，可在首次连接帮助中调整。
+
+令牌只留在当前页内存，刷新要重新连接，不进URL / Cookie / localStorage / Actions / Pages。访问由GitHub权限验证，不是用前端密码遮住公开照片。只能在信任的源码副本和HTTPS站点输入凭据。
+
+没有Vercel仍能拥有自己的网站，但**不能承诺clone后零配置、无需授权即可查看私仓**。基础版需要启用Pages、复制导入工作流和一次只读授权。想使用网页上传、智能补充、批量管理和密码会话，请选择 [服务端进阶版](SELF-HOSTING.md)；可复用原私有数据，不必重传，owner须保持一致。
 
 ## 常见问题
 
-| 现象 | 解决 |
+| 现象 | 处理 |
 | --- | --- |
-| Actions没开始 / Pages没地址 | 启用fork工作流，Pages Source选择GitHub Actions，再手动运行发布 |
-| 页面空白、地图404 | 不要改构建中的BASIC_BASE_PATH；使用含源码仓库名的完整部署地址 |
-| 仓库连不上 | 核对拼写、private、README与main、token有效期和选中仓库、组织批准 |
-| 能看但不能保存 | token需要Contents写权限，数据分支保护须允许直接提交 |
-| GitHub连接不稳定 | 保留页面内容后重试，不重复新建照片；保存与上传ID保持幂等 |
-| 照片没有GPS / 日期 | 可能原图没有或格式无法读取，可补充；不会用东京或上传日期猜旅行 |
-| 令牌过期 | 重新创建受限token并连接，数据仍在原私有仓库 |
+| Pages无地址 | 启用fork工作流、Pages Source选Actions，再手动发布 |
+| 导入没有运行 | 工作流应在private数据仓库；检查inbox路径、Actions和分支策略 |
+| 找不到源码 | 配置TRAVEL_APP_REPOSITORY；默认同账号japan-checkins/main，源码需可读 |
+| 导入失败 | 检查格式 / 原图大小 / 每次30张新照片 / owner / manifest；必要时导出JPEG |
+| 地图没有新足迹 | 新照片只生成提议；编辑import.json并明确confirmed后才上图 |
+| 网页不能上传或修改 | 基础版有意只读，用Git更新或部署服务端进阶版 |
+| 私仓无法读取 | 核对token有效期、只读Contents、选中仓库、README与分支、组织批准 |
+| 更改manifest后没覆盖网页内容 | 只有实际修改过的导入项才重新应用；相同配置不覆盖后续网页编辑 |
 
-基础版不提供共享网页密码、独立访客角色或公开记录发布，不会把私有数据打包成静态网站。索引512KiB、单张处理后JPEG3MiB、相册100张，适合个人日志。大量照片的GitHub接口延迟 / 配额、具体HEIC/RAW机型和手机系统分享仍需单独验收，不能承诺所有文件与设备兼容。
+不支持离线保存，Git历史不会永久清理。真实机型、Safari、分享 / 打印和大图库吞吐需单独验收。
 
-官方依据：[GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)、[REST API跨域访问](https://docs.github.com/en/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests)。
+官方依据：[GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)、[GitHub REST跨域](https://docs.github.com/en/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests)。

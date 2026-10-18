@@ -1,10 +1,20 @@
 # 自部署双版本与首次使用验收 · 2026-10-18
 
-## 产品合同
+## 最新决定：Git基础版只读，服务端进阶版可写
+
+用户后续明确选择基础版尽量通过Git操作，取代前期“基础版也网页上传”的要求。最终基础版隐藏全部写入控件且在适配器拒绝非GET；地图 / 时间线 / 照片 / 相册 / 导出保留。私仓只读Contents token只用于读取。Git导入模板、命令、确认manifest和增量签名已实现；Redis仅有可选方案文档，未实现或部署。
+
+新增153项测试通过，覆盖只读适配器拒绝所有写入、导入提议不生成访问、内容ID幂等、JPEG去EXIF与Git blob SHA、显式确认 / 相册、后续网页编辑不被相同manifest覆盖，以及非法owner / 坐标 / 路径 / 符号链接 / 损坏图片整批失败。本地私仓权限验证与导入命令成功；真实Actions链路结果在最终发布记录补充。
+
+本机320px静态子路径构建已验证：地图操作菜单无管理入口，照片页无添加 / 选择 / 批量管理按钮，仍有照片筛选 / 查看与时间线，地理资料链接带正确子路径。
+
+以下“前期可写基础版”浏览器上传验收是历史设计验证，不能作为最终基础版网页上传能力的宣传。进阶版仍支持这些网页交互。
+
+## 前期产品合同（已由顶部最新决定更新）
 
 每位用户 fork（或 clone 后 push）到自己的源码仓库，部署到自己的 Pages / 服务端，再连接自己的 private 数据仓库。不共用作者的正式站点、照片、访问权限或部署凭据。Vercel 可选，不引入数据库。
 
-基础版只有公开应用壳和地理资料；Actions 构建 / 发布代码，浏览器解析 EXIF 并通过 GitHub REST API 上传与保存。私人访问由 GitHub token 权限验证，不能用前端共享密码替代。必须启用 Pages 并进行一次仓库 / fine-grained token 配置；刷新需要重新输入，不能宣传成零配置一键私人网站。照片不会经过 Actions、Pages 或作者服务。进阶版保留服务端密码 / 访客与可选发布；标准 Next.js 同时支持 Vercel 与持久单机 Node。
+前期方案中基础版只有公开应用壳和地理资料；Actions 构建 / 发布代码，浏览器解析 EXIF 并通过 GitHub REST API 上传与保存。私人访问由 GitHub token 权限验证，不能用前端共享密码替代。必须启用 Pages 并进行一次仓库 / fine-grained token 配置；刷新需要重新输入，不能宣传成零配置一键私人网站。照片不会经过 Actions、Pages 或作者服务。进阶版保留服务端密码 / 访客与可选发布；标准 Next.js 同时支持 Vercel 与持久单机 Node。
 
 ## 实现
 
@@ -35,7 +45,7 @@
 
 截图在工作站临时目录：basic-library-desktop.png、basic-library-mobile.png、basic-library-mobile-light.png；不包含凭据或真实照片，不进入Git。真正iPhone Safari、实际HEIC / RAW机型、系统分享、打印、网络弱环境和大图库吞吐没有被此验收替代。
 
-自动检查：typecheck、151项合成测试、Next production build、Pages basic build和静态安全扫描。测试覆盖所有权、确认分离、缺失 / 非法GPS、边界、去EXIF、并发与失败重试；新增初始化 / 持久限流 / URL信任与基础版数据适配器回归。最终命令与发布结果以PROGRESS最新条目为准。
+前期自动检查：typecheck、151项合成测试、Next production build、Pages basic build和静态安全扫描。测试覆盖所有权、确认分离、缺失 / 非法GPS、边界、去EXIF、并发与失败重试；新增初始化 / 持久限流 / URL信任与基础版数据适配器回归。最终命令与发布结果以PROGRESS最新条目为准。
 
 ## 发布
 

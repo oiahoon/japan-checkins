@@ -1,16 +1,13 @@
 # 项目上下文与产品方向
 
-## 双部署方案 · 2026-10-18
+## 最新部署分工 · 2026-10-18
 
-本节优先于下方历史部署说明。基础版为 GitHub Pages + Actions：只构建公开应用代码，浏览器通过当前页内存中的 fine-grained PAT 直连自己的 private 数据仓库，支持网页上传、逐张确认、地图 / 时间线、旅行相册 / 文字及照片双向管理和导出。刷新必须重新连接；令牌不进 Git、Actions、URL、cookie 或浏览器持久存储。基础版没有共享密码、只读访客或公开发布；这些使用进阶版。不能承诺 Fork 一次就自动获得私人仓库权限。
+用户最新决定取代此前“基础版网页上传”：**GitHub基础版通过Git管理，网页只读；接入服务端进阶版后启用友好的网页写入交互。** 每人拥有自己的源码仓库 / Pages网址 / private数据仓库，不共享作者部署。基础版隐藏上传、编辑、删除、批量关联，BrowserJournal也拒绝全部非GET请求；保留地图探索、拼图、照片 / 相册 / 时间线查看与导出。页内只读Contents token用于读取私人数据，刷新重新授权。
 
-进阶版保留 Next.js 服务端认证与固定仓库 owner，可选 Vercel 或自有 Node.js 服务器。新增交互式 setup、仅本机权限600的配置 / 密码文件、doctor 和认证 / 同源的 `/setup` 检查。Vercel 在未显式配置 APP_URL 时仅使用可信系统生产域名，密码登录仍需平台 WAF 声明；自有单机通过持久目录独占创建5个分钟槽位限流，跨进程 / 重启生效，文件失败则拒绝登录，不能用于 serverless 或多主机。
+新增 `deploy/github-import.yml` 供复制到private数据仓库。提交inbox照片后，私仓Actions核验private、解析EXIF、生成去EXIF的JPEG与待确认照片、review.json和import.json；编辑manifest明确confirmed后才生成足迹，可通过Git编辑旅行相册 / 文字 / 照片关联 / 软移除恢复。源内容ID幂等、完整校验后单次Git提交、非强推；输入签名让未修改的manifest不会覆盖后来网页补充。原始inbox和EXIF仍在私仓Git历史，不宣称永久清除。
 
-新用户先看 [GitHub 基础版](GITHUB-BASIC.md)，服务端托管看 [进阶部署](SELF-HOSTING.md)。网络恢复后，隔离新建 private 验收仓库已完成：全新安装 / production 构建 / HTTPS 证书校验、密码登录、首次上传、去除原始 EXIF、地点日期明确保存、旅行记录关联、重新读取、重复提交幂等与未登录 / viewer 写入拒绝。只用合成图片，未改动既有私人数据或生产凭据。浏览器与发布的最终证据见 [本轮验收](design/self-hosting-2026-10-18.md)。
+进阶版仍为标准Next.js，Vercel可选，也可自有持久单机Node。setup / doctor / 认证部署检查、可信域名和登录限流保持。Redis仅作为可选批量任务方案设计，**未接入或部署**，不成为新用户依赖，见 [批量方案](BATCH-PROCESSING.md)。基础版仍需Git、Pages、复制工作流和私仓只读授权，不能宣传零配置。当前实现与验收见 [本轮报告](design/self-hosting-2026-10-18.md)，历史前期可写基础版证据不代表最终能力。
 
-
-
-后续候选：私有数据仓库 `inbox/` + git commit / push + Actions 增量导入照片。当前 Pages workflow 仅发布应用，不扫描照片目录；此入口尚未实现。即使采用 Git 上传，EXIF 仍是待确认提议，不能自动生成已确认旅行历史，私有网页读取仍需授权。
 
 ## 发布核对
 
