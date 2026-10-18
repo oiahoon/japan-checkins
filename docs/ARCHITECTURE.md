@@ -1,5 +1,9 @@
 # Architecture
 
+## 可选 Redis 适配 · 2026-10-18
+
+已实现默认关闭的Upstash REST协调：服务端Git索引写入60秒租约、可选全站5次/60秒登录限流、2秒请求预算及失败关闭、setup配置保留与doctor只读PING。GitHub仍负责照片 / 主记录和幂等事实；基础版不依赖KV，后台批次 / 进度 / 消费者仍未实现。用户已批准复用既有Upstash Free；Vercel原生连接仅作用于japan-checkins Production并自动注入Secret变量，未读取密钥。Production已保存JOURNAL_KV=redis与独立命名空间；原有项目连接保留，登录限流方式未改。用户已批准提交、推送与正式部署；最终发布及运行时证据记录在PROGRESS。主人可主动运行隔离短TTL的SET/EVAL/锁检查，默认诊断仍为只读PING。免费条款与操作确认边界见 [KV.md](KV.md)；本节优先于下文历史“尚无Redis适配”的描述。
+
 原图确认补充：Git导入manifest新增sourceId，将地点日期确认绑定源内容。相同文件名换图会创建独立待确认照片并清除新照片的旧确认；原有照片 / 到访与网页编辑不变。153项测试包含替换原图与重复运行回归。
 
 ## Deployment editions · 2026-10-18

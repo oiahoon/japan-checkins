@@ -1,5 +1,11 @@
 # Current handoff / 当前交接
 
+## 可选 Redis 适配 · 2026-10-18
+
+已实现默认关闭的Upstash REST协调：服务端Git索引写入60秒租约、可选全站5次/60秒登录限流、2秒请求预算及失败关闭、setup配置保留与doctor只读PING。GitHub仍负责照片 / 主记录和幂等事实；基础版不依赖KV，后台批次 / 进度 / 消费者仍未实现。用户已批准复用既有Upstash Free；Vercel原生连接仅作用于japan-checkins Production并自动注入Secret变量，未读取密钥。Production已保存JOURNAL_KV=redis与独立命名空间；原有项目连接保留，登录限流方式未改。用户已批准提交、推送与正式部署；最终发布及运行时证据记录在PROGRESS。主人可主动运行隔离短TTL的SET/EVAL/锁检查，默认诊断仍为只读PING。免费条款与操作确认边界见 [KV.md](KV.md)；本节优先于下文历史“尚无Redis适配”的描述。
+
+本次隔离验收：163项合成测试、typecheck、Next生产构建通过；基础版使用 `npm run build:basic -- --configLoader runner` 构建通过（避免只读依赖目录的Vite临时文件写入，产物不变）。已安装本机Redis通过临时Unix socket执行生产Lua，20个并发登录仅放行5个，TTL / 租约争用 / 过期与旧持有者安全释放通过；静态产物未包含新增KV配置或测试密钥字符串。真实Upstash REST、最终Free合同、云端写入权限和生产接入均未验收。
+
 ## 安装与维护文档补齐 · 2026-10-18
 
 新增 [升级、备份与回滚指南](UPGRADING.md)，README与双版本指南增加入口。说明fork同步、配置与完整私仓备份、自有服务器停止 / 更新 / 构建检查 / 原服务启动、应用回滚与数据恢复区别；数据仓库工作流副本需手动维护，其源码checkout默认跟随main。基础版补充Git前置认证与提交身份，进阶FAQ修正Pages适用范围。仅文档变更；未执行生产恢复、私人数据写入、凭据 / 安全调整或额外主动发布。本机typecheck、Next.js build、153项测试与diff检查通过；52个相对链接、19段shell示例语法及npm脚本名核对通过。未执行文中升级 / 回滚 / 备份示例；远端结果以本次准确提交的检查及任务交付记录为准。

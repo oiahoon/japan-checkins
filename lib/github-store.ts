@@ -7,7 +7,8 @@ export class GitHubStore {
   private deadline=Date.now()+55000;
   private config:Config;
   private transport:typeof fetch;
-  constructor(config:Config,transport:typeof fetch=fetch) {this.config=config;this.transport=transport;}
+  private coordinate:(scope:string,work:()=>Promise<void>)=>Promise<void>;
+  constructor(config:Config,transport:typeof fetch=fetch,coordinate:(scope:string,work:()=>Promise<void>)=>Promise<void>=(_scope,work)=>work()) {this.config=config;this.transport=transport;this.coordinate=coordinate;}
   private async api<T>(path:string,method='GET',body?:unknown) {
     const remaining=this.deadline-Date.now();if(remaining<=0)throw new Error('GitHub operation timed out');
     const r=await this.transport(`https://api.github.com/repos/${this.config.repository}${path}`,{method,headers:{Authorization:`Bearer ${this.config.token}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),cache:'no-store',redirect:'error',signal:AbortSignal.timeout(Math.min(10000,remaining))});
@@ -44,6 +45,10 @@ export class GitHubStore {
   }
   async mutate(owner:string,change:(journal:Journal)=>{changed:boolean;files?:TreeEntry[]}) {
     if(owner!==this.config.ownerId)throw new Error('Owner denied');
+    const scope=JSON.stringify([this.config.repository.toLowerCase(),this.config.branch,owner]);
+    return this.coordinate(scope,()=>this.mutateUnlocked(owner,change));
+  }
+  private async mutateUnlocked(owner:string,change:(journal:Journal)=>{changed:boolean;files?:TreeEntry[]}) {
     for(let attempt=0;attempt<3;attempt++) {
       const state=await this.snapshot();
       const result=change(state.journal);

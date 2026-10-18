@@ -75,7 +75,7 @@ npm run dev
 
 ## 4 · 登录后检查，再添加照片
 
-`/setup` 仅主人可访问：检查站点地址、认证、登录限流声明、仓库配置、私有性、分支及已有日志所有权。它只读，不会上传、创建或修改数据；能连接不等于令牌一定有写权限，第一次照片保存会验证实际写入。主人空间可以随时返回检查。
+`/setup` 仅主人可访问：检查站点地址、认证、登录限流声明、仓库配置、私有性、分支及已有日志所有权。默认检查只读，不会上传、创建或修改旅行数据；能连接不等于令牌一定有写权限，第一次照片保存会验证实际写入。主人空间可以随时返回检查。
 
 命令行等价检查：
 
@@ -104,6 +104,8 @@ NODE_ENV=production node --env-file=.setup/server.env scripts/doctor.mjs --remot
 | `VIEWER_PASSWORD_HASH` | 可选且与管理密码不同 |
 | `JOURNAL_VISIBILITY` | 默认 `private` |
 | `AUTH_PROVIDER` | 默认 `password`；可选 `github`；旧 `sites` 只适用于可信入口 |
+| `JOURNAL_KV`、`JOURNAL_KV_NAMESPACE` | 可选Redis协调开关和每项目/环境独立命名空间；默认off |
+| `KV_REST_API_URL`、`KV_REST_API_TOKEN` | 可选原生注入的Secret；也支持UPSTASH_REDIS_REST命名，不混用凭据对 |
 | `PASSWORD_RATE_LIMIT_DIR` | file模式持久目录，可选 |
 | `GEOAPIFY_API_KEY` | 可选在线地点搜索；默认本地行政区 / 别名建议 |
 
@@ -146,3 +148,10 @@ NODE_ENV=production node --env-file=.setup/server.env scripts/doctor.mjs --remot
 - [Vercel 自动生产域名](https://vercel.com/docs/environment-variables/system-environment-variables)
 - [Vercel WAF 登录限流](https://vercel.com/kb/guide/limit-abuse-with-rate-limiting)
 - [GitHub fine-grained token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+
+
+## 可选 Redis
+
+进阶版可选启用短期写入协调及全局登录限流，基础版不依赖。默认关闭，不改GitHub主存储。创建、权限、免费费用边界、配置检查与回滚见 [KV.md](KV.md)。本次已获批共享既有Free库并原生连接目标Production；发布及运行时验证结果见PROGRESS，不能把连接成功当作运行时验收。
+
+启用步骤：在Vercel Storage选择自己的Free实例，原生Connect仅选可信Production，保持敏感凭据保护；不要增加付款方式或升级。设置 `JOURNAL_KV=redis` 和独立 `JOURNAL_KV_NAMESPACE`，重新部署。保持原 `PASSWORD_RATE_LIMIT`，只有单独明确选择redis才切换登录限流。主人 `/setup` 默认只读PING；主动运行“验证 Redis 写入锁”会创建随机、最长60秒TTL的隔离测试键，验证SET/EVAL/互斥/过期，不写照片或记录。详情及共享库权限/额度边界见KV文档。

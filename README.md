@@ -14,7 +14,7 @@
 | 私人数据访问 | 页内存中的私仓 Contents 只读 token | 服务端密码认证，token不交给浏览器 |
 | 数据与照片 | 自己的 private GitHub 数据仓库 | 同一个 private 数据仓库，可复用 |
 | 只读访客 / 公开投影 / 在线 POI | 不提供 | 可选 |
-| Redis / 数据库 | 不需要 | 不需要；Redis批量任务方案尚在设计 |
+| Redis / 数据库 | 不需要 | 可选 Redis 写入协调 / 登录限流；批量队列仍在设计 |
 
 ### 基础版：用 Git 管理自己的网站
 
@@ -40,7 +40,7 @@ npm run setup
 
 将示例中的 `YOUR_ACCOUNT` 替换为自己的 GitHub 账号；源码仓库改名时同步调整 URL 和 `cd` 目录。Node.js >=22.18。初始化引导填写仓库、隐藏输入的令牌和部署方式，自动生成管理密码、哈希、会话密钥和 `.setup/vercel.env` / `.setup/server.env`，可一次导入配置。密码在 `.setup/admin-password.txt`；这些文件均不提交、不上传。
 
-Vercel需配置登录WAF；自有Node.js服务器可用HTTPS反向代理与持久文件限流，无需Vercel。部署后登录 `/setup` 检查，再点“添加第一张照片”。完整步骤见 [进阶自部署指南](docs/SELF-HOSTING.md)。
+Vercel需配置登录WAF；自有Node.js服务器可用HTTPS反向代理与持久文件限流，无需Vercel。部署后登录 `/setup` 检查，再点“添加第一张照片”。完整步骤见 [进阶自部署指南](docs/SELF-HOSTING.md)。可选 [Redis写入协调](docs/KV.md) 不改变GitHub主存储、不会自动切换登录限流，后台批次队列仍未实现。
 
 已部署用户请看[升级、备份与回滚指南](docs/UPGRADING.md)：同步 fork、更新服务端，以及维护复制到数据仓库的导入工作流。
 

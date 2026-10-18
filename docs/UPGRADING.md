@@ -158,3 +158,10 @@ Git导入还需同时核对**数据仓库工作流副本**与其引用的**源�
 恢复提交若涉及 `inbox/`、`travel/import.json`或工作流文件，会触发导入，不能边恢复边让自动化重写结果。待恢复方案在隔离副本验证并明确选择恢复范围后，才由部署者应用到实际数据分支，检查读取后恢复写入。当前没有一键恢复、自动回滚数据或清除Git历史的功能。本文不提供会直接覆盖生产数据的复制粘贴命令。
 
 官方操作参考：[同步fork](https://docs.github.com/en/pull-requests/how-tos/work-with-forks/syncing-a-fork)、[Git镜像备份](https://docs.github.com/en/repositories/archiving-a-github-repository/backing-up-a-repository)、[git revert](https://git-scm.com/docs/git-revert)、[Vercel回滚](https://vercel.com/docs/instant-rollback)。
+
+
+## 可选 Redis 适配升级
+
+Redis不成为基础部署依赖；照片与主记录始终在GitHub。服务端更新前，检查KV开关、每项目/环境独立namespace以及REST凭据对；共享Free库同时共享读写权限与总额度。平台原生连接仅需把Secret交给服务端，不把生产密钥拉到本地。旧部署会继续忽略KV开关，重新部署包含适配代码后才生效。登录限流不会因接入Redis自动切换。
+
+升级后主人打开 `/setup` 默认只读检查；可明确运行隔离短TTL写入锁验证，不能用部署Ready替代运行时结果。回滚可设 `JOURNAL_KV=off` 后重新部署；若曾单独选择 `PASSWORD_RATE_LIMIT=redis`，先恢复此前已验证的WAF或持久单机file模式，避免关闭KV后无法登录。回滚不需要迁移照片或主记录，也不要删除共享库、轮换共用凭据或断开其他项目。详见 [KV配置、验证和限制](KV.md)。

@@ -1,4 +1,5 @@
 import {journalProjection} from './journal-projection.ts';
+import {JournalBusy,CoordinationUnavailable} from './journal-kv.ts';
 import {z} from 'zod';
 import {entryMutation,mutateEntry,photoEntry} from './journal-entries.ts';
 import {cameraMetadataSchema,photoProposalSchema} from './travel-data.ts';
@@ -86,6 +87,8 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
     const b=markersInput.safeParse(body);if(!b.success)return json({error:'标记无效'},400);
     await store.mutate(user.userId,j=>{setMarkers(j,user.userId,b.data.markers);return {changed:true};});return json({saved:true});
   } catch(e) {
+    if(e instanceof JournalBusy)return Response.json({error:'另一项保存正在进行，请保留内容，稍后重试'},{status:409,headers:{...privateHeaders,'Retry-After':'2'}});
+    if(e instanceof CoordinationUnavailable)return Response.json({error:'保存协调服务暂时不可用，请保留内容后重试'},{status:503,headers:{...privateHeaders,'Retry-After':'60'}});
     if(e instanceof InputError)return json({error:e.message},400);
     return json({error:'私有仓库暂时无法访问或保存，请保留内容后重试；检查仓库权限与部署配置'},503);
   }
