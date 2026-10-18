@@ -1,5 +1,9 @@
 # Architecture
 
+## 手机弱网加载与浏览状态 · 2026-10-18
+
+记录、核心地图和补充目录 / 餐厅分别就绪，照片与时间线不等待慢地图资料。已访问视图保留组件状态 / 地图相机和缓存，hidden 退出布局与可访问树，仅活动主区域有 journal-main；普通切页恢复各自滚动。整理照片用递增请求主动重置筛选；显式记录聚焦用 focusRevision，避免保留地图后同一 ID 无法再次居中。拼图每张增量显示，切页停止后续任务派发；非日本拼图不额外请求日本细边界。查看器私有源尚未就绪时隐藏 img，消除破图闪现。没有改权限、数据 / API / Redis 契约。详见 [手机弱网验收](design/mobile-weak-network-2026-10-18.md)。
+
 ## 可见范围照片读取与计算复用 · 2026-10-18
 
 `PhotoImage` 以图片槽 IntersectionObserver（160px 预取区）控制 `usePhotoSource`，基础版 Blob URL 不再绕过原生懒加载提前拉取整页；eager / 不支持观察器回退读取，等待槽保持尺寸且无转圈。BrowserJournal 使用 3 路整照片操作队列，保持源去重 / 失败重试 / 断开中止。GitHubStore.read 跳过只在写入需要的 base-tree 请求，仍固定 head 验证私仓、owner 与发布 / 回收状态；mutate 的树 / CAS / 协调契约不变。无私人共享缓存。照片 / 地图搜索使用延迟输入，空照片查询先执行廉价过滤；拼图 SVG 只随笔记显示阈值、照片和边界变化重建。验收与未覆盖性能指标见 [资源优化报告](design/uiux-resource-performance-2026-10-18.md)。

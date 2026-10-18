@@ -276,3 +276,8 @@ body:has(dialog[open]) { overflow: hidden; }
 @media(prefers-reduced-motion:reduce) { .journal-loading-cards>span { animation:none; } }
 
 @media(min-width:640px) and (max-width:800px) { .journal-page .photo-library-grid { grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 18px; } }
+
+/* Preserve visited views without exposing hidden navigation targets or loading their images. */
+.journal-shell>main[hidden] { display:none!important; }
+/* Authenticated sources have no URL until the private blob is ready. */
+.viewer-stage[aria-busy=true] .viewer-image-area img { opacity:0; }

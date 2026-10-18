@@ -1,5 +1,9 @@
 # Current handoff / 当前交接
 
+## 手机弱网验收与修复 · 2026-10-18
+
+修复慢地图资料阻塞照片 / 时间线、切页重置相机与筛选、整批拼图空等、查看器破图闪现。受控慢响应（每响应 48KiB/s、400ms，目录 10 秒）单次对照照片列表 10803 → 481ms，首张成功照片 14591 → 4753ms；从 fixture app 启动计时，不是生产 LCP。验证手机 320 / 390px、浅暗、拖拽 / 缩放 / 页面往返、整理入口和两次 503 后重试。167 tests、typecheck / Next build / basic build、106 文件静态隐私扫描、diff 检查通过。仅合成隔离数据，无真实私人日志改写。main 触发既有 Pages / Vercel 自动发布；实际结果需与本轮 SHA 对齐。方法、证据和未覆盖项见 [手机弱网报告](design/mobile-weak-network-2026-10-18.md)。
+
 ## UI / UX 与现有资源优化 · 2026-10-18
 
 完成可见范围照片读取、基础版 3 路限流、只读快照减少 GitHub 请求、延迟搜索、空查询捷径、缩放拼图 SVG / 地理投影复用。167 tests、typecheck、Next build、基础版 build 与静态隐私扫描通过。390×844 隔离 48 张图片首屏源读取 48 → 10，滚动再读取后续；320 / 390 / 1280px 无横向溢出，失败原位重试成功，浅色地图 / 暗调时间线 / 照片库无控制台 warn/error。独立合成私仓连接 + 日志 + JPEG 实测 12 个 GET，未改写真实或测试日志。没有 LCP / INP / FPS 或真机弱网结论。main 按既有 GitHub → Pages / Vercel 工作流发布，实际状态需与提交 SHA 一致；完整证据见 [本轮验收](design/uiux-resource-performance-2026-10-18.md)。

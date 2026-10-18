@@ -10,12 +10,13 @@ import {useRevealWindow,RevealMore} from './ui/reveal-list';
 import {MapPin,CalendarDays,NotebookPen,ImagePlus,SlidersHorizontal,Plus,Check,NotebookTabs,Search,X,ArrowDownWideNarrow,CheckCheck,Ellipsis} from 'lucide-react';
 import type {PhotoDetails,PhotoProposal} from '../lib/travel-data';
 export type LibraryPhoto={id:string;url:string;entry?:string|null;marked:boolean;details:PhotoDetails;proposal?:PhotoProposal;metadata?:Record<string,string|number>;progress?:number;uploading?:boolean;error?:string};
-export default function PhotoLibrary({items,onEdit,onUpload,onManage,onDiscard,compact=false,records=[],onLink,onEntry,initialUnmarked=false}:{initialUnmarked?:boolean;records?:{id:string;title:string}[];onLink?:(ids:string[])=>void;onEntry?:(id:string)=>void;items:LibraryPhoto[];onEdit:(photo:LibraryPhoto,queue?:string[])=>void;onUpload?:()=>void;onManage?:(entry:string)=>void;onDiscard?:(photo:LibraryPhoto)=>void;compact?:boolean}){
+export default function PhotoLibrary({items,onEdit,onUpload,onManage,onDiscard,compact=false,records=[],onLink,onEntry,initialUnmarked=false,unmarkedRequest=0}:{unmarkedRequest?:number;initialUnmarked?:boolean;records?:{id:string;title:string}[];onLink?:(ids:string[])=>void;onEntry?:(id:string)=>void;items:LibraryPhoto[];onEdit:(photo:LibraryPhoto,queue?:string[])=>void;onUpload?:()=>void;onManage?:(entry:string)=>void;onDiscard?:(photo:LibraryPhoto)=>void;compact?:boolean}){
  const [unmarked,setUnmarked]=useState(initialUnmarked),[noNotes,setNoNotes]=useState(false),[entryFilter,setEntryFilter]=useState('all'),[selecting,setSelecting]=useState(false),[selected,setSelected]=useState(new Set<string>());
  useEffect(()=>setSelected(old=>{const next=new Set([...old].filter(id=>items.some(p=>p.id===id&&!p.entry&&!p.uploading&&!p.error&&(p.progress===undefined||p.progress===100))));return next.size===old.size?old:next}),[items]);
  const [query,setQuery]=useState(''),[sort,setSort]=useState<PhotoSort>('added'),[filtersOpen,setFiltersOpen]=useState(false);
  const filterId=useId(),activeFilters=Number(unmarked)+Number(noNotes)+Number(entryFilter!=='all');
  const reset=()=>{setQuery('');setUnmarked(false);setNoNotes(false);setEntryFilter('all')};
+ useEffect(()=>{if(unmarkedRequest){setQuery('');setUnmarked(true);setNoNotes(false);setEntryFilter('all')}},[unmarkedRequest]);
  const toggle=(id:string)=>setSelected(old=>{const next=new Set(old);next.has(id)?next.delete(id):next.size<100&&next.add(id);return next});
  const search=useDeferredValue(query),searching=search!==query;
  const filtered=useMemo(()=>discoverPhotos(items,{query:search,sort,unmarked,noNotes,entry:entryFilter,records}),[items,search,sort,unmarked,noNotes,entryFilter,records]);
