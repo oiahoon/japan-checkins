@@ -2,6 +2,29 @@
 
 每位用户拥有自己的源码仓库、Pages网址和私有数据仓库，不共用作者的网站。基础版不需要Vercel或Redis：通过Git上传 / 修改数据，Actions生成记录，Pages负责地图、时间线、照片查看与导出。网页上传 / 编辑 / 删除被隐藏，数据适配器也拒绝写入。
 
+<a id="git-preparation"></a>
+## 0 · 第一次使用 Git
+
+1. 准备 GitHub 账号，安装 [Git](https://git-scm.com/downloads)；终端执行 `git --version` 确认可用。macOS 首次运行可能提示安装命令行开发工具，按系统提示完成后再继续。
+2. 选择一种本机认证方式。已有可用认证就沿用，不必重新登录：
+   - **HTTPS**：可安装 [GitHub CLI](https://cli.github.com/)，执行 `gh auth login --hostname github.com --git-protocol https --web`，按浏览器提示登录，再执行 `gh auth setup-git` 和 `gh auth status`。源码和数据仓库都使用 GitHub 页面 Code → HTTPS 的 clone 地址。
+   - **SSH**：按 [GitHub SSH 指南](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)准备密钥、添加公钥并测试连接；使用 Code → SSH 的 clone 地址。
+3. clone 到本机后，在**每个需要提交的仓库目录**检查身份；缺少或需要单独设置时执行下方 `git config`。这些设置只影响当前仓库，已有合适身份无需覆盖。
+
+```sh
+git config --get user.name
+git config --get user.email
+# 把示例替换成自己的显示名与 GitHub Settings → Emails 中的提交邮箱
+git config user.name "你的提交显示名"
+git config user.email "你的GitHub提交邮箱"
+```
+
+可使用 GitHub 提供的 noreply 邮箱，避免公开个人邮箱。提交身份与登录认证是两件事：设置姓名 / 邮箱不能获得 push 权限。GitHub 不接受账号密码作为 HTTPS Git 密码；手动使用 token / 凭据管理器时见[认证说明](https://docs.github.com/en/get-started/git-basics/about-remote-repositories)。不要把 token 写进 clone URL、命令参数或提交内容。
+
+本机 Git 认证、基础版网页的 **Contents 只读 token**、进阶服务端的 **Contents 读写 token**分别用于不同入口。不要把本机 CLI 凭据直接复制到网页或部署配置；网页只授权一个数据仓库。复制导入工作流需要向数据仓库提交 `.github/workflows/import.yml`，本机凭据还须具备该仓库工作流文件的更新权限（fine-grained token 的 Workflows 写权限，或所用认证方式对应的权限）。这与 Actions 运行时内置的 `GITHUB_TOKEN` 不同。
+
+基础版使用托管 Actions 时，本机不需要 Node.js / npm；只有本地构建网页、运行导入脚本或安装进阶版才需要 Node.js >=22.18，并在**源码目录**执行 `npm ci`。
+
 ## 1 · 部署自己的网页
 
 1. Fork本项目（或clone后push到自己的源码仓库），源码可以公开。
@@ -22,7 +45,7 @@ GitHub Free的公开源码仓库可使用Pages；私人源码的Pages取决于�
 
 ## 3 · 用Git添加照片
 
-在本机clone**数据仓库**，把照片放进 `inbox/`，例如：
+在本机通过 GitHub 的 Code 按钮复制地址并 clone **数据仓库**，进入目录，按第0节确认提交身份，再把照片放进 `inbox/`。例如仓库名为 `my-travel-data`：
 
 ```sh
 cd my-travel-data
@@ -117,5 +140,7 @@ git push
 | 更改manifest后没覆盖网页内容 | 只有实际修改过的导入项才重新应用；相同配置不覆盖后续网页编辑 |
 
 不支持离线保存，Git历史不会永久清理。真实机型、Safari、分享 / 打印和大图库吞吐需单独验收。
+
+后续更新源码、Pages 和数据仓库里的工作流副本，以及备份 / 回滚方式，见[升级维护指南](UPGRADING.md)。同步源码不会自动替换数据仓库的 `.github/workflows/import.yml`。
 
 官方依据：[GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)、[GitHub REST跨域](https://docs.github.com/en/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests)。

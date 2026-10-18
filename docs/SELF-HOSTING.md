@@ -6,6 +6,8 @@
 
 ## 1 · 准备自己的仓库
 
+未配置本机 Git 时，先完成[安装、认证与提交身份准备](GITHUB-BASIC.md#git-preparation)。
+
 1. Fork 源码，clone 自己的副本；Node.js >=22.18，执行 `npm ci`。
 2. 创建自己的 **private 数据仓库**，勾选“Add a README”，确保 `main` 分支存在。源码与数据分开，上传照片不会触发源码部署。
 3. 创建 fine-grained GitHub token：只选择这个数据仓库，Contents 为 Read and write。组织仓库可能还需批准。不要使用可访问所有私人仓库的广泛令牌作为部署凭据。
@@ -126,7 +128,11 @@ NODE_ENV=production node --env-file=.setup/server.env scripts/doctor.mjs --remot
 | 检查能读，但上传保存失败 | token还需要Contents写权限；分支保护须允许直接提交或使用已有专用分支 |
 | 日志所有权不匹配 | 核对配置，不直接修改原owner或改写旧日志 |
 | 照片没定位 / 没日期 | 原图可能无EXIF、格式不支持或已经被移除；手填或从原图补读，不用上传时间兜底 |
-| GitHub Pages能否部署 | 不能，认证 / 私有照片 / 写入需要服务端 |
+| GitHub Pages能否部署 | 可部署[GitHub基础版](GITHUB-BASIC.md)，通过只读token查看私仓，使用Git / Actions添加照片；本页的服务端进阶版（密码会话、网页写入和服务端管理令牌）需要Vercel或自有Node.js服务器，不能由Pages运行 |
+
+## 升级与维护
+
+已部署用户见[升级、备份与回滚指南](UPGRADING.md)。其中分别说明同步 fork、自有服务器更新 / 重启、保留配置、备份私有数据，以及维护数据仓库中的导入工作流副本。普通源码升级不需要重新初始化密码、修改owner或运行旧Sites数据库迁移。
 
 ## 当前限制与验收
 

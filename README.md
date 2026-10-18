@@ -18,6 +18,8 @@
 
 ### 基础版：用 Git 管理自己的网站
 
+首次使用 Git，请先完成[Git 安装、认证与提交身份准备](docs/GITHUB-BASIC.md#git-preparation)。
+
 1. Fork本项目，在Actions启用工作流；Settings → Pages → Source选GitHub Actions，运行“发布 GitHub 基础版”。
 2. 创建private数据仓库（勾选README），把 [导入工作流模板](deploy/github-import.yml) 复制到数据仓库 `.github/workflows/import.yml`。
 3. 将照片放进数据仓库 `inbox/`，git commit + push。Actions解析EXIF并生成照片记录；编辑生成的 `travel/import.json`，明确确认地点 / 日期后才标记地图。
@@ -30,15 +32,17 @@
 ### 进阶版：Vercel 或自己的服务器
 
 ```sh
-git clone <你的源码仓库地址>
+git clone https://github.com/YOUR_ACCOUNT/japan-checkins.git
 cd japan-checkins
 npm ci
 npm run setup
 ```
 
-Node.js >=22.18。初始化引导填写仓库、隐藏输入的令牌和部署方式，自动生成管理密码、哈希、会话密钥和 `.setup/vercel.env` / `.setup/server.env`，可一次导入配置。密码在 `.setup/admin-password.txt`；这些文件均不提交、不上传。
+将示例中的 `YOUR_ACCOUNT` 替换为自己的 GitHub 账号；源码仓库改名时同步调整 URL 和 `cd` 目录。Node.js >=22.18。初始化引导填写仓库、隐藏输入的令牌和部署方式，自动生成管理密码、哈希、会话密钥和 `.setup/vercel.env` / `.setup/server.env`，可一次导入配置。密码在 `.setup/admin-password.txt`；这些文件均不提交、不上传。
 
 Vercel需配置登录WAF；自有Node.js服务器可用HTTPS反向代理与持久文件限流，无需Vercel。部署后登录 `/setup` 检查，再点“添加第一张照片”。完整步骤见 [进阶自部署指南](docs/SELF-HOSTING.md)。
+
+已部署用户请看[升级、备份与回滚指南](docs/UPGRADING.md)：同步 fork、更新服务端，以及维护复制到数据仓库的导入工作流。
 
 ## 进阶版：从照片开始
 
