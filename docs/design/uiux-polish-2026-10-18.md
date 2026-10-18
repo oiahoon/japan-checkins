@@ -26,3 +26,7 @@
 - 大型基础版分块的构建提示仍存在；占位是感知加载优化，不是网络速度或Core Web Vitals提升的证据。
 
 截图保存在本地临时审阅目录，未将真实照片、凭据、环境文件或QA入口提交到Git。发布证据见PROGRESS与CONTEXT顶端。
+
+## 功能发布
+
+功能提交 `aca0fe3741910f630f19b1f39551e6058e10a83a` 已推送main；Checks [39103377362](https://github.com/oiahoon/japan-checkins/actions/runs/39103377362)、clone-and-deploy [39103377366](https://github.com/oiahoon/japan-checkins/actions/runs/39103377366)、Pages [39103377375](https://github.com/oiahoon/japan-checkins/actions/runs/39103377375) 全部success。Vercel `dpl_2fLvputXTCEfEj5R9WTr5DGbTANv` Ready且绑定travel.miaowu.org；实际浏览器正式站显示密码入口、无控制台错误。本轮不声称已登录生产主人会话验收写入。

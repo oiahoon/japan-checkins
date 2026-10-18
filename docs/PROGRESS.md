@@ -4,7 +4,7 @@
 
 本轮针对截图审阅发现的操作密度与状态辨识问题：手机照片库压紧页头，将记录 / 排序收进筛选面板，保留可清除记录标签与结果计数；宽屏搜索与筛选并排，平板三列照片。选中后才显示朱红勾号，提供选择模式退出；时间线突出新建、缩小管理、标明地区筛选状态。共享焦点 / 弹层滚动 / 加载占位统一，拖动地图原有触控契约保持。基础版只读和进阶版写入分工不变。
 
-验收使用隔离合成数据与实际组件，覆盖320 / 390 / 768 / 1280px、亮暗主题、筛选 / 空结果 / 编辑 / 查看器 / 导出设置；没有改动生产记录。实现、验证边界和发布跟踪见 [本轮报告](design/uiux-polish-2026-10-18.md)。本条发布状态待提交后核对，不用旧发布证据代替。
+验收使用隔离合成数据与实际组件，覆盖320 / 390 / 768 / 1280px、亮暗主题、筛选 / 空结果 / 编辑 / 查看器 / 导出设置；没有改动生产记录。实现、验证边界和发布跟踪见 [本轮报告](design/uiux-polish-2026-10-18.md)。功能提交 `aca0fe3741910f630f19b1f39551e6058e10a83a` 已推送main；Checks [39103377362](https://github.com/oiahoon/japan-checkins/actions/runs/39103377362)、clone-and-deploy [39103377366](https://github.com/oiahoon/japan-checkins/actions/runs/39103377366)、Pages [39103377375](https://github.com/oiahoon/japan-checkins/actions/runs/39103377375) 全部success。Vercel `dpl_2fLvputXTCEfEj5R9WTr5DGbTANv` Ready且绑定travel.miaowu.org；实际浏览器正式站显示密码入口、无控制台错误。本轮不声称已登录生产主人会话验收写入。
 
 
 ## 确认保护最终发布 · 2026-10-18
