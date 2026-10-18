@@ -1,5 +1,14 @@
 # 项目上下文与产品方向
 
+## 最新发布与真实验收 · 2026-10-18
+
+功能提交 `648ad52b7aad9dbed452517043945c3accf0fe7e` 已推送main。Checks [39101480691](https://github.com/oiahoon/japan-checkins/actions/runs/39101480691)、clone-and-deploy [39101480652](https://github.com/oiahoon/japan-checkins/actions/runs/39101480652)、Pages [39101480643](https://github.com/oiahoon/japan-checkins/actions/runs/39101480643) 均success。Vercel Production `dpl_DV7zqwu3H9P1JzCwnwrtwkgwkcFk` Ready，正式 / 默认域名已指向新部署；GitHub基础版 https://oiahoon.github.io/japan-checkins/ 实际浏览器入口正常、无console警告，私人数据未打包。每位用户仍应部署自己的副本，这个地址仅为本项目基础版入口。
+
+独立private合成测试仓库的git-first-acceptance分支，两次真实Actions均success（39101495077原图导入、39101679596明确确认 / 相册）。第一次新增照片没有生成到访；第二次Git配置后，独立回读3张照片 / 3次已确认到访，新增照片正确关联git-acceptance-trip与手填笔记。原私人数据仓库 / Site / 生产凭据未操作。正式站新会话显示密码页，匿名/api/checkins为401，没有借此声称线上主人会话写入已复核。
+
+最终typecheck、153项测试、Next build、Pages build、106文件静态安全扫描与diff检查通过。浏览器证据来自本机同一静态产物的1280 / 390 / 320px、亮暗、私仓授权 / 撤销、只读控件、照片查看、地图 / 拼图 / PNG生成，以及公开正式入口。实际iPhone Safari / HEIC或RAW解码器 / 系统分享 / 实体打印 / 大图库吞吐仍未替代验收。Redis只有方案文档，未接入。后续发布证据文档与安全忽略规则提交不改变功能合同。
+
+
 ## 最新部署分工 · 2026-10-18
 
 用户最新决定取代此前“基础版网页上传”：**GitHub基础版通过Git管理，网页只读；接入服务端进阶版后启用友好的网页写入交互。** 每人拥有自己的源码仓库 / Pages网址 / private数据仓库，不共享作者部署。基础版隐藏上传、编辑、删除、批量关联，BrowserJournal也拒绝全部非GET请求；保留地图探索、拼图、照片 / 相册 / 时间线查看与导出。页内只读Contents token用于读取私人数据，刷新重新授权。

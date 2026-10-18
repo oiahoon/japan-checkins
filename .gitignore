@@ -54,3 +54,6 @@ next-env.d.ts
 /.local/
 
 dist-basic/
+
+# Raw Git imports belong only in the separate private data repository.
+/inbox/
