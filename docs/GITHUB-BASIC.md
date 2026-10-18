@@ -1,5 +1,7 @@
 # GitHub 基础版：Git 管理，网页浏览
 
+**第一次部署、不熟悉终端？先看[新手六步指南](GETTING-STARTED.md)**，它使用 GitHub Desktop 图形按钮，并给出每步完成标志。本页是命令行、配置格式与限制的详细参考，两条路径不必重复操作。
+
 每位用户拥有自己的源码仓库、Pages网址和私有数据仓库，不共用作者的网站。基础版不需要Vercel或Redis：通过Git上传 / 修改数据，Actions生成记录，Pages负责地图、时间线、照片查看与导出。网页上传 / 编辑 / 删除被隐藏，数据适配器也拒绝写入。
 
 <a id="git-preparation"></a>
@@ -35,6 +37,7 @@ git config user.email "你的GitHub提交邮箱"
 
 GitHub Free的公开源码仓库可使用Pages；私人源码的Pages取决于账号方案。**公开的是应用代码，不是你的照片。** 不要在数据仓库启用Pages。
 
+<a id="data-repository"></a>
 ## 2 · 准备自己的私有数据仓库
 
 创建 **private** 数据仓库，例如 `my-travel-data`，勾选README。把源码中的 [deploy/github-import.yml](../deploy/github-import.yml) 复制到该数据仓库的 `.github/workflows/import.yml` 并提交。
@@ -43,6 +46,7 @@ GitHub Free的公开源码仓库可使用Pages；私人源码的Pages取决于�
 
 工作流使用GitHub内置GITHUB_TOKEN，只提交本数据仓库，不需要Vercel或手填写入token。组织策略、分支保护需要允许该工作流提交。它会再次检查仓库private与日志owner；公开仓库不执行导入。自动化不会部署或发布私人数据。
 
+<a id="git-upload"></a>
 ## 3 · 用Git添加照片
 
 在本机通过 GitHub 的 Code 按钮复制地址并 clone **数据仓库**，进入目录，按第0节确认提交身份，再把照片放进 `inbox/`。例如仓库名为 `my-travel-data`：
@@ -120,7 +124,7 @@ git push
 
 ## 5 · 私人网页授权
 
-在GitHub创建**仅授权这个数据仓库、Contents只读**的fine-grained token。网页填写仓库名和token，连接后可浏览已确认足迹、待整理照片、时间线 / 相册与导出。分支默认main，可在首次连接帮助中调整。
+按[逐项授权步骤](GETTING-STARTED.md#token)创建**仅授权这个数据仓库、Contents只读**的fine-grained token。网页填写仓库名和token，连接后可浏览已确认足迹、待整理照片、时间线 / 相册与导出。分支默认main，可在首次连接帮助中调整。
 
 令牌只留在当前页内存，刷新要重新连接，不进URL / Cookie / localStorage / Actions / Pages。访问由GitHub权限验证，不是用前端密码遮住公开照片。只能在信任的源码副本和HTTPS站点输入凭据。
 

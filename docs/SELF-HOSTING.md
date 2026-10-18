@@ -1,5 +1,7 @@
 # 进阶版：服务端私人旅行日志
 
+首次部署先看[新手入口与完成检查](GETTING-STARTED.md#advanced)。本页是服务端配置的详细步骤；不需要先安装基础版，不用先配置 Redis 或在线地点搜索。
+
 只使用 GitHub、通过 Git 上传照片并在网页浏览，请先看 [GitHub 基础版](GITHUB-BASIC.md)。本页适用于需要密码访问、只读访客或服务端管理令牌的用户。
 
 本指南以当前实现为准。**Vercel 是托管选项，不是必需依赖。** 应用使用标准 Next.js 服务端；照片与旅行记录保存在自己的私有 GitHub 仓库。每个部署一位主人，可另设只读访问密码。
@@ -10,11 +12,22 @@
 
 1. Fork 源码，clone 自己的副本；Node.js >=22.18，执行 `npm ci`。
 2. 创建自己的 **private 数据仓库**，勾选“Add a README”，确保 `main` 分支存在。源码与数据分开，上传照片不会触发源码部署。
-3. 创建 fine-grained GitHub token：只选择这个数据仓库，Contents 为 Read and write。组织仓库可能还需批准。不要使用可访问所有私人仓库的广泛令牌作为部署凭据。
+3. 按[逐项授权步骤](GETTING-STARTED.md#token)创建 fine-grained GitHub token，但将 Contents 改为 **Read and write**，只选择自己的数据仓库。组织仓库可能还需批准。不要使用可访问所有私人仓库的广泛令牌作为部署凭据。
 
 数据仓库不能开 Pages，不能把照片放入源码 `public/`，不能改成 public。服务端会拒绝公开数据仓库。
 
 ## 2 · 一次初始化
+
+以下命令都在电脑的**源码仓库目录**执行，不能在数据仓库执行。如果还没有克隆，先按下方完整示例操作，将 `YOUR_ACCOUNT` 换成自己的账号（仓库名改过时也要同步修改）：
+
+```sh
+git clone https://github.com/YOUR_ACCOUNT/japan-checkins.git
+cd japan-checkins
+node --version
+npm ci
+```
+
+`node --version` 应为22.18或更高。然后运行：
 
 ```sh
 npm run setup
@@ -152,6 +165,6 @@ NODE_ENV=production node --env-file=.setup/server.env scripts/doctor.mjs --remot
 
 ## 可选 Redis
 
-进阶版可选启用短期写入协调及全局登录限流，基础版不依赖。默认关闭，不改GitHub主存储。创建、权限、免费费用边界、配置检查与回滚见 [KV.md](KV.md)。本次已获批共享既有Free库并原生连接目标Production；发布及运行时验证结果见PROGRESS，不能把连接成功当作运行时验收。
+进阶版可选启用短期写入协调及全局登录限流，基础版不依赖。默认关闭，不改GitHub主存储。创建、权限、免费费用边界、配置检查与回滚见 [KV.md](KV.md)。首次安装可跳过。启用时配置自己项目的资源与凭据；连接完成后还需运行时验证。
 
 启用步骤：在Vercel Storage选择自己的Free实例，原生Connect仅选可信Production，保持敏感凭据保护；不要增加付款方式或升级。设置 `JOURNAL_KV=redis` 和独立 `JOURNAL_KV_NAMESPACE`，重新部署。保持原 `PASSWORD_RATE_LIMIT`，只有单独明确选择redis才切换登录限流。主人 `/setup` 默认只读PING；主动运行“验证 Redis 写入锁”会创建随机、最长60秒TTL的隔离测试键，验证SET/EVAL/互斥/过期，不写照片或记录。详情及共享库权限/额度边界见KV文档。

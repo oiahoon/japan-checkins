@@ -1,5 +1,12 @@
 # Current handoff / 当前交接
 
+## 新手部署文档审阅 · 2026-10-18
+
+首次使用入口改为README → GETTING-STARTED → 对应详细指南。新增两个仓库对照、Git术语、基础版六步图形操作、单张照片验收、令牌逐项选项、进阶版独立起点和常见卡点。GitHub网页创建导入工作流，避免新手在Finder创建隐藏目录；GitHub Desktop负责本机照片提交 / Push / Pull，仍需编辑JSON确认。基础版和进阶版各自的令牌权限、照片出现与确认足迹的区别、部署Ready与可登录的区别均明确。服务端指南补完整源码克隆 / 安装命令并移除面向本项目某次云资源接入的表述。
+
+仅修改文档；对照实际工作流、导入schema、初始化脚本及GitHub官方说明校核，没有创建新仓库、申请凭据或修改生产资源。本轮不等同于邀请零基础用户真实从头部署验收，仍不能称零配置一键部署。 本机typecheck与Next.js生产构建通过；45个本地链接、20段Shell语法和新手照片确认片段与导入schema校核通过。未执行文中创建仓库、授权或部署步骤。
+
+
 ## Redis 生产发布与运行时验收 · 2026-10-18
 
 功能提交 [bfff195](https://github.com/oiahoon/japan-checkins/commit/bfff1950e097967f371447a8b2bee8f5f8b238a0) 已推送main。[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/39122645906)、[clone-and-deploy](https://github.com/oiahoon/japan-checkins/actions/runs/39122645878)、[GitHub基础版](https://github.com/oiahoon/japan-checkins/actions/runs/39122645928) 全部success。Vercel Production [5hXn3QJip](https://vercel.com/joey-huangs-projects/japan-checkins/5hXn3QJip1VKBR5cqfN5y1mW9j5n) 为READY / PROMOTED，正式域名 travel.miaowu.org 已绑定，构建1分8秒。后续纯文档证据提交不改变这份已验证的运行代码。

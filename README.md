@@ -4,6 +4,16 @@
 
 **每个人可以 fork 一份，部署在自己的 GitHub Pages 或服务器上，不共用本项目作者的网站或数据。Vercel 可选，旅行数据始终保存在自己的私有 GitHub 仓库。** 不需要 Supabase、D1、R2 或付费地理编码服务。
 
+## 第一次使用，从这里开始
+
+**[新手部署指南：从自己的仓库到第一处足迹](docs/GETTING-STARTED.md)** — 分清两个仓库，按步骤发布、创建授权、添加一张照片、确认信息，再检查地图。
+
+- 想用电脑管理照片、网页查看：选 **GitHub 基础版**。新手指南提供 GitHub Desktop 图形操作，不必输入 Git 命令；地点确认需要编辑 JSON 文件。
+- 想在网页上传和管理照片、用密码登录：选 **服务端进阶版**。按引导初始化后部署到 Vercel 或自己的服务器。
+- 已经部署过：[升级、备份与回滚](docs/UPGRADING.md)。开发架构和历史验收记录不用在首次安装时阅读。
+
+首次部署不需要 Redis、Geoapify 或自定义域名；先用一张照片跑通流程。以下是两种方案的能力对照与技术步骤。
+
 ## 选择部署方式
 
 | | GitHub 基础版 | 服务端进阶版（Vercel / 自有服务器） |
@@ -18,7 +28,7 @@
 
 ### 基础版：用 Git 管理自己的网站
 
-首次使用 Git，请先完成[Git 安装、认证与提交身份准备](docs/GITHUB-BASIC.md#git-preparation)。
+不熟悉命令行，先按[新手指南的图形操作](docs/GETTING-STARTED.md)完成；以下是熟悉 Git 的用户使用的简版步骤。首次使用命令行 Git，请先完成[安装、认证与提交身份准备](docs/GITHUB-BASIC.md#git-preparation)。
 
 1. Fork本项目，在Actions启用工作流；Settings → Pages → Source选GitHub Actions，运行“发布 GitHub 基础版”。
 2. 创建private数据仓库（勾选README），把 [导入工作流模板](deploy/github-import.yml) 复制到数据仓库 `.github/workflows/import.yml`。
