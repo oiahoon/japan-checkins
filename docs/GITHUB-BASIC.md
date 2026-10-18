@@ -137,10 +137,10 @@ git push
 | Pages无地址 | 启用fork工作流、Pages Source选Actions，再手动发布 |
 | 导入没有运行 | 工作流应在private数据仓库；检查inbox路径、Actions和分支策略 |
 | 找不到源码 | 配置TRAVEL_APP_REPOSITORY；默认同账号japan-checkins/main，源码需可读 |
-| 导入失败 | 检查格式 / 原图大小 / 每次30张新照片 / owner / manifest；必要时导出JPEG |
+| 导入失败 | 打开失败运行的步骤；JSON语法错误会指出文件名（不输出私人内容），修正后重新提交。也检查图片格式 / 大小 / 每次30张新照片 / owner；必要时导出JPEG |
 | 地图没有新足迹 | 新照片只生成提议；编辑import.json并明确confirmed后才上图 |
 | 网页不能上传或修改 | 基础版有意只读，用Git更新或部署服务端进阶版 |
-| 私仓无法读取 | 核对token有效期、只读Contents、选中仓库、README与分支、组织批准 |
+| 私仓无法读取 | 核对token有效期、选中仓库、README与分支、组织批准；仅选中仓库或只有Metadata权限不够，必须明确添加Repository permissions → Contents只读 |
 | 更改manifest后没覆盖网页内容 | 只有实际修改过的导入项才重新应用；相同配置不覆盖后续网页编辑 |
 
 不支持离线保存，Git历史不会永久清理。真实机型、Safari、分享 / 打印和大图库吞吐需单独验收。

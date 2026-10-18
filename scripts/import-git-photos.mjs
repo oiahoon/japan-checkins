@@ -4,7 +4,7 @@ import {promisify} from 'node:util';
 import {mkdir,writeFile,rename,rm} from 'node:fs/promises';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {planGitImport} from '../lib/git-import.ts';
+import {planGitImport,GitImportJSONError} from '../lib/git-import.ts';
 const exec=promisify(execFile);
 try{
  const {values}=parseArgs({options:{'repository-root':{type:'string'},repository:{type:'string'}}});
@@ -18,4 +18,4 @@ try{
  const plan=await planGitImport(root,fileURLToPath(new URL('../public',import.meta.url))),temporary=[];
  try{for(const [path,bytes] of plan.writes){const destination=resolve(root,path),file=destination+'.import-tmp';await mkdir(dirname(file),{recursive:true});await writeFile(file,bytes,{flag:'wx',mode:0o600});temporary.push({file,destination})}for(const item of temporary)await rename(item.file,item.destination)}finally{await Promise.all(temporary.map(item=>rm(item.file,{force:true})))}
  console.log(`Import ready: ${plan.added} new photos, ${plan.photos} total photos, ${plan.visits} confirmed visits, ${plan.writes.size} changed files. No Git commit was made by this command.`);
-}catch{console.error('Import failed; no commit was made. Check private-repo access, manifest/owner, image format, region confirmation and batch limits. Do not publish private logs or metadata.');process.exitCode=1}
+}catch(error){if(error instanceof GitImportJSONError)console.error(`导入未完成：${error.file} 不是有效 JSON，请检查英文引号、逗号和括号；本次未提交生成结果。`);else console.error('Import failed; no commit was made. Check private-repo access, manifest/owner, image format, region confirmation and batch limits. Do not publish private logs or metadata.');process.exitCode=1}

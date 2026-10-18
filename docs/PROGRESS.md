@@ -1,5 +1,12 @@
 # Current handoff / 当前交接
 
+## 独立新手部署验收 · 2026-10-18
+
+全新公开源码快照travel-guide-qa-20261018与private合成数据仓库travel-guide-data-qa-20261018，实际完成Pages发布、空日志初始化、单图EXIF提议、错误JSON失败保护、修复并确认四川成都地点、幂等重跑。1张照片先0到访，明确确认后1到访；错误JSON不修改原index，重复导入不新增提交。修正连接字段 / Contents权限提示与安全JSON文件诊断，新手指南补源码改名变量、权限和地图查找步骤。164项测试、typecheck、两版构建、静态隐私扫描通过。
+
+网页末段仍待用户更新测试令牌Contents只读权限后完成。已提供令牌可读metadata但读取index为403，不以Git数据正确替代网页足迹展示。测试使用等价Git/CLI流程，未安装GitHub Desktop，也不是另一账号真实Fork或真人新手试用；不影响原生产数据。完整证据与边界见 [本轮报告](design/beginner-deployment-acceptance-2026-10-18.md)。
+
+
 ## 新手部署文档审阅 · 2026-10-18
 
 首次使用入口改为README → GETTING-STARTED → 对应详细指南。新增两个仓库对照、Git术语、基础版六步图形操作、单张照片验收、令牌逐项选项、进阶版独立起点和常见卡点。GitHub网页创建导入工作流，避免新手在Finder创建隐藏目录；GitHub Desktop负责本机照片提交 / Push / Pull，仍需编辑JSON确认。基础版和进阶版各自的令牌权限、照片出现与确认足迹的区别、部署Ready与可登录的区别均明确。服务端指南补完整源码克隆 / 安装命令并移除面向本项目某次云资源接入的表述。

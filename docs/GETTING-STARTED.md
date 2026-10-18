@@ -50,7 +50,7 @@ Fork = 在 GitHub 复制项目；Clone = 下载仓库到电脑；Commit = 在电
 
 **完成标志：**数据仓库能看到 `.github/workflows/import.yml` 和对应任务。若仓库策略不允许创建或运行工作流，需要仓库管理员处理，不能通过公开数据仓库解决。
 
-本流程默认从同账号的 `japan-checkins/main` 读取程序。源码改过名、放在组织或不同账号下，请先看[自定义源码仓库设置](GITHUB-BASIC.md#data-repository)，不要直接照抄默认值。
+本流程默认从同账号的 `japan-checkins/main` 读取程序。如果同名仓库已经存在，或你给源码改了名字：先在**数据仓库** Settings → Secrets and variables → Actions → Variables，新建仓库变量 `TRAVEL_APP_REPOSITORY`，值为 `你的账号/实际源码仓库名`，再安装 / 运行导入工作流。例如源码叫 `my-travel-site`，这里就填 `你的账号/my-travel-site`，不能填数据仓库名或网站网址。此变量不是令牌。组织 / 跨账号情况见[详细设置](GITHUB-BASIC.md#data-repository)。
 
 <a id="token"></a>
 ### 4 · 让自己的网页读取私仓
@@ -62,9 +62,9 @@ Fork = 在 GitHub 复制项目；Clone = 下载仓库到电脑；Commit = 在电
 | Token name / Expiration | 填易辨认的名字和合适的有效期；过期后需换新令牌 |
 | Resource owner | 自己数据仓库所属的账号 |
 | Repository access | Only select repositories，只选 `my-travel-data` |
-| Permissions 中的 Contents | **Read-only（只读）**；自动附带的 Metadata 保留默认 |
+| Permissions → Repository permissions → Contents | **Read-only（只读）**；自动附带的 Metadata 保留默认 |
 
-其他权限不额外开启，确认后生成令牌。将它安全保存到自己的密码管理器；不要提交到仓库、发到聊天或填到作者的网站。组织账号可能需要管理员批准。
+**选中仓库不等于允许读取文件。** 需要明确添加上面的 Contents 权限，只有 Metadata 权限会出现“能找到仓库，但读不到照片记录”。其他权限不额外开启，确认后生成令牌。将它安全保存到自己的密码管理器；不要提交到仓库、发到聊天或填到作者的网站。组织账号可能需要管理员批准。
 
 打开**第1步得到的自己的网址**，填写：
 
@@ -113,6 +113,8 @@ Fork = 在 GitHub 复制项目；Clone = 下载仓库到电脑；Commit = 在电
 
 保存文件后，在 Desktop Commit to main → Push origin；等待数据仓库导入成功，再 Fetch / Pull。刷新网页重新连接，查看地图和时间线。
 
+先在“时间线”找到刚确认的记录，点“查看地图”，地图会跳转到对应地区。首次地图可能从日本开始，记录在中国时不要只在日本地图上找；也可通过地图搜索地区。常用地区可在地图选项里设置。
+
 **完成标志：**这张照片对应的确认地点出现在地图与时间线。到这里才算完成“部署 → 添加照片 → 确认地点 → 查看足迹”的完整流程。
 
 以后每次添加照片重复第5–6步。创建旅行相册、批量关联、删除 / 恢复和命令行操作见[基础版详细指南](GITHUB-BASIC.md)；更新应用与备份见[维护指南](UPGRADING.md)。
@@ -138,8 +140,9 @@ Fork = 在 GitHub 复制项目；Clone = 下载仓库到电脑；Commit = 在电
 | 数据仓库没有自动生成文件 | 看**数据仓库**的导入任务，不要看源码仓库的发布任务 |
 | 照片在电脑，网站没有 | 是否点了Push、导入任务是否成功；完成后刷新网页重新连接 |
 | 照片在网页，地图没有 | 地点 / 日期是否完整、是否明确confirmed并再次提交成功 |
+| 能找到仓库，但提示不能读取照片记录 / 403 | 明确添加该仓库的Contents只读权限；组织仓库检查批准状态，另核对GitHub请求额度。保存后若平台要求重新生成令牌，用新令牌重新连接 |
 | 网页找不到私仓 | 令牌是否过期、选错仓库、权限未批准；数据仓库是否有README和main分支 |
-| 修改JSON后任务失败 | 看失败日志，检查英文标点和字段；不要删除index或重建私仓来修复 |
+| 修改JSON后任务失败 | 打开失败任务的运行步骤。若提示 `travel/import.json 不是有效 JSON`，修正该文件的英文引号、逗号和括号后重新Commit / Push；失败不会提交本次生成结果，已有照片和足迹仍保留。不要删除index或重建私仓来修复 |
 | 找不到网页上传按钮 | 当前是基础版；上传 / 编辑入口属于服务端进阶版 |
 | 进阶版503或403 | 分别检查登录限流、可信网址APP_URL，按进阶FAQ排查 |
 

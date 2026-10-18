@@ -10,7 +10,9 @@ export class BrowserJournal implements JournalTransport{
  private read:typeof fetch;
  private images=new Map<string,Promise<Blob>>();private urls=new Map<string,Promise<string>>();
  constructor(repository:string,branch:string,token:string,read:typeof fetch=fetch){
-  if(!/^[A-Za-z0-9-]+\/[A-Za-z0-9_.-]+$/.test(repository)||!/^\w[\w-]*$/.test(branch)||repository.length>200||branch.length>100||!token.trim()||token.length>4096||/[\r\n]/.test(token))throw Error('请填写私有仓库和连接令牌');
+  if(!/^[A-Za-z0-9-]+\/[A-Za-z0-9_.-]+$/.test(repository)||repository.length>200)throw Error('数据仓库请填写“用户名/仓库名”，不要填写完整网址');
+  if(!/^\w[\w-]*$/.test(branch)||branch.length>100)throw Error('请检查数据分支名称；首次使用请保留 main');
+  if(!token.trim()||token.length>4096||/[\r\n]/.test(token))throw Error('请填写有效的连接令牌，检查是否误复制了换行');
   this.read=(input,init)=>read(input,init);this.config={repository,branch,token:token.trim(),ownerId:'journal-owner'};
  }
  private transport:typeof fetch=async(input,init)=>{
@@ -24,6 +26,7 @@ export class BrowserJournal implements JournalTransport{
   const r=await this.transport(root,{headers,signal:AbortSignal.timeout(15000),cache:'no-store'});if(!r.ok)throw Error('无法连接仓库，请检查令牌选中的仓库、有效期和权限');const meta=await r.json() as {private:boolean};if(meta.private!==true)throw Error('请选择 private 数据仓库，不能将照片保存在公开仓库');
   const index=await this.transport(root+'/contents/travel/index.json?ref='+encodeURIComponent(this.config.branch),{headers,signal:AbortSignal.timeout(15000),cache:'no-store'});
   if(index.ok){const file=await index.json() as {encoding:string;size:number;content:string};if(file.encoding!=='base64'||file.size>512*1024)throw Error('日志索引过大或无效');const journal=journalSchema.parse(JSON.parse(new TextDecoder().decode(decodeBase64(file.content))));assertOwner(journal,journal.owner);this.config.ownerId=journal.owner;}
+  else if(index.status===403)throw Error('令牌能找到仓库，但不能读取照片记录。请检查该数据仓库的 Contents 只读权限、组织批准或 GitHub 请求额度');
   else if(index.status!==404)throw Error('无法读取日志，请检查仓库和分支');
   await this.store().read(this.config.ownerId);
  }

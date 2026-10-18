@@ -17,6 +17,9 @@ export const importManifest=z.object({
  photos:z.array(importPhoto).max(1000).default([]),
  entries:z.array(z.object({id:recordId,type:z.enum(['trip','text']),title:z.string().max(150),date:z.string(),note:z.string().max(1000),photos:z.array(filePath).max(100),removed:z.boolean().optional()}).strict()).max(1000).default([]),
 }).strict();
+type ImportJSONFile='travel/import.json'|'travel/index.json'|'travel/import-state.json';
+export class GitImportJSONError extends Error { readonly file:ImportJSONFile;constructor(file:ImportJSONFile){super('Invalid JSON file: '+file);this.file=file} }
+function parseImportJSON(text:string,file:GitImportJSONError['file']):unknown {try{return JSON.parse(text)}catch{throw new GitImportJSONError(file)}}
 const digest=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
 const gitBlob=(bytes:Uint8Array)=>createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
 async function inside(root:string,path:string){
@@ -29,10 +32,10 @@ async function inbox(root:string){const files:string[]=[];async function walk(pa
 
 /** Prepare the whole batch before writing anything. No EXIF proposal creates a visit. */
 export async function planGitImport(directory:string,geographyDirectory:string){
- const root=await realpath(directory),rawManifest=await readOptional(root,'travel/import.json'),manifest=importManifest.parse(rawManifest?JSON.parse(rawManifest):{});
+ const root=await realpath(directory),rawManifest=await readOptional(root,'travel/import.json'),manifest=importManifest.parse(rawManifest!==undefined?parseImportJSON(rawManifest,'travel/import.json'):{});
  if(new Set(manifest.photos.map(p=>p.file)).size!==manifest.photos.length||new Set(manifest.entries.map(e=>e.id)).size!==manifest.entries.length)throw Error('Duplicate manifest item');
- const original=await readOptional(root,'travel/index.json');const journal:Journal=original?journalSchema.parse(JSON.parse(original)):emptyJournal(manifest.owner);if(original&&!rawManifest)manifest.owner=journal.owner;assertOwner(journal,manifest.owner);
- const rawState=await readOptional(root,'travel/import-state.json'),state=z.object({photos:z.record(z.string()),entries:z.record(z.string())}).strict().parse(rawState?JSON.parse(rawState):{photos:{},entries:{}});
+ const original=await readOptional(root,'travel/index.json');const journal:Journal=original!==undefined?journalSchema.parse(parseImportJSON(original,'travel/index.json')):emptyJournal(manifest.owner);if(original&&!rawManifest)manifest.owner=journal.owner;assertOwner(journal,manifest.owner);
+ const rawState=await readOptional(root,'travel/import-state.json'),state=z.object({photos:z.record(z.string()),entries:z.record(z.string())}).strict().parse(rawState!==undefined?parseImportJSON(rawState,'travel/import-state.json'):{photos:{},entries:{}});
  const files=await inbox(root);for(const file of files)if(!manifest.photos.some(p=>p.file===file))manifest.photos.push({file,details:{...blankPhotoDetails},confirmed:false});
  if(manifest.photos.length>1000)throw Error('Manifest file limit reached');
  const writes=new Map<string,Uint8Array>(),ids=new Map<string,string>(),review:{file:string;id:string;proposal:unknown;metadata:unknown}[]=[];let added=0,total=0;
