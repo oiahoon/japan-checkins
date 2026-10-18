@@ -76,3 +76,6 @@
  .chronicle-entry--text { grid-template-columns: minmax(0,1fr); }
  .chronicle-cover { min-height: 240px; aspect-ratio: auto; flex: 1; }
 }
+
+.timeline-filter-toggle[aria-pressed=true] { color:var(--amber);box-shadow:var(--control-inset); }
+@media(max-width:800px) { .timeline-workspace .journal-page-actions { width:100%; }.timeline-workspace .journal-page-actions>.icon-button { margin-left:auto; } }
