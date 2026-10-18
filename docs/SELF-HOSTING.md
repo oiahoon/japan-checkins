@@ -62,7 +62,7 @@ NODE_ENV=production node --env-file=.setup/server.env node_modules/next/dist/bin
 
 此方式默认 `PASSWORD_RATE_LIMIT=file`：全站每个固定一分钟窗口最多5次密码尝试，不信任客户端提供的 IP。独占创建文件槽位，单机多进程共享同一个目录，重启不会清零；文件不可写时登录失败关闭。默认 `.local/login-rate-limit` 必须持久可写，也可设置 `PASSWORD_RATE_LIMIT_DIR` 指向自己的持久卷。该目录只存尝试槽位，不存密码或照片；不是旅行数据库。
 
-仅支持单台主机 / 共享可靠本地文件系统。多主机、只读容器、临时盘和其他 serverless 不属于 file 模式支持范围；需要另行配置分布式保护。当前没有 Docker 镜像 / 任意云平台一键适配验收。
+仅支持单台主机 / 共享可靠本地文件系统。多主机、只读容器、临时盘和其他 serverless 不属于 file 模式支持范围；需要另行配置分布式保护。也可按KV指南选用Redis分布式限流；仍不提供Docker镜像 / 任意云平台一键适配验收。
 
 ## 3C · 本机体验
 

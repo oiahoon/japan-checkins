@@ -1,5 +1,9 @@
 # 项目上下文与产品方向
 
+## 当前Redis生产状态 · 2026-10-18
+
+已批准共享Free并发布功能提交bfff195，正式站真实PING/SET NX/EVAL/TTL/锁互斥与旧持有者保护通过；照片/主记录未写入。仅Production开启japan-checkins:production写入协调，登录仍vercel-waf，队列仍未实现。原有项目连接保留；共享权限/额度边界不因namespace消失。具体CI/部署与验收证据见[PROGRESS](PROGRESS.md#redis-生产发布与运行时验收--2026-10-18)。下文发布前状态为历史。
+
 ## 可选 Redis 适配 · 2026-10-18
 
 已实现默认关闭的Upstash REST协调：服务端Git索引写入60秒租约、可选全站5次/60秒登录限流、2秒请求预算及失败关闭、setup配置保留与doctor只读PING。GitHub仍负责照片 / 主记录和幂等事实；基础版不依赖KV，后台批次 / 进度 / 消费者仍未实现。用户已批准复用既有Upstash Free；Vercel原生连接仅作用于japan-checkins Production并自动注入Secret变量，未读取密钥。Production已保存JOURNAL_KV=redis与独立命名空间；原有项目连接保留，登录限流方式未改。用户已批准提交、推送与正式部署；最终发布及运行时证据记录在PROGRESS。主人可主动运行隔离短TTL的SET/EVAL/锁检查，默认诊断仍为只读PING。免费条款与操作确认边界见 [KV.md](KV.md)；本节优先于下文历史“尚无Redis适配”的描述。

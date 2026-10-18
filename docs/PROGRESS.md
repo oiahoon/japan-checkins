@@ -1,5 +1,18 @@
 # Current handoff / 当前交接
 
+## Redis 生产发布与运行时验收 · 2026-10-18
+
+功能提交 [bfff195](https://github.com/oiahoon/japan-checkins/commit/bfff1950e097967f371447a8b2bee8f5f8b238a0) 已推送main。[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/39122645906)、[clone-and-deploy](https://github.com/oiahoon/japan-checkins/actions/runs/39122645878)、[GitHub基础版](https://github.com/oiahoon/japan-checkins/actions/runs/39122645928) 全部success。Vercel Production [5hXn3QJip](https://vercel.com/joey-huangs-projects/japan-checkins/5hXn3QJip1VKBR5cqfN5y1mW9j5n) 为READY / PROMOTED，正式域名 travel.miaowu.org 已绑定，构建1分8秒。后续纯文档证据提交不改变这份已验证的运行代码。
+
+本次经用户明确同意共享既有Upstash Free及长期连接；Vercel原生Connect只给japan-checkins Production注入Secret变量，未读取或复制密钥，原有项目连接保留。Production启用JOURNAL_KV=redis，命名空间japan-checkins:production。登录仍为原有vercel-waf声明模式，没有切换redis或改WAF规则；没有新建/恢复数据库、增加付款方式或调整Auto Upgrade。
+
+正式域名主人会话 `/setup` 验证：站点/认证/原限流模式、GitHub仓库private/owner匹配和Redis PING均通过。主动点击“验证 Redis 写入锁”后，真实Upstash REST的SET NX、EVAL、TTL到期、重叠抢占拒绝、释放/重入以及过期旧持有者不能删除继任者锁均通过。所有测试键在本项目namespace下随机verify子空间，TTL最长60秒，通常释放；没有访问另一个项目的键、写入照片/主记录或生成新长期凭据。这是实际Redis锁语义验收，不是多实例压力/配额耗尽测试。
+
+无Cookie独立请求：/login为200，/api/checkins及POST /api/setup/kv-check均401、private no-store。主人页诊断截图仅保存在本机任务目录，没有私人照片或密钥，不进入公共仓库。163项合成测试、typecheck、Next构建、基础版构建和真实本机Redis生产Lua/诊断检查通过；diff检查通过。
+
+当前已实现可选写入租约和可选分布式登录限流代码；实际部署只开启写入协调。后台批次、任务进度、消费者及一次提交整批照片仍未实现。命名空间不是ACL，共享全库权限和总额度；回滚及免费合同限制见[KV](KV.md)和[UPGRADING](UPGRADING.md)。真实旅行上传/保存未用于本轮验收。
+
+
 ## 可选 Redis 适配 · 2026-10-18
 
 已实现默认关闭的Upstash REST协调：服务端Git索引写入60秒租约、可选全站5次/60秒登录限流、2秒请求预算及失败关闭、setup配置保留与doctor只读PING。GitHub仍负责照片 / 主记录和幂等事实；基础版不依赖KV，后台批次 / 进度 / 消费者仍未实现。用户已批准复用既有Upstash Free；Vercel原生连接仅作用于japan-checkins Production并自动注入Secret变量，未读取密钥。Production已保存JOURNAL_KV=redis与独立命名空间；原有项目连接保留，登录限流方式未改。用户已批准提交、推送与正式部署；最终发布及运行时证据记录在PROGRESS。主人可主动运行隔离短TTL的SET/EVAL/锁检查，默认诊断仍为只读PING。免费条款与操作确认边界见 [KV.md](KV.md)；本节优先于下文历史“尚无Redis适配”的描述。

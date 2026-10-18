@@ -1,6 +1,6 @@
 # 可选 Redis 协调
 
-2026-10-18：代码适配已实现；经用户明确同意共享既有Upstash Free数据库及长期连接后，已通过Vercel原生Connect仅连接目标项目Production。平台自动注入5个Secret变量，未读取、复制或手动传输密钥。另已保存Production的 `JOURNAL_KV=redis` 与 `JOURNAL_KV_NAMESPACE=japan-checkins:production`；现有登录限流方式未改。已获准提交、推送及重新部署；发布前仍不能视为运行时已启用，最终证据见PROGRESS。GitHub 基础版继续只读且不依赖 KV；进阶版未配置 KV 时继续原有 GitHub 原子提交。
+2026-10-18：代码适配已实现；经用户明确同意共享既有Upstash Free数据库及长期连接后，已通过Vercel原生Connect仅连接目标项目Production。平台自动注入5个Secret变量，未读取、复制或手动传输密钥。另已保存Production的 `JOURNAL_KV=redis` 与 `JOURNAL_KV_NAMESPACE=japan-checkins:production`；现有登录限流方式未改。功能提交bfff195已发布，正式域名真实PING、SET NX、EVAL、TTL和锁语义验收通过，见[PROGRESS](PROGRESS.md)。GitHub 基础版继续只读且不依赖 KV；进阶版未配置 KV 时继续原有 GitHub 原子提交。
 
 ## 供应商与免费边界
 
@@ -22,7 +22,7 @@
 
 创建或连接前，应展示具体计划、费用边界与权限并获得确认。此次原生Connect没有出现新的OAuth、条款或付费步骤；没有接受新供应商合同。连接器此前读取集成配置403，未重试该路径；用户完成Chrome登录后通过正常网页操作，未绕过访问限制。后续若出现更广权限、新条款或收费必须暂停。
 
-本次长期连接与自动注入凭据已获授权并完成；用户已批准提交、推送及生产发布；执行及验收状态见PROGRESS。没有读取现有 `.env.local` 或拉取云端密钥；没有更改公开、付款、安全设置或既有项目连接。Vercel提示新部署后环境变量才生效，未点击Redeploy。
+本次长期连接与自动注入凭据已获授权并完成；用户已批准提交、推送及生产发布，功能提交bfff195已上线并完成隔离键运行时验证；证据见PROGRESS。没有读取现有 `.env.local` 或拉取云端密钥；没有更改公开、付款、安全设置或既有项目连接。Vercel提示新部署后环境变量才生效；已由main推送触发正式部署，没有另行点击Redeploy。
 
 ## 配置
 
@@ -66,10 +66,10 @@ npm run build:basic
 node --experimental-strip-types scripts/verify-kv-local.mjs
 ```
 
-本次结果：163项合成测试、typecheck、Next构建通过；基础版在隔离副本以 `--configLoader runner` 避免只读依赖目录的Vite临时写入后构建通过。真实本机Redis的生产Lua检查通过；静态JS未包含新增KV配置/合成密钥字符串。平台连接及变量范围已核对，云端REST/SET/EVAL与正式运行时验收仍未完成。
+本次结果：163项合成测试、typecheck、Next构建通过；基础版在隔离副本以 `--configLoader runner` 避免只读依赖目录的Vite临时写入后构建通过。真实本机Redis的生产Lua检查通过；静态JS未包含新增KV配置/合成密钥字符串。平台连接与变量范围、正式域名的真实REST/SET NX/EVAL/TTL/锁语义已验收。多实例压力及真实旅行写入未纳入本轮。
 
 本机Redis检查只创建临时Unix socket（无TCP监听），直接执行生产Lua以核验原子语义，结束删除临时数据。合成REST测试不能替代实际Upstash账户/REST/计划/权限验收。
 
-连接已获准并完成，用户已批准提交/发布；发布后的验证只能使用本项目命名空间。先在隔离环境用独立namespace和合成数据执行SET/EVAL/TTL、两实例争用、配额/连接失败、重复提交与丢响应恢复；经同意再重新部署到目标环境，核对commit、部署Ready、正式域名、无凭据输出。生产只读PING后，实际保存应由主人明确操作；未完成不得报“线上KV可用”。不把本地Redis验收当作云端验收。
+连接和发布已完成。未来升级后的验证仍只能使用本项目命名空间；先在隔离环境用独立namespace和合成数据执行SET/EVAL/TTL、两实例争用、配额/连接失败、重复提交与丢响应恢复；经同意再重新部署到目标环境，核对commit、部署Ready、正式域名、无凭据输出。生产只读PING后，实际保存应由主人明确操作；未完成不得报“线上KV可用”。不把本地Redis验收当作云端验收。
 
 回滚时若登录选择redis，先恢复此前已验证的 `vercel-waf` 或持久单机 `file`，然后设 `JOURNAL_KV=off`，经发布授权后重新部署。不能关闭KV却留下redis登录模式，后者会拒绝登录。无需迁移GitHub数据，也不自动删除数据库/凭据；撤销连接和资源删除另行确认。
