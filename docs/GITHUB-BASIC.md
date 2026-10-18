@@ -57,11 +57,10 @@ git pull --ff-only
 
 ## 4 · 在Git中确认地点与记录
 
-编辑生成的 `travel/import.json`。每张照片已有file和空details。核对review.json后，填写，例如：
+编辑生成的 `travel/import.json`。每张照片已有file、绑定原图内容的sourceId和空details。保留生成的sourceId，不手改。核对review.json后，填写，例如：
 
 ```json
 {
-  "file": "inbox/example.jpg",
   "details": {
     "country": "JP", "prefecture": "福岡県", "city": "福岡市", "district": "",
     "place": "自己确认的地点", "date": "2020-01-02", "note": "自己的笔记",
@@ -71,7 +70,7 @@ git pull --ff-only
 }
 ```
 
-这是替换photos数组中的单项，不是整个文件。`confirmed: true`表示你明确确认该张照片的地点与日期；完整且有效才标记地图。坐标可留null，仅记录地区；填写坐标时必须与地区边界一致。不确定时保留false，仅保存部分信息。
+这里只展示需要修改的details和confirmed字段；保留对应photos项中生成的file和sourceId，不要用示例整体替换。`confirmed: true`表示你明确确认该张照片的地点与日期；完整且有效才标记地图。坐标可留null，仅记录地区；填写坐标时必须与地区边界一致。不确定时保留false，仅保存部分信息。
 
 可在同一文件的entries数组中创建旅行记录或文字：
 
@@ -84,7 +83,7 @@ git pull --ff-only
 
 文字记录使用 `type: "text"`，photos为空数组且note非空。记录ID保持不变以便更新；一张照片只属于一个旅行记录。从该entries项的photos数组移除路径可解除关联，不删除照片 / 单张信息。跨记录移动先解除原关联，提交成功后再加入新记录。相册上限100张。
 
-给照片项或旅行记录项加 `removed: true`移入回收状态，`removed: false`恢复。删掉inbox原文件或manifest条目不会自动删除已导入照片。替换原文件内容会创建新的独立照片；同一原图内容重复上传不会重复导入。
+给照片项或旅行记录项加 `removed: true`移入回收状态，`removed: false`恢复。删掉inbox原文件或manifest条目不会自动删除已导入照片。替换原文件内容会创建新的独立待确认照片，清空新照片的旧地点确认，不沿用同一路径的旧确认；同一原图内容重复上传不会重复导入。
 
 ```sh
 git add travel/import.json

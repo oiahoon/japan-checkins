@@ -11,9 +11,10 @@ import {blankPhotoDetails,savePhotoDetails} from './photo-records.ts';
 import {entryMutation,mutateEntry} from './journal-entries.ts';
 
 const filePath=z.string().min(7).max(250).refine(v=>v.startsWith('inbox/')&&!v.includes('\\')&&!v.split('/').some(p=>!p||p==='.'||p==='..'));
+const importPhoto=z.object({file:filePath,sourceId:recordId.optional(),details:photoDetailsSchema.default(blankPhotoDetails),confirmed:z.boolean().default(false),removed:z.boolean().optional()}).strict();
 export const importManifest=z.object({
  owner:z.string().min(1).max(100).default('journal-owner'),
- photos:z.array(z.object({file:filePath,details:photoDetailsSchema.default(blankPhotoDetails),confirmed:z.boolean().default(false),removed:z.boolean().optional()}).strict()).max(1000).default([]),
+ photos:z.array(importPhoto).max(1000).default([]),
  entries:z.array(z.object({id:recordId,type:z.enum(['trip','text']),title:z.string().max(150),date:z.string(),note:z.string().max(1000),photos:z.array(filePath).max(100),removed:z.boolean().optional()}).strict()).max(1000).default([]),
 }).strict();
 const digest=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
@@ -38,7 +39,11 @@ export async function planGitImport(directory:string,geographyDirectory:string){
  for(const item of manifest.photos){
   const path=await inside(root,item.file);let stat;try{stat=await lstat(path)}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')continue;throw e}
   if(!stat.isFile()||stat.size>MAX_SOURCE_BYTES)throw Error('Unsupported source size');total+=stat.size;if(total>500*1024*1024)throw Error('Batch source budget exceeded');
-  const bytes=await readFile(path),id='git-'+digest(bytes).slice(0,48);ids.set(item.file,id);let photo=journal.photos.find(p=>p.id===id);
+  const bytes=await readFile(path),id='git-'+digest(bytes).slice(0,48);ids.set(item.file,id);
+  // Consent belongs to this source content, never merely to a reusable filename.
+  if(!item.sourceId&&state.photos[id])item.sourceId=id;
+  if(item.sourceId!==id){item.sourceId=id;item.confirmed=false;item.details={...blankPhotoDetails};delete item.removed}
+  let photo=journal.photos.find(p=>p.id===id);
   if(!photo){
    if(++added>30)throw Error('Import at most 30 new photos per run');
    const meta=await inspectPhoto(new Blob([bytes]));let jpeg:Uint8Array;
@@ -47,7 +52,7 @@ export async function planGitImport(directory:string,geographyDirectory:string){
    photo={id,owner:manifest.owner,sha:gitBlob(jpeg),digest:digest(jpeg),checkin:null,created:new Date().toISOString(),metadata:meta.camera,proposal:{date:meta.date,dateSource:meta.dateSource,dateStatus:meta.dateStatus,gps:meta.gps}};journal.photos.push(photo);writes.set('travel/photos/'+id+'.jpg',jpeg);
   }
   review.push({file:item.file,id,proposal:photo.proposal||{},metadata:photo.metadata||{}});
-  const signature=digest(Buffer.from(JSON.stringify(item))),changed=state.photos[id]!==signature,customized=item.confirmed||Object.values(item.details).some(v=>v!==''&&v!==null&&v!==undefined);
+  const signature=digest(Buffer.from(JSON.stringify(importPhoto.parse(item)))),changed=state.photos[id]!==signature,customized=item.confirmed||Object.values(item.details).some(v=>v!==''&&v!==null&&v!==undefined);
   if(changed&&item.removed!==undefined&&item.removed!==!!photo.removed)manageItems(journal,manifest.owner,'photos',[id],item.removed);
   if(changed&&customized&&!photo.removed){
    const d=item.details;
@@ -69,7 +74,7 @@ export async function planGitImport(directory:string,geographyDirectory:string){
   mutateEntry(journal,manifest.owner,entryMutation.parse({op:'save',id:e.id,type:e.type,title:e.title,date:e.date,note:e.note,photos}));if(e.removed)manageItems(journal,manifest.owner,'records',[e.id],true);
  }
  assertOwner(journal,manifest.owner);const text=JSON.stringify(journalSchema.parse(journal));if(Buffer.byteLength(text)>512*1024)throw Error('Journal size limit reached');
- writes.set('travel/index.json',Buffer.from(text+'\n'));writes.set('travel/import.json',Buffer.from(JSON.stringify(manifest,null,2)+'\n'));writes.set('travel/review.json',Buffer.from(JSON.stringify({photos:review},null,2)+'\n'));writes.set('travel/import-state.json',Buffer.from(JSON.stringify(state)+'\n'));
+ writes.set('travel/index.json',Buffer.from(text+'\n'));writes.set('travel/import.json',Buffer.from(JSON.stringify(importManifest.parse(manifest),null,2)+'\n'));writes.set('travel/review.json',Buffer.from(JSON.stringify({photos:review},null,2)+'\n'));writes.set('travel/import-state.json',Buffer.from(JSON.stringify(state)+'\n'));
  for(const [path,bytes] of writes){const full=await inside(root,path);try{if((await readFile(full)).equals(Buffer.from(bytes)))writes.delete(path)}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}}
  return {writes,added,photos:journal.photos.length,visits:journal.checkins.length};
 }

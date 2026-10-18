@@ -1,5 +1,7 @@
 # Architecture
 
+原图确认补充：Git导入manifest新增sourceId，将地点日期确认绑定源内容。相同文件名换图会创建独立待确认照片并清除新照片的旧确认；原有照片 / 到访与网页编辑不变。153项测试包含替换原图与重复运行回归。
+
 ## Deployment editions · 2026-10-18
 
 GitHub basic edition (`basic/`, Vite → `dist-basic`, source Actions → Pages) contains only app code and public geography. BrowserJournal is read-only: non-GET operations return403 before any remote request; writes are hidden in the shared UI. A repo-scoped Contents read-only token in page memory retrieves the private journal and authenticated photo blobs; every snapshot verifies private and row owners. No private data is built into Pages. Refresh requires reauthorization. This is GitHub-verified repository access, not a frontend shared password.

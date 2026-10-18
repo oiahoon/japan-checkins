@@ -1,5 +1,7 @@
 # Current handoff / 当前交接
 
+原图确认补充：Git导入manifest新增sourceId，将地点日期确认绑定源内容。相同文件名换图会创建独立待确认照片并清除新照片的旧确认；原有照片 / 到访与网页编辑不变。153项测试包含替换原图与重复运行回归。
+
 ## 最新发布与真实验收 · 2026-10-18
 
 功能提交 `648ad52b7aad9dbed452517043945c3accf0fe7e` 已推送main。Checks [39101480691](https://github.com/oiahoon/japan-checkins/actions/runs/39101480691)、clone-and-deploy [39101480652](https://github.com/oiahoon/japan-checkins/actions/runs/39101480652)、Pages [39101480643](https://github.com/oiahoon/japan-checkins/actions/runs/39101480643) 均success。Vercel Production `dpl_DV7zqwu3H9P1JzCwnwrtwkgwkcFk` Ready，正式 / 默认域名已指向新部署；GitHub基础版 https://oiahoon.github.io/japan-checkins/ 实际浏览器入口正常、无console警告，私人数据未打包。每位用户仍应部署自己的副本，这个地址仅为本项目基础版入口。
