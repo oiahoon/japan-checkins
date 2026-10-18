@@ -3,7 +3,10 @@ import {validPasswordHash} from './password.ts';
 export function githubMode() { return process.env.AUTH_PROVIDER !== 'sites'; }
 export function authProvider(){const value=process.env.AUTH_PROVIDER||'password';if(!['password','github','sites'].includes(value))throw new Error('Invalid AUTH_PROVIDER');return value;}
 export function siteConfig() {
-  const origin = new URL(required('APP_URL'));
+  // Only server-owned deployment metadata may supply the canonical origin.
+  // Never derive it from Host / X-Forwarded-Host or the incoming request.
+  const automatic=process.env.VERCEL==='1'?process.env.VERCEL_PROJECT_PRODUCTION_URL:undefined;
+  const origin = new URL(process.env.APP_URL || (automatic?`https://${automatic}`:required('APP_URL')));
   if (origin.pathname !== '/' || origin.search || origin.hash || origin.username || origin.password) throw new Error('APP_URL must be an origin');
   const local = ['localhost', '127.0.0.1'].includes(origin.hostname);
   if (origin.protocol !== 'https:' && !(process.env.NODE_ENV !== 'production' && local && origin.protocol === 'http:')) throw new Error('APP_URL requires HTTPS');

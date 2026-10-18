@@ -1,3 +1,4 @@
+import {publicAsset} from './public-asset.ts';
 /** In-memory, deduplicated reads of allowlisted public assets only. Never use for owner data. */
 const publicPaths=['/china-admin.json','/restaurants.json','/japan-simple.json','/china-simple.json','/sichuan-cities.json','/chengdu-districts.json','/world-simple.json','/japan-cities.json','/place-index.json'] as const;
 export type PublicJsonPath=typeof publicPaths[number];
@@ -14,4 +15,4 @@ export function createPublicJsonLoader(read:typeof fetch,timeoutMs=15000){
   cache.set(path,task);return task as Promise<T>;
  };
 }
-export const loadPublicJson=createPublicJsonLoader((...args)=>fetch(...args));
+export const loadPublicJson=createPublicJsonLoader((path,init)=>fetch(publicAsset(String(path)),init));

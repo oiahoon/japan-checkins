@@ -1,0 +1,5 @@
+import {photoEntry,photoParentRemoved,type Journal} from './travel-data.ts';
+export function journalProjection(data:Journal,readOnly=false,shared=false){
+ const visible=(p:Journal['photos'][number])=>!p.removed&&!photoParentRemoved(data,p);
+ return {entries:data.entries.filter(e=>!e.removed),removedEntries:readOnly?[]:data.entries.filter(e=>e.removed),removedCheckins:readOnly?[]:data.checkins.filter(c=>c.removed),checkins:data.checkins.filter(c=>!c.removed&&!data.photos.some(p=>p.checkin===c.id&&p.id===c.id&&photoParentRemoved(data,p))).sort((a,b)=>b.date.localeCompare(a.date)||b.created.localeCompare(a.created)),statuses:data.statuses,removedPhotos:readOnly?[]:data.photos.filter(p=>p.removed).map(p=>({id:p.id,checkin:p.checkin,entry:p.entry})),photos:data.photos.filter(p=>visible(p)&&p.checkin!==null).map(p=>({id:p.id,checkin:p.checkin,entry:p.entry,...(!shared?{metadata:p.metadata,details:p.details,proposal:p.proposal}:{})})),drafts:readOnly?[]:data.photos.filter(p=>visible(p)&&p.checkin===null).map(p=>({id:p.id,entry:p.entry,metadata:p.metadata,details:p.details,proposal:p.proposal}))};
+}

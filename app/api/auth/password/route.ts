@@ -3,7 +3,7 @@ import {authProvider,passwordConfig} from '../../../../lib/self-host-config';
 import {signSession,sessionCookie} from '../../../../lib/session';
 import {verifyPassword} from '../../../../lib/password';
 import {boundedBytes} from '../../../../lib/github-service';
-import {admitPasswordAttempt,productionRateLimitReady} from '../../../../lib/password-rate-limit';
+import {admitLoginAttempt,productionRateLimitReady} from '../../../../lib/password-rate-limit';
 export const runtime='nodejs';
 export async function POST(request:Request){
   const headers={'Cache-Control':'private, no-store'};
@@ -14,7 +14,7 @@ export async function POST(request:Request){
     if(!productionRateLimitReady())return new Response('请先配置服务端登录限流',{status:503,headers});
     // Trust the IP only on Vercel; generic local use has one global bucket.
     const key=process.env.VERCEL==='1'?(request.headers.get('x-vercel-forwarded-for')||'global'):'local';
-    if(!admitPasswordAttempt(key))return new Response('尝试次数过多，请稍后再试',{status:429,headers:{...headers,'Retry-After':'60'}});
+    if(!await admitLoginAttempt(key))return new Response('尝试次数过多，请稍后再试',{status:429,headers:{...headers,'Retry-After':'60'}});
     const body=new URLSearchParams((await boundedBytes(request,4096)).toString('utf8'));
     const password=body.get('password')||'';
     const admin=await verifyPassword(password,c.adminHash);

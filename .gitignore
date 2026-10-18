@@ -51,3 +51,6 @@ next-env.d.ts
 /artifacts/
 !.env.example
 /.setup/
+/.local/
+
+dist-basic/

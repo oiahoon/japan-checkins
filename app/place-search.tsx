@@ -1,4 +1,5 @@
 'use client';
+import {useJournalTransport} from './journal-transport';
 import {useEffect,useId,useMemo,useRef,useState} from 'react';
 import {Search,MapPin,LoaderCircle} from 'lucide-react';
 import {NeoInput} from './ui/neo';
@@ -6,22 +7,23 @@ import {lookupPlace,type PlaceMatch} from '../lib/place-lookup';
 import {placeSuggestion,type PlaceSuggestion} from '../lib/place-search';
 
 export default function PlaceSearch({value,entries,onChange,onSelect,onLocal,endpoint='/api/places',loadingLocal=false,localError=false}:{loadingLocal?:boolean;localError?:boolean;endpoint?:string;value:string;entries:PlaceMatch[];onChange:(value:string)=>void;onSelect:(place:PlaceSuggestion)=>void;onLocal:(place:PlaceMatch)=>void}){
+ const transport=useJournalTransport(),request=transport?.request||fetch;
  const id=useId(),input=useRef<HTMLInputElement>(null),cache=useRef(new Map<string,PlaceSuggestion[]>());
  const [focused,setFocused]=useState(false),[edited,setEdited]=useState(false),[composing,setComposing]=useState(false),[enabled,setEnabled]=useState(false),[remote,setRemote]=useState<{query:string;items:PlaceSuggestion[]}>({query:'',items:[]}),[active,setActive]=useState(-1),[busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>{if(active>=0)document.getElementById(id+'-option-'+active)?.scrollIntoView({block:'nearest'})},[active,id]);
  const query=value.trim(),localMatches=useMemo(()=>lookupPlace(value,entries),[value,entries]),local=localMatches.candidates;
- useEffect(()=>{const controller=new AbortController();fetch(endpoint,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(6500)]),cache:'no-store'}).then(r=>r.ok?r.json() as Promise<{enabled?:boolean}>:null).then(data=>{if(!controller.signal.aborted)setEnabled(data?.enabled===true)}).catch(()=>{});return()=>controller.abort()},[endpoint]);
+ useEffect(()=>{const controller=new AbortController();request(endpoint,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(6500)]),cache:'no-store'}).then(r=>r.ok?r.json() as Promise<{enabled?:boolean}>:null).then(data=>{if(!controller.signal.aborted)setEnabled(data?.enabled===true)}).catch(()=>{});return()=>controller.abort()},[endpoint,request]);
  useEffect(()=>{
   setActive(-1);setError('');setBusy(false);
   if(!enabled||!edited||!focused||composing||query.length<2)return;
   const cached=cache.current.get(query);if(cached){setRemote({query,items:cached});return}
   const controller=new AbortController();
-  const timer=setTimeout(()=>{setBusy(true);fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query}),signal:AbortSignal.any([controller.signal,AbortSignal.timeout(6500)]),cache:'no-store'})
+  const timer=setTimeout(()=>{setBusy(true);request(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query}),signal:AbortSignal.any([controller.signal,AbortSignal.timeout(6500)]),cache:'no-store'})
    .then(async r=>{const data=await r.json() as {results?:unknown[];error?:string};if(!r.ok)throw Error(data.error||'地点搜索暂时不可用');if(!Array.isArray(data.results))throw Error();return data.results.map((v:unknown)=>placeSuggestion.safeParse(v)).filter((v:ReturnType<typeof placeSuggestion.safeParse>)=>v.success).map((v:{data:PlaceSuggestion})=>v.data) as PlaceSuggestion[]})
    .then(items=>{if(controller.signal.aborted)return;if(cache.current.size>=20)cache.current.delete(cache.current.keys().next().value!);cache.current.set(query,items);setRemote({query,items});setActive(-1)})
    .catch(e=>{if(!controller.signal.aborted){setRemote({query,items:[]});setError(e.message||'地点搜索暂时不可用')}}).finally(()=>{if(!controller.signal.aborted)setBusy(false)})},450);
   return()=>{clearTimeout(timer);controller.abort()};
- },[query,edited,focused,enabled,composing,endpoint]);
+ },[query,edited,focused,enabled,composing,endpoint,request]);
  const options=[...(remote.query===query?remote.items:[]).map(place=>({key:place.id,name:place.name,label:place.label,choose:()=>onSelect(place)})),...local.map(place=>({key:place.code||place.country+'/'+place.prefecture+'/'+place.city+'/'+place.name,name:localMatches.automatic===place?query:place.name,label:[place.country==='JP'?'日本':place.country==='CN'?'中国':place.country,place.prefecture,place.city,place.district].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' · '),choose:()=>onLocal({...place,name:localMatches.automatic===place?query:place.name})}))].slice(0,10);
  const open=focused&&edited&&query.length>=2,pending=enabled&&open&&!composing&&remote.query!==query&&!error;
  function choose(index:number){options[index]?.choose();setFocused(false);setEdited(false);setActive(-1);input.current?.focus()}

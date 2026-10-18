@@ -1,0 +1,49 @@
+name: 发布 GitHub 基础版
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'basic/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'package*.json'
+      - 'vite.basic.config.mts'
+      - '.github/workflows/pages.yml'
+permissions:
+  contents: read
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:basic
+        env:
+          BASIC_BASE_PATH: /${{ github.event.repository.name }}/
+      - run: node scripts/verify-basic-build.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-basic
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - uses: actions/deploy-pages@v4
+        id: deployment

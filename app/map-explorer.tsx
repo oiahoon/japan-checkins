@@ -1,4 +1,5 @@
 'use client';
+import {publicAsset} from '../lib/public-asset';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowLeft,ChevronRight,Globe2,Search,X,Plus,Minus,LocateFixed,MapPin} from 'lucide-react';
 import PuzzleLayer,{type PuzzleLayerProps} from './puzzle-layer';
@@ -50,8 +51,8 @@ export default function MapExplorer({geographies:g,request,focusedVisit,visits,h
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);let cancelled=false;
   const load=async()=>{setDataLoading(true);setDataError(false);try{
    const jobs:Promise<void>[]=[];
-   if(provinceCode&&!cityShards[provinceCode])jobs.push(fetch('/china-cities/'+provinceCode+'.json',{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('city layer');return r.json() as Promise<{features:MapFeature[]}>}).then(v=>{if(!cancelled)setCityShards(old=>({...old,[provinceCode!]:v.features}))}));
-   if(provinceCode&&!districtShards[provinceCode])jobs.push(fetch('/china-districts/'+provinceCode+'.json',{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('district layer');return r.json() as Promise<{features:MapFeature[]}>}).then(v=>{if(!cancelled)setDistrictShards(old=>({...old,[provinceCode]:v.features}))}));
+   if(provinceCode&&!cityShards[provinceCode])jobs.push(fetch(publicAsset('/china-cities/'+provinceCode+'.json'),{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('city layer');return r.json() as Promise<{features:MapFeature[]}>}).then(v=>{if(!cancelled)setCityShards(old=>({...old,[provinceCode!]:v.features}))}));
+   if(provinceCode&&!districtShards[provinceCode])jobs.push(fetch(publicAsset('/china-districts/'+provinceCode+'.json'),{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('district layer');return r.json() as Promise<{features:MapFeature[]}>}).then(v=>{if(!cancelled)setDistrictShards(old=>({...old,[provinceCode]:v.features}))}));
    await Promise.all(jobs);
   }catch{if(!cancelled)setDataError(true)}finally{clearTimeout(timeout);if(!cancelled)setDataLoading(false)}};void load();
   return()=>{cancelled=true;clearTimeout(timeout);controller.abort()};
@@ -110,7 +111,7 @@ export default function MapExplorer({geographies:g,request,focusedVisit,visits,h
   </svg>
   {(dataLoading||dataError||japanLoading||japanError||fallback)&&<div className="explorer-coverage" role="status">{dataLoading||japanLoading?'正在载入地区地图…':japanError?<button onClick={onRetryJapanDetails}>城市地图载入失败 · 重试</button>:dataError?<button onClick={()=>setRetry(v=>v+1)}>地图载入失败 · 重试</button>:fallback?'暂显示'+layer.name+'地图':null}</div>}
   {hover&&!dragging&&<div className="explorer-hover" aria-hidden="true">{hover}</div>}
-  <div className="explorer-footer">{visits.some(v=>v.place_source==='geoapify')&&<span className="explorer-geocoding-source"><a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">Geoapify</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OSM</a></span>}<div className="map-legend"><span><i className="amber-dot"/>选中</span><span><i className="teal-dot"/>已记录</span></div><a className="explorer-source" href={layer.scope==='chengdu'?'https://www.openstreetmap.org/copyright':'/data-notes.md'} target="_blank" rel="noreferrer">{layer.scope==='chengdu'||layer.features.some(f=>f.properties.year===2017)?'© OSM · 2017':layer.features.some(f=>f.properties.year===2021)?'内政部 · 2021':layer.features.some(f=>f.properties.year===2020)?'HDX · 2020':'地图来源'}</a></div>
+  <div className="explorer-footer">{visits.some(v=>v.place_source==='geoapify')&&<span className="explorer-geocoding-source"><a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">Geoapify</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OSM</a></span>}<div className="map-legend"><span><i className="amber-dot"/>选中</span><span><i className="teal-dot"/>已记录</span></div><a className="explorer-source" href={layer.scope==='chengdu'?'https://www.openstreetmap.org/copyright':publicAsset('/data-notes.md')} target="_blank" rel="noreferrer">{layer.scope==='chengdu'||layer.features.some(f=>f.properties.year===2017)?'© OSM · 2017':layer.features.some(f=>f.properties.year===2021)?'内政部 · 2021':layer.features.some(f=>f.properties.year===2020)?'HDX · 2020':'地图来源'}</a></div>
   <span className="sr-only" role="status" aria-live="polite">当前地图：{path.map(n=>n.name).join('，')}</span>
  </div>;
 }

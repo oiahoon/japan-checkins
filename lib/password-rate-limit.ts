@@ -7,5 +7,15 @@ export function admitPasswordAttempt(key:string,now=Date.now()){
   return b.count<=5;
 }
 export function productionRateLimitReady(){
-  return process.env.NODE_ENV!=='production'||(process.env.VERCEL==='1'&&process.env.PASSWORD_RATE_LIMIT==='vercel-waf');
+  return process.env.NODE_ENV!=='production'||(process.env.VERCEL==='1'
+    ?process.env.PASSWORD_RATE_LIMIT==='vercel-waf'
+    :process.env.PASSWORD_RATE_LIMIT==='file');
+}
+
+export async function admitLoginAttempt(key:string){
+  if(process.env.VERCEL!=='1'&&process.env.PASSWORD_RATE_LIMIT==='file'){
+    const {admitFileAttempt}=await import('./password-file-limit.ts');
+    return admitFileAttempt();
+  }
+  return admitPasswordAttempt(key);
 }
