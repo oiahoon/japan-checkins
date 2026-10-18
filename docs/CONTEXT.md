@@ -4,7 +4,7 @@
 
 全新公开源码快照travel-guide-qa-20261018与private合成数据仓库travel-guide-data-qa-20261018，实际完成Pages发布、空日志初始化、单图EXIF提议、错误JSON失败保护、修复并确认四川成都地点、幂等重跑。1张照片先0到访，明确确认后1到访；错误JSON不修改原index，重复导入不新增提交。修正连接字段 / Contents权限提示与安全JSON文件诊断，新手指南补源码改名变量、权限和地图查找步骤。164项测试、typecheck、两版构建、静态隐私扫描通过。
 
-网页末段仍待用户更新测试令牌Contents只读权限后完成。已提供令牌可读metadata但读取index为403，不以Git数据正确替代网页足迹展示。测试使用等价Git/CLI流程，未安装GitHub Desktop，也不是另一账号真实Fork或真人新手试用；不影响原生产数据。完整证据与边界见 [本轮报告](design/beginner-deployment-acceptance-2026-10-18.md)。
+网页末段现已通过：用户补齐Contents只读后，实际连接未确认快照与main，照片/日期提议、只读查看器、确认地点/日期/笔记、时间线到成都定位、四川成都着色与作品预览正确。刷新授权清空、全新会话重新读取正确；1280/390px无横向溢出，成功会话无console错误。另修正时间线摘要，独立照片计入记忆总数，实际显示1条记忆/1张照片；独立测试站点bfe6189发布及CI均success。测试使用等价Git/CLI流程，未安装GitHub Desktop，也不是另一账号真实Fork或真人新手试用；不影响原生产数据。完整证据与边界见 [本轮报告](design/beginner-deployment-acceptance-2026-10-18.md)。
 
 
 ## 新手部署文档审阅 · 2026-10-18
