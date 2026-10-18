@@ -41,3 +41,5 @@ IAB浏览器，本机最终静态构建挂载/japan-checkins/。1280×720、390�
 功能提交648ad52三项CI / Pages发布全部success；Vercel Production dpl_DV7zqwu3H9P1JzCwnwrtwkgwkcFk Ready，正式域名别名已更新。https://oiahoon.github.io/japan-checkins/ 实际加载只读基础版连接页且console无warn/error；https://travel.miaowu.org/ 新会话显示密码页，匿名/api/checkins返回401。Vercel连接器范围403后，使用同团队/项目CLI凭据完成核对，没有改权限。
 
 生产入口未输入本机广泛CLI凭据，私人读取验收在本机同一静态构建使用隔离QA仓库进行；不把公开壳加载等同于生产私仓上传验收。iPhone Safari、实际相机HEIC/RAW、系统分享 / 打印、弱网 / 大图库和Redis任务均保留未验收边界。截图只放工作站临时目录，不进入Git；当前发布收尾见PROGRESS最新条目。
+
+最终安全补充：第三次真实私仓Actions39102138131成功，同名换图后4张照片 / 3次到访，新照片未确认，旧足迹保留。修正3489abc三项CI和Pages均success，Vercel dpl_Hku2R6bRk8DvHY3oWrXDTb14MWnm Ready且正式别名更新；153项测试与两版构建再次通过。
