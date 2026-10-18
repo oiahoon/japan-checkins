@@ -2,6 +2,8 @@
 
 ## 私有缩略图与前台优先加载 · 2026-10-18
 
+功能提交 [1f0d396](https://github.com/oiahoon/japan-checkins/commit/1f0d39679d1484b1b0a8232eac22ec996053accc) 已推送并发布：[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/39139597938)、[独立克隆构建](https://github.com/oiahoon/japan-checkins/actions/runs/39139598073)、[Pages](https://github.com/oiahoon/japan-checkins/actions/runs/39139597909) 均 success。Vercel Production `dpl_BNsqkEfyZkh4WqRkD76HoynkzpFR` READY，准确 SHA 匹配且 aliases 包含 travel.miaowu.org；正式登录页 / Pages 200，未登录照片大图与 thumbnail 接口均 401。生产没有进行私人照片写入或补生成。本段后续纯文档提交不改变这份已验收的功能代码。
+
 已完成 768px 私有缩略图、网页上传 / Git 导入同步生成、旧图兼容与最多 30 张的主动补生成工具；照片库 / 时间线 / 拼图读小图，编辑 / 查看器 / 导出保留清晰大图。统一读取队列支持前台抢占恢复、共享消费者取消和实际视口读取，保持所有权 / 发布 / 回收门禁。合成弱网浏览器验证 78,625 → 16,896 bytes（约少 78.5%），大图仍 1600×1200；网页合成上传成功，日期待确认，不自动生成到访。390px 照片库 / 编辑 / 查看器、320px 暗调无横向溢出，控制台无 warn / error。178 tests、typecheck、Next / basic 构建和 106 文件静态隐私扫描通过；导入 CLI 语法与 diff 检查通过。没有改写生产真实私仓。main 推送触发既有 Pages / Vercel 自动发布，实际结果需对应本轮 SHA；详见 [照片加载契约和验收](PHOTO-LOADING.md)。
 
 ## 手机弱网验收与修复 · 2026-10-18
