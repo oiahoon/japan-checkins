@@ -1,6 +1,11 @@
 name: Import private travel photos
 on:
   workflow_dispatch:
+    inputs:
+      thumbnails_only:
+        description: 'Only generate missing private thumbnails (up to 30)'
+        type: boolean
+        default: false
   push:
     paths: ['inbox/**', 'travel/import.json', '.github/workflows/import.yml']
 permissions:
@@ -31,10 +36,14 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - run: npm ci
         working-directory: app
-      - run: node --experimental-strip-types scripts/import-git-photos.mjs --repository-root "$GITHUB_WORKSPACE/journal" --repository "$GITHUB_REPOSITORY"
+      - run: |
+          args=()
+          if [ "$THUMBNAILS_ONLY" = "true" ]; then args+=(--thumbnails-only); fi
+          node --experimental-strip-types scripts/import-git-photos.mjs --repository-root "$GITHUB_WORKSPACE/journal" --repository "$GITHUB_REPOSITORY" "${args[@]}"
         working-directory: app
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          THUMBNAILS_ONLY: ${{ github.event.inputs.thumbnails_only || 'false' }}
       - name: Commit derived private data
         working-directory: journal
         run: |

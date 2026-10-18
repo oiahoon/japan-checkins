@@ -22,7 +22,8 @@
     "doctor": "node --experimental-strip-types scripts/doctor.mjs",
     "build:basic": "vite build --config vite.basic.config.mts",
     "dev:basic": "vite --config vite.basic.config.mts",
-    "import:git": "node --experimental-strip-types scripts/import-git-photos.mjs"
+    "import:git": "node --experimental-strip-types scripts/import-git-photos.mjs",
+    "thumbnails:git": "node --experimental-strip-types scripts/import-git-photos.mjs --thumbnails-only"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

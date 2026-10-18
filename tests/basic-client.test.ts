@@ -13,7 +13,7 @@ test('basic reader bounds 48 distinct photo reads, deduplicates each source and 
  return Response.json(!path?{private:true}:path.startsWith('/git/ref/')?{object:{sha:'head'}}:path.startsWith('/git/commits/')?{tree:{sha:'tree'}}:path.startsWith('/git/blobs/')?{encoding:'base64',size:4,content:encodeBase64(new Uint8Array([255,216,255,217]))}:{encoding:'base64',size:100,content:encodeBase64(new TextEncoder().encode(JSON.stringify(journal)))});
  };
  const c=new BrowserJournal('synthetic/private','main','synthetic-only',read);await c.connect();peak=0;
- const jobs=journal.photos.map(p=>c.photo('/api/photos/'+p.id));assert.equal(c.photo('/api/photos/'+journal.photos[0].id),jobs[0]);await Promise.all(jobs);assert.equal(peak,3);assert.equal(commitReads,0);assert.equal(calls,5+48*4);
+ const jobs=journal.photos.map(p=>c.photo('/api/photos/'+p.id));const duplicate=c.photo('/api/photos/'+journal.photos[0].id);await Promise.all(jobs);assert.equal(await duplicate,await jobs[0]);assert.equal(peak,2);assert.equal(commitReads,0);assert.equal(calls,5+48*4);
  // Queued operations still pass through the closed-connection guard before remote I/O.
  c.disconnect();const before=calls;const failed=await Promise.allSettled(journal.photos.map(p=>c.photo('/api/photos/'+p.id+'?retry=1')));assert.equal(failed.filter(r=>r.status==='rejected').length,48);assert.equal(calls,before);
 });

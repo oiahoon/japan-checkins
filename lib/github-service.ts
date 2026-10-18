@@ -5,6 +5,8 @@ import {entryMutation,mutateEntry,photoEntry} from './journal-entries.ts';
 import {cameraMetadataSchema,photoProposalSchema} from './travel-data.ts';
 import {createHash} from 'node:crypto';
 import {GitHubStore} from './github-store.ts';
+import {makeThumbnail} from './photo-thumbnail.ts';
+import {readPhotoVariant} from './photo-source.ts';
 import {sanitizeJPEG} from './photo.ts';
 import {manageItems,appendVisit, setMarkers, recordId, visitInput, markersInput, InputError,sharedJournal,photoParentRemoved} from './travel-data.ts';
 import {savePhotoDetails,photoEditInput} from './photo-records.ts';
@@ -33,9 +35,9 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
     }
     if(action==='photo'||action==='delete') {
       if(!recordId.safeParse(id).success)return json({error:'照片不存在'},404);
-      if(action==='photo') {const photo=await store.photo(id!,user.userId,context.sharedOnly);return photo?new Response(photo,{headers:{...privateHeaders,'Content-Type':'image/jpeg','Content-Disposition':'inline'}}):json({error:'照片不存在'},404);}
+      if(action==='photo') {const photo=await store.photo(id!,user.userId,context.sharedOnly,readPhotoVariant(request?.url||''),makeThumbnail);return photo?new Response(new Uint8Array(photo),{headers:{...privateHeaders,'Content-Type':'image/jpeg','Content-Disposition':'inline'}}):json({error:'照片不存在'},404);}
       let blocked=false;
-      await store.mutate(user.userId,j=>{const row=j.photos.find(p=>p.id===id&&p.owner===user.userId);if(!row)return {changed:false};if(row.checkin!==null){blocked=true;return {changed:false};}j.photos=j.photos.filter(p=>p.id!==id);return {changed:true,files:[{path:`travel/photos/${id}.jpg`,mode:'100644',type:'blob',sha:null}]};});
+      await store.mutate(user.userId,j=>{const row=j.photos.find(p=>p.id===id&&p.owner===user.userId);if(!row)return {changed:false};if(row.checkin!==null){blocked=true;return {changed:false};}j.photos=j.photos.filter(p=>p.id!==id);return {changed:true,files:[...(row.thumbnailSha?[{path:`travel/thumbnails/${id}.jpg`,mode:'100644' as const,type:'blob' as const,sha:null}]:[]),{path:`travel/photos/${id}.jpg`,mode:'100644',type:'blob',sha:null}]};});
       return new Response(null,{status:blocked?409:204,headers:privateHeaders});
     }
     if(action==='edit-photo'){
@@ -68,8 +70,9 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
       const previous=current.photos.find(p=>p.id===photoId&&p.owner===user.userId);
       if(previous){if(previous.digest!==digest)throw new InputError('上传标识已用于另一张照片');return json({id:photoId},201);}
       if(current.photos.filter(p=>!p.removed&&p.checkin===null&&!photoEntry(p)).length>=30)throw new InputError('未完成照片过多，请先保存或移除');
-      const sha=await store.blob(bytes);
-      await store.mutate(user.userId,j=>{const existing=j.photos.find(p=>p.id===photoId&&p.owner===user.userId);if(existing){if(existing.digest!==digest)throw new InputError('上传标识已用于另一张照片');return {changed:false};}if(j.photos.filter(p=>!p.removed&&p.checkin===null&&!photoEntry(p)).length>=30)throw new InputError('未完成照片过多');j.photos.push({id:photoId!,owner:user.userId,checkin:null,sha,digest,metadata,proposal,created:new Date().toISOString()});return {changed:true,files:[{path:`travel/photos/${photoId}.jpg`,mode:'100644',type:'blob',sha}]};});
+      let thumbnail:Uint8Array;try{thumbnail=await makeThumbnail(bytes)}catch{return json({error:'照片图像数据无效，请重新选择 JPEG'},400)}
+      const sha=await store.blob(bytes),thumbnailSha=await store.blob(thumbnail);
+      await store.mutate(user.userId,j=>{const existing=j.photos.find(p=>p.id===photoId&&p.owner===user.userId);if(existing){if(existing.digest!==digest)throw new InputError('上传标识已用于另一张照片');return {changed:false};}if(j.photos.filter(p=>!p.removed&&p.checkin===null&&!photoEntry(p)).length>=30)throw new InputError('未完成照片过多');j.photos.push({id:photoId!,owner:user.userId,checkin:null,sha,thumbnailSha,digest,metadata,proposal,created:new Date().toISOString()});return {changed:true,files:[{path:`travel/thumbnails/${photoId}.jpg`,mode:'100644',type:'blob',sha:thumbnailSha},{path:`travel/photos/${photoId}.jpg`,mode:'100644',type:'blob',sha}]};});
       return json({id:photoId},201);
     }
     let body:unknown;try{body=JSON.parse((await boundedBytes(request!,20000)).toString('utf8'));}catch{return json({error:'请求内容无效或过长'},400);}

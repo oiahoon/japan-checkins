@@ -2,11 +2,12 @@ import {readFile,readdir,lstat,realpath} from 'node:fs/promises';
 import {resolve,relative,join} from 'node:path';
 import {createHash} from 'node:crypto';
 import sharp from 'sharp';
+import {makeThumbnail} from './photo-thumbnail.ts';
 import {z} from 'zod';
 import {inspectPhoto,MAX_SOURCE_BYTES} from './photo-import.ts';
 import {prefectureAt} from './photo-metadata.ts';
 import {sanitizeJPEG} from './photo.ts';
-import {journalSchema,emptyJournal,assertOwner,photoDetailsSchema,recordId,manageItems,type Journal} from './travel-data.ts';
+import {journalSchema,emptyJournal,assertOwner,photoParentRemoved,photoDetailsSchema,recordId,manageItems,type Journal} from './travel-data.ts';
 import {blankPhotoDetails,savePhotoDetails} from './photo-records.ts';
 import {entryMutation,mutateEntry} from './journal-entries.ts';
 
@@ -38,7 +39,7 @@ export async function planGitImport(directory:string,geographyDirectory:string){
  const rawState=await readOptional(root,'travel/import-state.json'),state=z.object({photos:z.record(z.string()),entries:z.record(z.string())}).strict().parse(rawState!==undefined?parseImportJSON(rawState,'travel/import-state.json'):{photos:{},entries:{}});
  const files=await inbox(root);for(const file of files)if(!manifest.photos.some(p=>p.file===file))manifest.photos.push({file,details:{...blankPhotoDetails},confirmed:false});
  if(manifest.photos.length>1000)throw Error('Manifest file limit reached');
- const writes=new Map<string,Uint8Array>(),ids=new Map<string,string>(),review:{file:string;id:string;proposal:unknown;metadata:unknown}[]=[];let added=0,total=0;
+ const writes=new Map<string,Uint8Array>(),ids=new Map<string,string>(),review:{file:string;id:string;proposal:unknown;metadata:unknown}[]=[];let added=0,total=0,oldThumbnails=0;
  for(const item of manifest.photos){
   const path=await inside(root,item.file);let stat;try{stat=await lstat(path)}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')continue;throw e}
   if(!stat.isFile()||stat.size>MAX_SOURCE_BYTES)throw Error('Unsupported source size');total+=stat.size;if(total>500*1024*1024)throw Error('Batch source budget exceeded');
@@ -53,6 +54,10 @@ export async function planGitImport(directory:string,geographyDirectory:string){
    try{jpeg=sanitizeJPEG(await sharp(bytes,{limitInputPixels:80000000}).rotate().resize({width:1600,height:1600,fit:'inside',withoutEnlargement:true}).flatten({background:'#fff'}).jpeg({quality:82}).toBuffer())}catch{throw Error('Photo conversion failed; export a JPEG retaining EXIF and retry')}
    if(jpeg.length>3*1024*1024)throw Error('Converted JPEG too large');
    photo={id,owner:manifest.owner,sha:gitBlob(jpeg),digest:digest(jpeg),checkin:null,created:new Date().toISOString(),metadata:meta.camera,proposal:{date:meta.date,dateSource:meta.dateSource,dateStatus:meta.dateStatus,gps:meta.gps}};journal.photos.push(photo);writes.set('travel/photos/'+id+'.jpg',jpeg);
+  }
+  if(!photo.thumbnailSha&&!photo.removed&&!photoParentRemoved(journal,photo)&&(writes.has('travel/photos/'+id+'.jpg')||oldThumbnails<30)){
+   if(!writes.has('travel/photos/'+id+'.jpg'))oldThumbnails++;
+   let jpeg=writes.get('travel/photos/'+id+'.jpg');if(!jpeg){const stored=await inside(root,'travel/photos/'+id+'.jpg'),stat=await lstat(stored);if(!stat.isFile()||stat.size>3*1024*1024)throw Error('Photo integrity mismatch');jpeg=await readFile(stored)}if(jpeg.length>3*1024*1024||gitBlob(jpeg)!==photo.sha)throw Error('Photo integrity mismatch');const thumb=await makeThumbnail(jpeg);photo.thumbnailSha=gitBlob(thumb);writes.set('travel/thumbnails/'+id+'.jpg',thumb);
   }
   review.push({file:item.file,id,proposal:photo.proposal||{},metadata:photo.metadata||{}});
   const signature=digest(Buffer.from(JSON.stringify(importPhoto.parse(item)))),changed=state.photos[id]!==signature,customized=item.confirmed||Object.values(item.details).some(v=>v!==''&&v!==null&&v!==undefined);
@@ -79,5 +84,22 @@ export async function planGitImport(directory:string,geographyDirectory:string){
  assertOwner(journal,manifest.owner);const text=JSON.stringify(journalSchema.parse(journal));if(Buffer.byteLength(text)>512*1024)throw Error('Journal size limit reached');
  writes.set('travel/index.json',Buffer.from(text+'\n'));writes.set('travel/import.json',Buffer.from(JSON.stringify(importManifest.parse(manifest),null,2)+'\n'));writes.set('travel/review.json',Buffer.from(JSON.stringify({photos:review},null,2)+'\n'));writes.set('travel/import-state.json',Buffer.from(JSON.stringify(state)+'\n'));
  for(const [path,bytes] of writes){const full=await inside(root,path);try{if((await readFile(full)).equals(Buffer.from(bytes)))writes.delete(path)}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}}
+ return {writes,added,photos:journal.photos.length,visits:journal.checkins.length};
+}
+
+
+/** Derivatives only: bounded, checksum-verified, no visit or original-file changes. */
+export async function planThumbnailBackfill(directory:string){
+ const root=await realpath(directory),raw=await readOptional(root,'travel/index.json');if(raw===undefined)throw Error('Missing journal');
+ const journal=journalSchema.parse(parseImportJSON(raw,'travel/index.json'));assertOwner(journal,journal.owner);
+ const writes=new Map<string,Uint8Array>();let added=0;
+ for(const photo of journal.photos){
+  if(added>=30)break;if(photo.thumbnailSha||photo.removed||photoParentRemoved(journal,photo))continue;
+  const path=await inside(root,'travel/photos/'+photo.id+'.jpg'),stat=await lstat(path);if(!stat.isFile()||stat.size>3*1024*1024)throw Error('Invalid viewing JPEG');
+  const bytes=await readFile(path);if(gitBlob(bytes)!==photo.sha)throw Error('Photo integrity mismatch');
+  const thumb=await makeThumbnail(bytes);photo.thumbnailSha=gitBlob(thumb);writes.set('travel/thumbnails/'+photo.id+'.jpg',thumb);added++;
+ }
+ const text=JSON.stringify(journalSchema.parse(journal));if(Buffer.byteLength(text)>512*1024)throw Error('Journal size limit reached');
+ if(added)writes.set('travel/index.json',Buffer.from(text+'\n'));
  return {writes,added,photos:journal.photos.length,visits:journal.checkins.length};
 }

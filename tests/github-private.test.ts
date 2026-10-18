@@ -1,3 +1,5 @@
+import sharp from 'sharp';
+import {createHash} from 'node:crypto';
 import {journalAPI} from '../lib/github-service.ts';
 import {sanitizeJPEG} from '../lib/photo.ts';
 import test from 'node:test';
@@ -37,7 +39,7 @@ test('invalid dates, duplicate photos and unconfirmed coordinates reject',()=>{
 });
 function fakeGit(options:{conflict?:boolean;lostResponse?:boolean;public?:boolean;alwaysConflict?:boolean;uploadFailure?:boolean;initial?:Journal}={}) {
  let journal:Journal=options.initial?structuredClone(options.initial):emptyJournal(owner),head='head0',treeIndex='',count=0,updates=0;
- const commits=new Map<string,string>();
+ const commits=new Map<string,string>(),blobs=new Map<string,Buffer>(),files:{path:string;sha:string|null}[]=[];
  const transport:typeof fetch=async(url,init)=>{
   const path=new URL(String(url)).pathname.replace('/repos/synthetic/private-journal','');
   const body=init?.body?JSON.parse(String(init.body)):{};
@@ -46,9 +48,9 @@ function fakeGit(options:{conflict?:boolean;lostResponse?:boolean;public?:boolea
   if(path.startsWith('/git/ref/'))return ok({object:{sha:head}});
   if(path.startsWith('/git/commits/'))return ok({tree:{sha:'tree0'}});
   if(path==='/contents/travel/index.json')return ok({encoding:'base64',size:100,content:Buffer.from(JSON.stringify(journal)).toString('base64')});
-  if(path.startsWith('/git/blobs/'))return ok({encoding:'base64',size:syntheticJPEG.length,content:syntheticJPEG.toString('base64')});
-  if(path==='/git/blobs'){if(options.uploadFailure)throw new Error('Synthetic upload failure');return ok({sha:'a'.repeat(40)});}
-  if(path==='/git/trees'){treeIndex=body.tree[0].content;return ok({sha:'newtree'});}
+  if(path.startsWith('/git/blobs/')){const bytes=blobs.get(path.split('/').at(-1)!)||syntheticJPEG;return ok({encoding:'base64',size:bytes.length,content:bytes.toString('base64')})}
+  if(path==='/git/blobs'){if(options.uploadFailure)throw new Error('Synthetic upload failure');const bytes=Buffer.from(body.content,'base64'),sha=createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');blobs.set(sha,bytes);return ok({sha});}
+  if(path==='/git/trees'){files.push(...body.tree.slice(1));treeIndex=body.tree[0].content;return ok({sha:'newtree'});}
   if(path==='/git/commits'){const sha='commit'+(++count);commits.set(sha,treeIndex);return ok({sha});}
   if(path.startsWith('/git/refs/')) {
    updates++;assert.equal(body.force,false);
@@ -60,7 +62,7 @@ function fakeGit(options:{conflict?:boolean;lostResponse?:boolean;public?:boolea
   }
   throw new Error('Unexpected endpoint '+path);
  };
- return {store:new GitHubStore(config,transport),data:()=>journal,updates:()=>updates};
+ return {store:new GitHubStore(config,transport),data:()=>journal,updates:()=>updates,files:()=>files};
 }
 test('concurrent ref rejection re-reads and preserves other update',async()=>{
  const git=fakeGit({conflict:true});await git.store.mutate(owner,j=>({changed:appendVisit(j,owner,input())}));assert.equal(git.data().checkins.length,1);assert.equal(git.data().statuses.find(s=>s.label==='并发合成地点')?.depth,3);assert.equal(git.updates(),2);
@@ -74,7 +76,7 @@ test('public repository, wrong owner and endless conflicts fail closed',async()=
  const conflicts=fakeGit({alwaysConflict:true});await assert.rejects(conflicts.store.mutate(owner,j=>({changed:appendVisit(j,owner,input())})));assert.equal(conflicts.updates(),3);
 });
 
-const syntheticJPEG=Buffer.from([255,216,255,225,0,6,69,88,73,70,255,192,0,11,8,0,1,0,1,1,1,17,0,255,218,0,8,1,1,0,0,63,0,0,255,217]);
+const syntheticJPEG=await sharp({create:{width:64,height:48,channels:3,background:'#f4f1e8'}}).jpeg().withExif({IFD0:{Make:'Synthetic',Model:'Fixture'}}).toBuffer();
 const uploadRequest=(origin='https://journal.test',bytes=syntheticJPEG)=>new Request('https://journal.test/api/photos',{method:'POST',headers:{origin,'X-Upload-Id':'synthetic-photo-01'},body:bytes});
 test('photo upload failures and lost responses recover; retry does not create drafts twice',async()=>{
  const failed=fakeGit({uploadFailure:true});
@@ -229,4 +231,17 @@ test('partial and complete photo information survives Git commit, list projectio
  assert.equal((await save(complete,true)).status,200);data=await list();assert.equal(data.drafts.length,0);assert.deepEqual(data.photos[0].details,complete);assert.equal(data.checkins.length,1);
  assert.equal((await save({...complete,note:''},true)).status,200);data=await list();assert.equal(data.photos[0].details!.note,'');assert.equal(data.checkins[0].note,'');assert.equal(data.checkins.length,1);
  const shared=await (await journalAPI({...ctx,readOnly:true,sharedOnly:true},undefined,'list')).json() as Listing;assert.equal(shared.photos.length,0);assert.equal(shared.drafts.length,0);
+});
+
+test('upload stores a private thumbnail atomically; thumbnail read obeys owner, publishing and soft-removal',async()=>{
+ const git=fakeGit(),ctx={userId:owner,origin:'https://journal.test',store:git.store};assert.equal((await journalAPI(ctx,uploadRequest(),'upload')).status,201);const p=git.data().photos[0];assert.ok(p.thumbnailSha);assert.notEqual(p.thumbnailSha,p.sha);assert.ok(git.files().some(f=>f.path==='travel/thumbnails/'+p.id+'.jpg'));
+ const request=new Request('https://journal.test/api/photos/'+p.id+'?variant=thumbnail');const thumb=await journalAPI(ctx,request,'photo',p.id);assert.equal(thumb.status,200);assert.equal(thumb.headers.get('cache-control'),'private, no-store');assert.equal((await sharp(Buffer.from(await thumb.arrayBuffer())).metadata()).exif,undefined);
+ const full=await journalAPI(ctx,new Request('https://journal.test/api/photos/'+p.id),'photo',p.id);assert.deepEqual(Buffer.from(await full.arrayBuffer()),Buffer.from(sanitizeJPEG(syntheticJPEG)));
+ assert.equal((await journalAPI({...ctx,readOnly:true,sharedOnly:true},request,'photo',p.id)).status,404);
+ appendVisit(git.data(),owner,{...input(),published:true,photos:[p.id]});assert.equal((await journalAPI({...ctx,readOnly:true,sharedOnly:true},request,'photo',p.id)).status,200);
+ p.removed=true;assert.equal((await journalAPI(ctx,request,'photo',p.id)).status,404);p.removed=false;git.data().checkins[0].removed=true;assert.equal((await journalAPI(ctx,request,'photo',p.id)).status,404);
+ await assert.rejects(git.store.photo(p.id,'foreign-owner',false,'thumbnail'));
+});
+test('legacy thumbnail is generated only after authorization without writing or replacing the original',async()=>{
+ const j=emptyJournal(owner);j.photos.push({id:'synthetic-legacy-photo',owner,sha:'a'.repeat(40),digest:'synthetic',checkin:null,created:''});const git=fakeGit({initial:j}),request=new Request('https://journal.test/api/photos/synthetic-legacy-photo?variant=thumbnail');const result=await journalAPI({userId:owner,origin:'https://journal.test',store:git.store},request,'photo',j.photos[0].id);assert.equal(result.status,200);assert.equal((await sharp(Buffer.from(await result.arrayBuffer())).metadata()).exif,undefined);assert.equal(git.updates(),0);assert.equal(git.data().photos[0].thumbnailSha,undefined);
 });
