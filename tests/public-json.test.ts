@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createPublicJsonLoader,type PublicJsonPath} from '../lib/public-json.ts';
 test('public reads deduplicate in-flight requests and parsed results across consumers',async()=>{
- let calls=0,parsed=0;const loader=createPublicJsonLoader(async()=>{calls++;return {ok:true,json:async()=>{parsed++;return {features:['synthetic']}}} as Response});
+ let calls=0,parsed=0;const loader=createPublicJsonLoader(async(_url,init)=>{calls++;assert.equal(init?.priority,'low');return {ok:true,json:async()=>{parsed++;return {features:['synthetic']}}} as Response});
  const first=loader('/japan-cities.json'),second=loader('/japan-cities.json');assert.equal(first,second);
  assert.deepEqual(await first,{features:['synthetic']});assert.equal(await first,await loader('/japan-cities.json'));
  assert.equal(calls,1);assert.equal(parsed,1);

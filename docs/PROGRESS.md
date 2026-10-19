@@ -1,5 +1,13 @@
 # Current handoff / 当前交接
 
+## 线上私仓缩略图补生成与实际弱网复测 · 2026-10-19
+
+用户明确授权后，为线上私仓 9 张当前可访问照片补生成缩略图并非强推提交；回收照片 / 所属回收记录保持原样。完整索引排除 thumbnailSha 后逐项相等，所有已有文件 SHA-256 一致；远端索引回读匹配、仓库 private、重复运行 0 修改。9 张展示图 6,081,406 → 697,131 bytes（少 88.5%）。实际站登录 / 390px 列表读取 768px 小图正确。
+
+只读回环中继使用真实私仓 / 同一优化构建，全局 48KiB/s + 至少 400ms。发现公开资料 15 秒预算误报、大图 30 秒中断，以及打开任何照片就拉取 4.25MB 日本边界；已调整为公开资料 low / 45 秒、大图 90 秒（缩略图 30 秒），日本边界只在确实需要时读取，保留认证、取消和导出预算。最终完整响应复测：大图 645,951 bytes / 30.6 秒成功显示 1600×1200，地点目录 933,736 bytes / 37.9 秒成功，未触发日本细边界且公开资料 0 超时。日志确认前台打开时被动读取中止、大图完成后恢复；390px 照片 / 时间线切换、地图缩放拖拽、无横向溢出和 console 健康通过。不是冷启动或真机性能指标。
+
+178 tests、typecheck、Next / basic 构建、106 文件静态隐私扫描和 diff 检查通过。未登录照片读取仍 401，弱网中继未登录记录读取 401、写入一律 403；没有私人照片、地点或笔记进入公开仓库。源码推送后按既有 main → Pages / Vercel 发布，最终部署需对应准确 SHA。详细边界见 [PHOTO-LOADING](PHOTO-LOADING.md)。
+
 ## 私有缩略图与前台优先加载 · 2026-10-18
 
 功能提交 [1f0d396](https://github.com/oiahoon/japan-checkins/commit/1f0d39679d1484b1b0a8232eac22ec996053accc) 已推送并发布：[Checks](https://github.com/oiahoon/japan-checkins/actions/runs/39139597938)、[独立克隆构建](https://github.com/oiahoon/japan-checkins/actions/runs/39139598073)、[Pages](https://github.com/oiahoon/japan-checkins/actions/runs/39139597909) 均 success。Vercel Production `dpl_BNsqkEfyZkh4WqRkD76HoynkzpFR` READY，准确 SHA 匹配且 aliases 包含 travel.miaowu.org；正式登录页 / Pages 200，未登录照片大图与 thumbnail 接口均 401。生产没有进行私人照片写入或补生成。本段后续纯文档提交不改变这份已验收的功能代码。

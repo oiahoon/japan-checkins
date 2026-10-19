@@ -18,7 +18,7 @@ import {photoDetailsChanged} from '../lib/photo-discovery';
 import {photoSaveIntent} from '../lib/photo-save-intent';
 import type {MapFeature} from '../lib/geography';
 import {regionCities,cityDistricts,type ChinaDirectory} from '../lib/china-admin';
-export default function PhotoEditor({photo,geos,onSave,onClose,onView,onNext,position}:{onNext?:()=>void;position?:string;photo:LibraryPhoto;geos:{japan:MapFeature[];china:MapFeature[];sichuan:MapFeature[];world:MapFeature[];japanCities?:MapFeature[];chinaAdmin?:ChinaDirectory};onSave:(id:string,details:PhotoDetails,confirmed:boolean)=>Promise<void>;onClose:()=>void;onView:()=>void}){
+export default function PhotoEditor({photo,geos,onSave,onClose,onView,onNext,position,onJapanDetails}:{onJapanDetails?:(needed:boolean)=>void;onNext?:()=>void;position?:string;photo:LibraryPhoto;geos:{japan:MapFeature[];china:MapFeature[];sichuan:MapFeature[];world:MapFeature[];japanCities?:MapFeature[];chinaAdmin?:ChinaDirectory};onSave:(id:string,details:PhotoDetails,confirmed:boolean)=>Promise<void>;onClose:()=>void;onView:()=>void}){
  const dialog=useRef<HTMLDialogElement>(null),sourceInput=useRef<HTMLInputElement>(null),gpsApplied=useRef(false),placeEdited=useRef(false),userEdited=useRef(false);
  const [d,setD]=useState<PhotoDetails>(()=>({...photo.details,date:photo.details.date||photo.proposal?.date||''})),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const [discardPrompt,setDiscardPrompt]=useState(false);
@@ -37,6 +37,8 @@ export default function PhotoEditor({photo,geos,onSave,onClose,onView,onNext,pos
  };
  const gps=recovered?.gps||photo.proposal?.gps;
  const gpsValue=useMemo(()=>{if(!gps)return;const jp=prefectureAt(gps.latitude,gps.longitude,geos.japan),cn=prefectureAt(gps.latitude,gps.longitude,geos.china),area=!jp&&!cn?geos.world.find(f=>prefectureAt(gps.latitude,gps.longitude,[f])):undefined;return {district:'',latitude:gps.latitude,longitude:gps.longitude,country:jp?'JP':cn?'CN':area?.properties.code||'',prefecture:jp||cn||area?.properties.name||'',city:jp?prefectureAt(gps.latitude,gps.longitude,(geos.japanCities||[]).filter(f=>(f.properties as {prefecture?:string}).prefecture===jp))||'':cn==='四川省'?prefectureAt(gps.latitude,gps.longitude,geos.sichuan)||'':''};},[gps,geos.japan,geos.china,geos.world,geos.sichuan,geos.japanCities]);
+ // Fine Japanese boundaries are needed only for an unapplied Japanese GPS proposal.
+ useEffect(()=>{if(!d.country&&gpsValue?.country==='JP'&&!geos.japanCities?.length)onJapanDetails?.(true)},[d.country,gpsValue?.country,geos.japanCities?.length,onJapanDetails]);
  useEffect(()=>{if(gpsApplied.current||!gpsValue||!geos.japan.length||!geos.world.length||(gpsValue.country==='JP'&&!geos.japanCities?.length)||userEdited.current)return;gpsApplied.current=true;if(!photo.marked&&gpsValue.country&&!placeEdited.current)setD(v=>v.country?v:{...v,...gpsValue})},[gpsValue,geos.japan.length,geos.world.length,geos.japanCities?.length,photo.marked]);
  const regionOptions=d.country==='JP'?geos.japan:d.country==='CN'?geos.china:[];
  const countryName=({JP:'日本',CN:'中国'} as Record<string,string>)[d.country]||geos.world.find(f=>f.properties.code===d.country)?.properties.name||d.country;
