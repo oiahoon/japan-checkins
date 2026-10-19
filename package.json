@@ -23,6 +23,7 @@
     "build:basic": "vite build --config vite.basic.config.mts",
     "dev:basic": "vite --config vite.basic.config.mts",
     "import:git": "node --experimental-strip-types scripts/import-git-photos.mjs",
+    "geography:split-japan": "node scripts/split-japan-boundaries.mjs",
     "thumbnails:git": "node --experimental-strip-types scripts/import-git-photos.mjs --thumbnails-only"
   },
   "dependencies": {

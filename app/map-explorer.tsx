@@ -1,5 +1,6 @@
 'use client';
 import {publicAsset} from '../lib/public-asset';
+import {loadBoundary} from '../lib/boundary-loader';
 import {useDeferredValue,useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowLeft,ChevronRight,Globe2,Search,X,Plus,Minus,LocateFixed,MapPin} from 'lucide-react';
 import PuzzleLayer,{type PuzzleLayerProps} from './puzzle-layer';
@@ -7,9 +8,9 @@ import {featurePath,type MapFeature,type Scope,type GeographicVisit} from '../li
 import {createExplorerTree,projectEarth,fitCamera,clampCamera,zoomCamera,detailNodeAt,featureNode,explorerPath,nodeForArea,nodeForVisit,nodeBounds,visitInExplorerNode,hasExplorerHistory,searchExplorer,type MapCamera,type ExplorerNode,type ExplorerGeographies} from '../lib/map-explorer';
 
 export type ExplorerRequest={scope:Scope;area?:string;nodeId?:string;revision:number};
-type Props=PuzzleLayerProps&{geographies:ExplorerGeographies;request:ExplorerRequest;focusedVisit?:GeographicVisit;focusRevision?:number;visits:GeographicVisit[];historical:Set<string>;historyScope:Scope;onContext:(node:ExplorerNode,path:ExplorerNode[])=>void;onVisit:(id:string)=>void;onNavigate:()=>void;extended?:boolean;japanDetailsStatus?:'idle'|'loading'|'error'|'ready';onJapanDetails?:()=>void;onRetryJapanDetails?:()=>void};
+type Props=PuzzleLayerProps&{active?:boolean;geographies:ExplorerGeographies;request:ExplorerRequest;focusedVisit?:GeographicVisit;focusRevision?:number;visits:GeographicVisit[];historical:Set<string>;historyScope:Scope;onContext:(node:ExplorerNode,path:ExplorerNode[])=>void;onVisit:(id:string)=>void;onNavigate:()=>void;extended?:boolean;japanDetailsStatus?:'idle'|'loading'|'error'|'ready';onJapanDetails?:(prefecture?:string)=>void;onRetryJapanDetails?:()=>void};
 type Pointer={x:number;y:number;startX:number;startY:number};
-export default function MapExplorer({geographies:g,request,focusedVisit,focusRevision=0,visits,historical,historyScope,onContext,onVisit,onNavigate,extended=true,japanDetailsStatus,onJapanDetails,onRetryJapanDetails,...puzzle}:Props){
+export default function MapExplorer({active:enabled=true,geographies:g,request,focusedVisit,focusRevision=0,visits,historical,historyScope,onContext,onVisit,onNavigate,extended=true,japanDetailsStatus,onJapanDetails,onRetryJapanDetails,...puzzle}:Props){
  const [cityShards,setCityShards]=useState<Record<string,MapFeature[]>>({}),[districtShards,setDistrictShards]=useState<Record<string,MapFeature[]>>({}),[dataError,setDataError]=useState(false),[dataLoading,setDataLoading]=useState(false),[retry,setRetry]=useState(0);
  const tree=useMemo(()=>createExplorerTree({...g,chinaCities:Object.values(cityShards).flat(),chinaDistricts:Object.values(districtShards).flat()}),[g.japan,g.china,g.world,g.sichuan,g.chengdu,g.japanCities,g.chinaAdmin,cityShards,districtShards]);
  const pendingFit=useRef<string|null>(null);
@@ -26,8 +27,9 @@ export default function MapExplorer({geographies:g,request,focusedVisit,focusRev
  const searchQuery=useDeferredValue(query);
  const path=explorerPath(tree,node.id),results=useMemo(()=>searchOpen?searchExplorer(tree,searchQuery).filter(n=>extended||n.country==='JP'||n.id==='japan'):[],[tree,searchQuery,extended,searchOpen]);
  const requestJapanDetails=useRef(onJapanDetails);requestJapanDetails.current=onJapanDetails;
- const needsJapanDetails=searchOpen||!!request.nodeId?.startsWith('jp-')&&!g.japanCities.length||node.id.startsWith('jp-pref:')||node.id.startsWith('jp-city:');
- useEffect(()=>{if(needsJapanDetails)requestJapanDetails.current?.()},[needsJapanDetails]);
+ const japanArea=enabled&&node.country==='JP'&&node.area?node.area:undefined;
+ const needsJapanDetails=!!japanArea;
+ useEffect(()=>{requestJapanDetails.current?.(japanArea)},[japanArea]);
  const japanLoading=needsJapanDetails&&japanDetailsStatus==='loading',japanError=needsJapanDetails&&japanDetailsStatus==='error';
  const project=projectEarth;
  function stop(){if(animation.current)cancelAnimationFrame(animation.current);animation.current=0;}
@@ -35,7 +37,7 @@ export default function MapExplorer({geographies:g,request,focusedVisit,focusRev
  function takeControl(){pendingFit.current=null;requestRevision.current=request.revision;initialized.current=true;stop()}
  function update(next:MapCamera,semantic=true){if(semantic){pendingFit.current=null;setHover('');}const bounded=clampCamera(next);cam.current=bounded;setCamera(bounded);if(semantic){const n=detailNodeAt(tree,active.current,bounded,aspectRef.current);if(extended||n.country==='JP'){active.current=n.id;setNodeId(n.id);}}}
  function navigate(next:ExplorerNode,animate=true){
-  stop();setSearchOpen(false);setHover('');pendingFit.current=next.country==='CN'?next.id:null;active.current=next.id;setNodeId(next.id);
+  stop();setSearchOpen(false);setHover('');pendingFit.current=next.country==='CN'||next.country==='JP'&&next.hasBoundary===false?next.id:null;active.current=next.id;setNodeId(next.id);
   const target=fitCamera(next,aspectRef.current),start=cam.current;
   if(!animate||window.matchMedia('(prefers-reduced-motion: reduce)').matches){update(target,false);return;}
   const began=performance.now();const tick=(now:number)=>{const progress=Math.min(1,(now-began)/360),ease=1-Math.pow(1-progress,3);update({x:start.x+(target.x-start.x)*ease,y:start.y+(target.y-start.y)*ease,span:Math.exp(Math.log(start.span)+(Math.log(target.span)-Math.log(start.span))*ease)},false);if(progress<1)animation.current=requestAnimationFrame(tick);else {animation.current=0;setHover('');}};animation.current=requestAnimationFrame(tick);
@@ -48,16 +50,16 @@ export default function MapExplorer({geographies:g,request,focusedVisit,focusRev
  // Public geometry is loaded only for the country/province being explored.
  const provinceCode=node.country==='CN'?node.provinceCode:undefined;
  useEffect(()=>{
-  if(node.country!=='CN'||!g.chinaAdmin){setDataLoading(false);setDataError(false);return}
-  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);let cancelled=false;
+  if(!enabled||node.country!=='CN'||!g.chinaAdmin){setDataLoading(false);setDataError(false);return}
+  const controller=new AbortController();let cancelled=false;
   const load=async()=>{setDataLoading(true);setDataError(false);try{
    const jobs:Promise<void>[]=[];
-   if(provinceCode&&!cityShards[provinceCode])jobs.push(fetch(publicAsset('/china-cities/'+provinceCode+'.json'),{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('city layer');return r.json() as Promise<{features:MapFeature[]}>}).then(v=>{if(!cancelled)setCityShards(old=>({...old,[provinceCode!]:v.features}))}));
-   if(provinceCode&&!districtShards[provinceCode])jobs.push(fetch(publicAsset('/china-districts/'+provinceCode+'.json'),{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('district layer');return r.json() as Promise<{features:MapFeature[]}>}).then(v=>{if(!cancelled)setDistrictShards(old=>({...old,[provinceCode]:v.features}))}));
+   if(provinceCode&&!cityShards[provinceCode])jobs.push(loadBoundary('/china-cities/'+provinceCode+'.json',controller.signal).then(features=>{if(!cancelled)setCityShards(old=>({...old,[provinceCode!]:features}))}));
+   if(provinceCode&&!districtShards[provinceCode])jobs.push(loadBoundary('/china-districts/'+provinceCode+'.json',controller.signal).then(features=>{if(!cancelled)setDistrictShards(old=>({...old,[provinceCode]:features}))}));
    await Promise.all(jobs);
-  }catch{if(!cancelled)setDataError(true)}finally{clearTimeout(timeout);if(!cancelled)setDataLoading(false)}};void load();
-  return()=>{cancelled=true;clearTimeout(timeout);controller.abort()};
- },[node.country,provinceCode,retry,g.chinaAdmin]);
+  }catch{if(!cancelled)setDataError(true)}finally{if(!cancelled)setDataLoading(false)}};void load();
+  return()=>{cancelled=true;controller.abort()};
+ },[enabled,node.country,provinceCode,retry,g.chinaAdmin]);
  useEffect(()=>{const id=pendingFit.current,n=id?tree.get(id):undefined;if(n&&n.hasBoundary!==false&&n.features.length){pendingFit.current=null;stop();update(fitCamera(n,aspectRef.current),false)}},[tree]);
  // A gesture may reach a province before its shard arrives. Reconcile its new geometry
  // at the same camera; only an explicit click/search is allowed to request a refit.

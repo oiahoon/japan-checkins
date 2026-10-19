@@ -2,6 +2,7 @@ import {countryOf,bounds,type Scope,type MapFeature,type Geographies,type Geogra
 import {prefectureAt} from './photo-metadata.ts';
 import type {PuzzleRegion} from './photo-puzzle.ts';
 import type {ChinaDirectory} from './china-admin.ts';
+import {japanMunicipalities,japanPrefectures} from './japan-boundaries.ts';
 
 export type ExplorerGeographies=Geographies&{japanCities:PuzzleRegion[];chinaAdmin?:ChinaDirectory;chinaCities?:MapFeature[];chinaDistricts?:MapFeature[]};
 export type MapCamera={x:number;y:number;span:number};
@@ -32,7 +33,11 @@ export function createExplorerTree(g:ExplorerGeographies):ExplorerTree{
  if(!tree.has('china'))add({id:'china',name:'中国',parent:'asia',scope:'china',area:'',country:'CN',features:g.china,children:[]});
  for(const f of g.japan){const id='jp-pref:'+f.properties.id,cities=g.japanCities.filter(c=>c.properties.prefecture===f.properties.name);
   add({id,name:f.properties.name,parent:'japan',scope:'japan',area:f.properties.name,country:'JP',features:cities.length?cities:[f],children:[],frame:bounds([f])});tree.get('japan')!.children.push(id);
-  for(const c of cities){const cid='jp-city:'+c.properties.id;add({id:cid,name:c.properties.name,parent:id,scope:'japan',area:f.properties.name,country:'JP',city:c.properties.name,focusFrame:municipalFocus(c),ambiguousCity:cities.filter(other=>other.properties.name===c.properties.name).length>1,features:[c],children:[]});tree.get(id)!.children.push(cid);}
+  const names=japanPrefectures.some(p=>p.id===f.properties.id&&p.name===f.properties.name)?japanMunicipalities.filter(c=>c.prefectureId===f.properties.id):[],loaded=new Map(cities.map(c=>[c.properties.id,c]));
+  // Names and stable IDs stay searchable before the corresponding geometry is requested.
+  for(const item of names){const c=loaded.get(item.id),cid='jp-city:'+item.id;add({id:cid,name:item.name,parent:id,scope:'japan',area:f.properties.name,country:'JP',city:item.name,focusFrame:c?municipalFocus(c):undefined,ambiguousCity:names.filter(other=>other.name===item.name).length>1,features:c?[c]:[],hasBoundary:!!c,frame:c?undefined:bounds([f]),children:[]});tree.get(id)!.children.push(cid);}
+  // Preserve synthetic/custom geometry used by independent forks and fixtures.
+  for(const c of cities.filter(c=>!names.some(n=>n.id===c.properties.id))){const cid='jp-city:'+c.properties.id;add({id:cid,name:c.properties.name,parent:id,scope:'japan',area:f.properties.name,country:'JP',city:c.properties.name,ambiguousCity:cities.filter(other=>other.properties.name===c.properties.name).length>1,focusFrame:municipalFocus(c),features:[c],children:[]});tree.get(id)!.children.push(cid);}
  }
  for(const f of g.china){const id=f.properties.name==='四川省'?'sichuan':'cn-pref:'+f.properties.id;
   add({id,name:f.properties.name,parent:'china',scope:id==='sichuan'?'sichuan':'china',area:id==='sichuan'?'':f.properties.name,country:'CN',features:id==='sichuan'&&g.sichuan?.length?g.sichuan:[f],children:[],frame:bounds([f])});tree.get('china')!.children.push(id);
