@@ -168,3 +168,7 @@ NODE_ENV=production node --env-file=.setup/server.env scripts/doctor.mjs --remot
 进阶版可选启用短期写入协调及全局登录限流，基础版不依赖。默认关闭，不改GitHub主存储。创建、权限、免费费用边界、配置检查与回滚见 [KV.md](KV.md)。首次安装可跳过。启用时配置自己项目的资源与凭据；连接完成后还需运行时验证。
 
 启用步骤：在Vercel Storage选择自己的Free实例，原生Connect仅选可信Production，保持敏感凭据保护；不要增加付款方式或升级。设置 `JOURNAL_KV=redis` 和独立 `JOURNAL_KV_NAMESPACE`，重新部署。保持原 `PASSWORD_RATE_LIMIT`，只有单独明确选择redis才切换登录限流。主人 `/setup` 默认只读PING；主动运行“验证 Redis 写入锁”会创建随机、最长60秒TTL的隔离测试键，验证SET/EVAL/互斥/过期，不写照片或记录。详情及共享库权限/额度边界见KV文档。
+
+## 可选图片加速
+
+默认 Git 已可上传、查看、拼图和导出，无需图床。需要时按 [ImageKit 引导](IMAGEKIT.md)配置自己的私有展示副本；失败自动回退。服务端密钥不能加 NEXT_PUBLIC_，也不能放进 Pages。关闭只需 PHOTO_DELIVERY=git 并重新部署，照片不用迁回。R2 是下一阶段计划，尚未实现。

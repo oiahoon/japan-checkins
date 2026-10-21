@@ -1,3 +1,4 @@
+export const maxDuration=60;
 import {githubMode} from '../../../lib/self-host-config';
 import {githubAPI} from '../../../lib/github-api';
 import {getChatGPTUser} from '../../chatgpt-auth';

@@ -149,3 +149,7 @@ Fork = 在 GitHub 复制项目；Clone = 下载仓库到电脑；Commit = 在电
 提供帮助信息时只发失败步骤和已遮去私人信息的错误消息，不要发 token、密码、完整环境文件或含真实GPS的日志。GitHub Actions、Pages、Vercel的可用性与额度由各自账号方案决定，不能承诺无限免费使用。
 
 官方操作参考：[网页创建文件](https://docs.github.com/en/repositories/working-with-files/managing-files/creating-new-files)、[GitHub Desktop 克隆](https://docs.github.com/en/desktop/adding-and-cloning-repositories/cloning-a-repository-from-github-to-github-desktop)、[提交和推送](https://docs.github.com/en/desktop/making-changes-in-a-branch/pushing-changes-to-github-from-github-desktop)、[fine-grained token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)、[Pages 发布来源](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)。
+
+## 照片多了以后再考虑加速
+
+首次部署不需要图床。进阶版可选 [ImageKit 私有图片加速](IMAGEKIT.md)，Git 继续保存照片，失败自动回退，随时可关闭；基础版无需增加配置。建议先完成一张照片的完整流程，再决定是否启用。

@@ -1,3 +1,4 @@
+import type {ImageKitDelivery} from './imagekit.ts';
 import {journalProjection} from './journal-projection.ts';
 import {JournalBusy,CoordinationUnavailable} from './journal-kv.ts';
 import {z} from 'zod';
@@ -20,13 +21,17 @@ export async function boundedBytes(request:Request,limit:number) {
   return Buffer.concat(chunks,size);
 }
 export type Action = 'list'|'save'|'markers'|'upload'|'photo'|'delete'|'publish'|'hide-photo'|'restore-photo'|'manage'|'edit-photo'|'entry';
-export async function journalAPI(context:{userId:string;origin:string;store:GitHubStore;readOnly?:boolean;sharedOnly?:boolean},request:Request|undefined,action:Action,id?:string) {
+export async function journalAPI(context:{userId:string;origin:string;store:GitHubStore;readOnly?:boolean;sharedOnly?:boolean;delivery?:Pick<ImageKitDelivery,'ticket'|'mirror'>|null;schedule?:(work:()=>Promise<void>)=>void},request:Request|undefined,action:Action,id?:string) {
   const user={userId:context.userId};
   try {
     if(context.readOnly&&!['list','photo'].includes(action))return json({error:'只读访问不能修改记录'},403);
     const config={origin:context.origin};
     if(request&&['save','markers','upload','delete','publish','hide-photo','restore-photo','manage','edit-photo','entry'].includes(action)&&request.headers.get('origin')!==config.origin)return json({error:'无效请求来源'},403);
     const store=context.store;
+    const warmPhoto=(photoId:string,variant:'original'|'thumbnail',refresh=false)=>{
+      if(!context.delivery||!context.schedule)return;
+      try{context.schedule(async()=>{try{const row=await store.photoReference(photoId,user.userId,context.sharedOnly);if(!row)return;await context.delivery!.mirror({id:photoId,sha:variant==='thumbnail'?(row.thumbnailSha||row.sha):row.sha,variant},()=>store.photo(photoId,user.userId,context.sharedOnly,variant,makeThumbnail),refresh)}catch{/* Optional acceleration never changes Git save/read results. */}})}catch{/* Scheduling is optional too. */}
+    };
     if(action==='entry'){let body;try{body=entryMutation.parse(JSON.parse((await boundedBytes(request!,30000)).toString('utf8')))}catch{return json({error:'请检查记录信息与照片选择'},400)}await store.mutate(user.userId,j=>({changed:mutateEntry(j,user.userId,body)}));return json({saved:true});}
     if(action==='list') {
       const original=await store.read(user.userId);
@@ -35,7 +40,16 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
     }
     if(action==='photo'||action==='delete') {
       if(!recordId.safeParse(id).success)return json({error:'照片不存在'},404);
-      if(action==='photo') {const photo=await store.photo(id!,user.userId,context.sharedOnly,readPhotoVariant(request?.url||''),makeThumbnail);return photo?new Response(new Uint8Array(photo),{headers:{...privateHeaders,'Content-Type':'image/jpeg','Content-Disposition':'inline'}}):json({error:'照片不存在'},404);}
+      if(action==='photo') {
+        const variant=readPhotoVariant(request?.url||''),params=new URL(request?.url||'https://journal.invalid').searchParams;
+        if(context.delivery&&params.get('delivery')==='auto'){
+          const row=await store.photoReference(id!,user.userId,context.sharedOnly);if(!row)return json({error:'照片不存在'},404);
+          const ticket=context.delivery.ticket({id:id!,sha:variant==='thumbnail'?(row.thumbnailSha||row.sha):row.sha,variant});if(ticket)return json(ticket);
+        }
+        const photo=await store.photo(id!,user.userId,context.sharedOnly,variant,makeThumbnail);
+        if(photo&&context.delivery&&(params.get('delivery')==='auto'||params.get('warm')==='1'))warmPhoto(id!,variant,params.get('warm')==='1');
+        return photo?new Response(new Uint8Array(photo),{headers:{...privateHeaders,'Content-Type':'image/jpeg','Content-Disposition':'inline'}}):json({error:'照片不存在'},404);
+      }
       let blocked=false;
       await store.mutate(user.userId,j=>{const row=j.photos.find(p=>p.id===id&&p.owner===user.userId);if(!row)return {changed:false};if(row.checkin!==null){blocked=true;return {changed:false};}j.photos=j.photos.filter(p=>p.id!==id);return {changed:true,files:[...(row.thumbnailSha?[{path:`travel/thumbnails/${id}.jpg`,mode:'100644' as const,type:'blob' as const,sha:null}]:[]),{path:`travel/photos/${id}.jpg`,mode:'100644',type:'blob',sha:null}]};});
       return new Response(null,{status:blocked?409:204,headers:privateHeaders});
@@ -73,6 +87,7 @@ export async function journalAPI(context:{userId:string;origin:string;store:GitH
       let thumbnail:Uint8Array;try{thumbnail=await makeThumbnail(bytes)}catch{return json({error:'照片图像数据无效，请重新选择 JPEG'},400)}
       const sha=await store.blob(bytes),thumbnailSha=await store.blob(thumbnail);
       await store.mutate(user.userId,j=>{const existing=j.photos.find(p=>p.id===photoId&&p.owner===user.userId);if(existing){if(existing.digest!==digest)throw new InputError('上传标识已用于另一张照片');return {changed:false};}if(j.photos.filter(p=>!p.removed&&p.checkin===null&&!photoEntry(p)).length>=30)throw new InputError('未完成照片过多');j.photos.push({id:photoId!,owner:user.userId,checkin:null,sha,thumbnailSha,digest,metadata,proposal,created:new Date().toISOString()});return {changed:true,files:[{path:`travel/thumbnails/${photoId}.jpg`,mode:'100644',type:'blob',sha:thumbnailSha},{path:`travel/photos/${photoId}.jpg`,mode:'100644',type:'blob',sha}]};});
+      warmPhoto(photoId!,'original');warmPhoto(photoId!,'thumbnail');
       return json({id:photoId},201);
     }
     let body:unknown;try{body=JSON.parse((await boundedBytes(request!,20000)).toString('utf8'));}catch{return json({error:'请求内容无效或过长'},400);}

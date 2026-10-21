@@ -20,6 +20,7 @@
     "password:hash": "node --experimental-strip-types scripts/password-hash.mjs",
     "setup": "node --experimental-strip-types scripts/setup-selfhost.mjs",
     "doctor": "node --experimental-strip-types scripts/doctor.mjs",
+    "imagekit:check": "node --experimental-strip-types scripts/check-imagekit.mjs",
     "build:basic": "vite build --config vite.basic.config.mts",
     "dev:basic": "vite --config vite.basic.config.mts",
     "import:git": "node --experimental-strip-types scripts/import-git-photos.mjs",

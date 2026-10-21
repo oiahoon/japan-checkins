@@ -20,6 +20,8 @@
 
 地图细边界按正在查看的地区加载，可见照片与大图优先读取；见[地图数据说明](docs/GEOGRAPHY.md)。
 
+可选 [ImageKit 私有图片加速](docs/IMAGEKIT.md)：默认仍从 Git 读取，配置后加速失败自动回退；不影响基础版部署。Cloudflare R2 为后续拓展计划。
+
 ## 选择部署方式
 
 | | GitHub 基础版 | 服务端进阶版（Vercel / 自有服务器） |

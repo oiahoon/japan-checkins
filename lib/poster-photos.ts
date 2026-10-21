@@ -6,9 +6,9 @@ export async function loadPosterPhotos(items:PuzzlePhoto[],options:Options):Prom
  if(unique.length>100)throw Error('照片较多，请选择旅行记录或缩小时间范围');
  onProgress?.(0,unique.length);
  const abort=()=>controller.abort(signal.reason);signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();
- const budget=setTimeout(()=>controller.abort(new Error('照片读取超时，请重试')),options.budgetMs??45000),urls=new Map<string,string>();
+ const budget=setTimeout(()=>controller.abort(new Error('照片读取超时，请重试')),options.budgetMs??120000),urls=new Map<string,string>();
  async function worker(){while(cursor<unique.length){const p=unique[cursor++],request=new AbortController(),stop=()=>request.abort(controller.signal.reason);controller.signal.addEventListener('abort',stop,{once:true});if(controller.signal.aborted)stop();
- const timer=setTimeout(()=>request.abort(new Error('照片读取超时，请重试')),options.requestMs??15000);
+ const timer=setTimeout(()=>request.abort(new Error('照片读取超时，请重试')),options.requestMs??45000);
  try{request.signal.throwIfAborted();const blob=await read(p.url,request.signal);request.signal.throwIfAborted();if(blob.type!=='image/jpeg'||blob.size>3*1024*1024)throw Error('照片格式或大小无效');bytes+=blob.size;if(bytes>(options.maxBytes??24*1024*1024))throw Error('照片较多，请选择旅行记录或缩小时间范围');urls.set(p.id,await encode(blob,request.signal));request.signal.throwIfAborted();onProgress?.(++done,unique.length);
  }finally{clearTimeout(timer);controller.signal.removeEventListener('abort',stop)}}}
  try{await Promise.all([worker(),worker()]);items.forEach((p,i)=>{result[i]={...p,url:urls.get(p.id)!}});return result;}catch(e){controller.abort(e);throw e;}finally{clearTimeout(budget);signal.removeEventListener('abort',abort)}

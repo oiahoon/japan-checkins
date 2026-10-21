@@ -35,11 +35,15 @@ export class GitHubStore {
   }
   async read(owner:string) {if(owner!==this.config.ownerId)throw new Error("Owner denied");return (await this.snapshot(false)).journal;}
   async blob(bytes:Uint8Array) {return (await this.api<{sha:string}>('/git/blobs','POST',{encoding:'base64',content:encodeBase64(bytes)})).sha as string;}
-  async photo(id:string,owner:string,publishedOnly=false,variant:'original'|'thumbnail'='original',fallbackThumbnail?:(bytes:Uint8Array)=>Promise<Uint8Array>) {
+  async photoReference(id:string,owner:string,publishedOnly=false) {
     if(owner!==this.config.ownerId)throw new Error('Owner denied');
     const journal=await this.read(owner);
     const row=journal.photos.find(p=>p.id===id&&p.owner===owner);
     if(!row||row.removed||photoParentRemoved(journal,row)||(publishedOnly&&(journal.entries.some(e=>e.id===photoEntry(row))||!journal.checkins.some(v=>v.id===row.checkin&&v.published))))return null;
+    return row;
+  }
+  async photo(id:string,owner:string,publishedOnly=false,variant:'original'|'thumbnail'='original',fallbackThumbnail?:(bytes:Uint8Array)=>Promise<Uint8Array>) {
+    const row=await this.photoReference(id,owner,publishedOnly);if(!row)return null;
     const thumbnail=variant==='thumbnail';
     const blob=await this.api<{encoding:string;size:number;content:string}>(`/git/blobs/${thumbnail&&row.thumbnailSha?row.thumbnailSha:row.sha}`);
     if(blob.encoding!=='base64'||blob.size>3*1024*1024)throw new Error('Invalid photo blob');

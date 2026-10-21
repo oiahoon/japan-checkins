@@ -1,8 +1,9 @@
+import {imageKitConfig} from './imagekit.ts';
 import {authProvider,siteConfig,passwordConfig,authConfig,repoConfig} from './self-host-config.ts';
 import {productionRateLimitReady} from './password-rate-limit.ts';
 import {GitHubStore,GitHubError} from './github-store.ts';
 import {redisConfig,JournalRedis} from './journal-kv.ts';
-export type DeploymentCheck={id:string;label:string;ok:boolean;message:string};
+export type DeploymentCheck={id:string;label:string;ok:boolean;message:string;optional?:boolean};
 export async function deploymentChecks(remote=false){
  const checks:DeploymentCheck[]=[];
  let provider='invalid';try{provider=authProvider()}catch{}
@@ -17,6 +18,7 @@ export async function deploymentChecks(remote=false){
   if(config&&remote){await new JournalRedis(config).ping();checks.push({id:'kv',label:'可选 Redis 协调',ok:true,message:'Redis 只读 PING 成功；写入权限及真实并发尚需独立验证。'});}
   else checks.push({id:'kv',label:'可选 Redis 协调',ok:true,message:config?'配置格式有效；尚未连接验证。':'未启用；继续使用 GitHub 原子提交，不提供后台队列。'});
  }catch{checks.push({id:'kv',label:'可选 Redis 协调',ok:false,message:'检查 JOURNAL_KV、独立命名空间、完整 REST 凭据或服务额度；不会回退到实例内存。'});}
+ try{const c=imageKitConfig();checks.push({id:'images',label:'可选 ImageKit 图片加速',ok:true,optional:true,message:c?'配置格式有效；请在下方用合成图验证私有访问。验证通过前继续走 Git。':'未启用；照片从 Git 读取。'});}catch{checks.push({id:'images',label:'可选 ImageKit 图片加速',ok:false,optional:true,message:'配置不完整或未确认访问限制，已回退 Git；不影响上传和查看。'});}
  const storage=check('storage','数据仓库配置',()=>repoConfig(),'填写自己的 GITHUB_DATA_REPOSITORY、GITHUB_DATA_TOKEN 和已存在的数据分支。');
  if(remote&&storage){
   try{const c=repoConfig();await new GitHubStore(c).read(c.ownerId);checks.push({id:'github',label:'私有仓库连接',ok:true,message:'仓库私有、分支可读，日志所有权匹配。尚未执行写入。'});}

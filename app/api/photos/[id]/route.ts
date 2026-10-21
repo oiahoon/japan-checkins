@@ -1,3 +1,4 @@
+export const maxDuration=60;
 import {currentAccess} from '../../../../lib/github-auth';
 import {boundedBytes} from '../../../../lib/github-service';
 import {githubMode} from '../../../../lib/self-host-config';
